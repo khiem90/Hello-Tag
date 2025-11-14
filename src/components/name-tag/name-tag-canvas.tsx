@@ -55,8 +55,14 @@ export function NameTagCanvas({
     .filter((field) => field.visible);
   const cardBackgroundStyle =
     tag.background === "custom"
-      ? { background: tag.customBackground }
-      : { backgroundImage: theme?.gradient };
+      ? {
+          backgroundColor: tag.customBackground,
+          backgroundImage: "none",
+        }
+      : {
+          backgroundColor: "transparent",
+          backgroundImage: theme?.gradient ?? "none",
+        };
 
   return (
     <section className="rounded-[32px] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-6 shadow-inner shadow-slate-200">

@@ -303,7 +303,12 @@ export function NameTagForm({
               )}
               <button
                 type="button"
-                onClick={() => onThemeChange({ background: "custom" })}
+                onClick={() =>
+                  onThemeChange({
+                    background: "custom",
+                    customBackground: tag.customBackground || "#f8fafc",
+                  })
+                }
                 className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
                   tag.background === "custom"
                     ? "border-slate-900 bg-slate-900 text-white"
@@ -318,7 +323,7 @@ export function NameTagForm({
                 Custom color
                 <input
                   type="color"
-                  value={tag.customBackground}
+                  value={tag.customBackground || "#f8fafc"}
                   onChange={(event) =>
                     onThemeChange({
                       background: "custom",
