@@ -1,65 +1,326 @@
-import Image from "next/image";
+﻿"use client";
+
+import {
+  ChangeEvent,
+  FormEvent,
+  useMemo,
+  useState,
+} from "react";
+import { NameTag, NameTagCard } from "@/components/name-tag-card";
+
+type NameTagDraft = Omit<NameTag, "id">;
+
+const starterTags: NameTag[] = [
+  {
+    id: "tag-alex",
+    fullName: "Alex Kim",
+    role: "Product Designer",
+    tagline: "Coffee snob & prototyper",
+    accent: "#14b8a6",
+  },
+  {
+    id: "tag-samira",
+    fullName: "Samira Patel",
+    role: "Developer Advocate",
+    tagline: "Ask me about DX",
+    accent: "#a855f7",
+  },
+  {
+    id: "tag-lena",
+    fullName: "Lena Flores",
+    role: "Ops Lead",
+    tagline: "Team puzzle master",
+    accent: "#f97316",
+  },
+];
+
+const accentPalette = [
+  "#0ea5e9",
+  "#22d3ee",
+  "#14b8a6",
+  "#f97316",
+  "#f43f5e",
+  "#a855f7",
+];
+
+const createBlankDraft = (): NameTagDraft => ({
+  fullName: "",
+  role: "",
+  tagline: "",
+  accent: "#0ea5e9",
+});
+
+const createId = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `tag-${Date.now().toString(36)}-${Math.random()
+        .toString(16)
+        .slice(2, 8)}`;
 
 export default function Home() {
+  const [tags, setTags] = useState<NameTag[]>(starterTags);
+  const [form, setForm] = useState<NameTagDraft>(() => createBlankDraft());
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const isEditing = Boolean(editingId);
+
+  const livePreview: NameTag = useMemo(
+    () => ({
+      id: editingId ?? "preview",
+      fullName: form.fullName,
+      role: form.role,
+      tagline: form.tagline,
+      accent: form.accent,
+    }),
+    [editingId, form],
+  );
+
+  const handleFieldChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAccentPick = (value: string) => {
+    setForm((prev) => ({ ...prev, accent: value }));
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed: NameTagDraft = {
+      fullName: form.fullName.trim(),
+      role: form.role.trim(),
+      tagline: form.tagline.trim(),
+      accent: form.accent,
+    };
+
+    if (!trimmed.fullName) {
+      return;
+    }
+
+    setTags((prev) => {
+      if (!editingId) {
+        return [{ id: createId(), ...trimmed }, ...prev];
+      }
+
+      return prev.map((tag) =>
+        tag.id === editingId ? { ...tag, ...trimmed } : tag,
+      );
+    });
+
+    setForm(createBlankDraft());
+    setEditingId(null);
+  };
+
+  const startEditing = (tag: NameTag) => {
+    setEditingId(tag.id);
+    setForm({
+      fullName: tag.fullName,
+      role: tag.role,
+      tagline: tag.tagline,
+      accent: tag.accent,
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setForm(createBlankDraft());
+  };
+
+  const disableSubmit = form.fullName.trim().length === 0;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-slate-100/60 px-4 py-12 text-slate-900 sm:px-6 lg:px-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
+        <header className="space-y-3 text-center sm:text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600">
+            Name Tag Studio
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            Create memorable name tags in seconds.
+          </h1>
+          <p className="text-base text-slate-600 sm:max-w-3xl">
+            Capture the essentials for each person, add a splash of color, and
+            jump back into any tag to keep editing. The live preview updates as
+            you type so you know exactly what will print.
+          </p>
+        </header>
+
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-[32px] border border-slate-200 bg-white/80 p-6 shadow-lg shadow-slate-200/60 backdrop-blur"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  {isEditing ? "Edit tag" : "New tag"}
+                </p>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {isEditing ? "Update name tag" : "Add a name tag"}
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Fill out the details below. You can always edit later.
+                </p>
+              </div>
+              {isEditing ? (
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className="text-sm font-semibold text-slate-500 transition hover:text-slate-900"
+                >
+                  Cancel edit
+                </button>
+              ) : null}
+            </div>
+
+            <div className="mt-6 space-y-5">
+              <label className="block space-y-2 text-sm font-medium text-slate-700">
+                Full name
+                <input
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+                  name="fullName"
+                  value={form.fullName}
+                  onChange={handleFieldChange}
+                  placeholder="e.g. Jordan Avery"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm font-medium text-slate-700">
+                Role or team
+                <input
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+                  name="role"
+                  value={form.role}
+                  onChange={handleFieldChange}
+                  placeholder="Product Manager"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm font-medium text-slate-700">
+                Icebreaker or fun fact
+                <textarea
+                  className="min-h-[96px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+                  name="tagline"
+                  maxLength={90}
+                  value={form.tagline}
+                  onChange={handleFieldChange}
+                  placeholder="Ask me about..."
+                />
+              </label>
+
+              <div className="space-y-3 text-sm font-medium text-slate-700">
+                Accent color
+                <div className="flex flex-wrap items-center gap-3">
+                  {accentPalette.map((color) => {
+                    const isSelected = form.accent === color;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        aria-label={`Select ${color} accent`}
+                        aria-pressed={isSelected}
+                        onClick={() => handleAccentPick(color)}
+                        className={`h-10 w-10 rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 ${
+                          isSelected
+                            ? "border-slate-900 ring-2 ring-slate-900/10"
+                            : "border-transparent ring-transparent"
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    );
+                  })}
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    Custom
+                    <input
+                      type="color"
+                      name="accent"
+                      value={form.accent}
+                      onChange={handleFieldChange}
+                      className="h-10 w-16 cursor-pointer rounded-xl border border-slate-200 bg-white p-1"
+                      aria-label="Pick a custom accent color"
+                    />
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                type="submit"
+                disabled={disableSubmit}
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition enabled:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {isEditing ? "Save changes" : "Add name tag"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm(createBlankDraft())}
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-900 hover:text-slate-900"
+              >
+                Clear form
+              </button>
+            </div>
+          </form>
+
+          <div className="rounded-[32px] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-6 shadow-inner shadow-slate-200">
+            <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+                  Live preview
+                </p>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  What you&apos;ll print
+                </h2>
+                <p className="text-sm text-slate-500">
+                  {isEditing
+                    ? "Editing an existing tag."
+                    : "Drafting a brand new tag."}
+                </p>
+              </div>
+              <div className="rounded-full bg-slate-900/80 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+                {isEditing ? "Editing" : "Draft"}
+              </div>
+            </div>
+            <NameTagCard tag={livePreview} isPreview />
+          </div>
+        </section>
+
+        <section className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Saved tags
+              </p>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {tags.length
+                  ? `You have ${tags.length} tag${tags.length > 1 ? "s" : ""}`
+                  : "Start by adding your first tag"}
+              </h2>
+            </div>
+          </div>
+
+          {tags.length ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {tags.map((tag) => (
+                <NameTagCard key={tag.id} tag={tag} onEdit={startEditing} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-white/60 px-6 py-12 text-center text-slate-500">
+              <p className="text-base font-semibold text-slate-600">
+                No name tags yet
+              </p>
+              <p className="text-sm">
+                Use the form above to craft your first badge. It will appear
+                here ready to edit.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
