@@ -17,6 +17,8 @@ const starterTags: NameTag[] = [
     role: "Product Designer",
     tagline: "Coffee snob & prototyper",
     accent: "#14b8a6",
+    textAlign: "left",
+    namePlacement: "middle",
   },
   {
     id: "tag-samira",
@@ -24,6 +26,8 @@ const starterTags: NameTag[] = [
     role: "Developer Advocate",
     tagline: "Ask me about DX",
     accent: "#a855f7",
+    textAlign: "center",
+    namePlacement: "top",
   },
   {
     id: "tag-lena",
@@ -31,6 +35,8 @@ const starterTags: NameTag[] = [
     role: "Ops Lead",
     tagline: "Team puzzle master",
     accent: "#f97316",
+    textAlign: "right",
+    namePlacement: "bottom",
   },
 ];
 
@@ -43,11 +49,49 @@ const accentPalette = [
   "#a855f7",
 ];
 
+const textAlignOptions: Array<{
+  value: NameTag["textAlign"];
+  label: string;
+  description: string;
+}> = [
+  { value: "left", label: "Left", description: "Classic name badge layout" },
+  {
+    value: "center",
+    label: "Center",
+    description: "Perfect for short names",
+  },
+  {
+    value: "right",
+    label: "Right",
+    description: "Modern offset treatment",
+  },
+];
+
+const placementOptions: Array<{
+  value: NameTag["namePlacement"];
+  label: string;
+  description: string;
+}> = [
+  { value: "top", label: "Top", description: "Keep names near the greeting" },
+  {
+    value: "middle",
+    label: "Middle",
+    description: "Balances the white space",
+  },
+  {
+    value: "bottom",
+    label: "Bottom",
+    description: "Align with the tagline",
+  },
+];
+
 const createBlankDraft = (): NameTagDraft => ({
   fullName: "",
   role: "",
   tagline: "",
   accent: "#0ea5e9",
+  textAlign: "left",
+  namePlacement: "middle",
 });
 
 const createId = () =>
@@ -71,12 +115,16 @@ export default function Home() {
       role: form.role,
       tagline: form.tagline,
       accent: form.accent,
+      textAlign: form.textAlign,
+      namePlacement: form.namePlacement,
     }),
     [editingId, form],
   );
 
   const handleFieldChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -93,6 +141,8 @@ export default function Home() {
       role: form.role.trim(),
       tagline: form.tagline.trim(),
       accent: form.accent,
+      textAlign: form.textAlign,
+      namePlacement: form.namePlacement,
     };
 
     if (!trimmed.fullName) {
@@ -120,6 +170,8 @@ export default function Home() {
       role: tag.role,
       tagline: tag.tagline,
       accent: tag.accent,
+      textAlign: tag.textAlign ?? "left",
+      namePlacement: tag.namePlacement ?? "middle",
     });
   };
 
@@ -245,6 +297,84 @@ export default function Home() {
                 </div>
               </div>
 
+              <div className="space-y-4 rounded-3xl border border-slate-100 bg-slate-50/60 p-4">
+                <p className="text-sm font-semibold text-slate-700">
+                  Text placement
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Horizontal alignment
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {textAlignOptions.map((option) => {
+                        const isActive = form.textAlign === option.value;
+                        return (
+                          <button
+                            type="button"
+                            key={option.value}
+                            aria-pressed={isActive}
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                textAlign: option.value,
+                              }))
+                            }
+                            className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15 ${
+                              isActive
+                                ? "border-slate-900 bg-slate-900 text-white"
+                                : "border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {textAlignOptions.find(
+                        (alignment) => alignment.value === form.textAlign,
+                      )?.description ?? ""}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Vertical focus
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {placementOptions.map((option) => {
+                        const isActive = form.namePlacement === option.value;
+                        return (
+                          <button
+                            type="button"
+                            key={option.value}
+                            aria-pressed={isActive}
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                namePlacement: option.value,
+                              }))
+                            }
+                            className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15 ${
+                              isActive
+                                ? "border-slate-900 bg-slate-900 text-white"
+                                : "border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {placementOptions.find(
+                        (placement) => placement.value === form.namePlacement,
+                      )?.description ?? ""}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">

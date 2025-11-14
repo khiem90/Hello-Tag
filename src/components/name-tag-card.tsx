@@ -2,12 +2,17 @@
 
 import { memo } from "react";
 
+export type TextAlignOption = "left" | "center" | "right";
+export type NamePlacementOption = "top" | "middle" | "bottom";
+
 export type NameTag = {
   id: string;
   fullName: string;
   role: string;
   tagline: string;
   accent: string;
+  textAlign: TextAlignOption;
+  namePlacement: NamePlacementOption;
 };
 
 type NameTagCardProps = {
@@ -24,10 +29,29 @@ export const NameTagCard = memo(function NameTagCard({
   isPreview = false,
 }: NameTagCardProps) {
   const accent = tag.accent || defaultAccent;
+  const alignKey: TextAlignOption = tag.textAlign ?? "left";
+  const placementKey: NamePlacementOption = tag.namePlacement ?? "middle";
+  const horizontalAlignClass: Record<TextAlignOption, string> = {
+    left: "items-start text-left",
+    center: "items-center text-center",
+    right: "items-end text-right",
+  };
+
+  const verticalPlacementClass: Record<NamePlacementOption, string> = {
+    top: "justify-start",
+    middle: "justify-center",
+    bottom: "justify-end",
+  };
+
+  const taglineAlignClass: Record<TextAlignOption, string> = {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right",
+  };
 
   return (
     <article
-      className="relative isolate flex h-48 w-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white/90 p-6 text-slate-900 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="relative isolate flex h-48 w-full flex-col rounded-[32px] border border-slate-200 bg-white/90 p-6 text-slate-900 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg"
       style={{
         boxShadow:
           "0 15px 35px -25px rgba(15, 23, 42, 0.65), inset 0 0 0 1px rgba(15, 23, 42, 0.04)",
@@ -38,24 +62,30 @@ export const NameTagCard = memo(function NameTagCard({
         <span>my name is</span>
       </div>
 
-      <div className="space-y-1.5">
-        <p className="text-3xl font-semibold tracking-tight">
-          {tag.fullName || "Your Name"}
-        </p>
-        <p className="text-base text-slate-600">
-          {tag.role || "What you do"}
-        </p>
+      <div
+        className={`flex flex-1 flex-col ${verticalPlacementClass[placementKey]}`}
+      >
+        <div
+          className={`space-y-1.5 ${horizontalAlignClass[alignKey]}`}
+        >
+          <p className="text-3xl font-semibold tracking-tight">
+            {tag.fullName || "Your Name"}
+          </p>
+          <p className="text-base text-slate-600">
+            {tag.role || "What you do"}
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-slate-500">
-        <p className="max-w-[70%] truncate">
+      <div className="flex items-center gap-3 text-sm text-slate-500">
+        <p className={`flex-1 truncate ${taglineAlignClass[alignKey]}`}>
           {tag.tagline || "Add a fun fact or conversation starter"}
         </p>
         {onEdit && !isPreview ? (
           <button
             type="button"
             onClick={() => onEdit?.(tag)}
-            className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-transparent hover:bg-slate-900 hover:text-white"
+            className="ml-auto rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-transparent hover:bg-slate-900 hover:text-white"
           >
             Edit
           </button>
