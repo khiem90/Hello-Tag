@@ -1,3 +1,7 @@
+# Hello Tag
+
+Hello Tag is a Next.js playground for crafting, previewing, and editing personalized name tags with live controls.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

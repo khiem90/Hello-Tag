@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Name Tag Studio",
-  description: "Create, preview, and edit personalized name tags in Next.js.",
+  title: "Hello Tag",
+  description:
+    "Hello Tag helps you create, preview, and refine personalized name tags in Next.js.",
 };
 
 export default function RootLayout({

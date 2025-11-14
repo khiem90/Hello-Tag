@@ -158,7 +158,7 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <header className="space-y-3 text-center sm:text-left">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600">
-            Name Tag Studio
+            Hello Tag
           </p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Create memorable name tags in seconds.
