@@ -4,8 +4,9 @@ import {
   accentPalette,
   backgroundThemes,
 } from "@/lib/name-tag";
+import type { ImportSummary } from "@/types/import";
 import { NameTagData, NameTagField } from "@/types/name-tag";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useMemo, useRef } from "react";
 
 type NameTagFormProps = {
   tag: NameTagData;
@@ -23,6 +24,10 @@ type NameTagFormProps = {
     >,
   ) => void;
   onReset: () => void;
+  onImportDataset: (file: File) => void;
+  importSummary: ImportSummary | null;
+  importError: string | null;
+  isImportingDataset: boolean;
 };
 
 const alignOptions: Array<NameTagData["textAlign"]> = [
@@ -30,6 +35,44 @@ const alignOptions: Array<NameTagData["textAlign"]> = [
   "center",
   "right",
 ];
+
+const importStatusTokens: Record<
+  ImportSummary["status"],
+  {
+    label: string;
+    pill: string;
+    text: string;
+  }
+> = {
+  match: {
+    label: "Headers match your layers",
+    pill: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    text: "text-emerald-700",
+  },
+  "needs-layers": {
+    label: "Add more layers",
+    pill: "border-amber-200 bg-amber-50 text-amber-700",
+    text: "text-amber-700",
+  },
+  "unused-layers": {
+    label: "Too many layers",
+    pill: "border-sky-200 bg-sky-50 text-sky-700",
+    text: "text-sky-700",
+  },
+};
+
+const describeImportSummary = (summary: ImportSummary) => {
+  const { headerCount, layerCount } = summary;
+  if (headerCount === layerCount) {
+    return "Each header in your file can map to a layer.";
+  }
+  if (headerCount > layerCount) {
+    const difference = headerCount - layerCount;
+    return `The file has ${headerCount} headers but only ${layerCount} layers. Add ${difference} more layer${difference > 1 ? "s" : ""} or hide unused headers.`;
+  }
+  const difference = layerCount - headerCount;
+  return `Your tag exposes ${layerCount} layers but the file only contains ${headerCount} headers. Hide or remove ${difference} layer${difference > 1 ? "s" : ""}.`;
+};
 
 export function NameTagForm({
   tag,
@@ -40,12 +83,56 @@ export function NameTagForm({
   onRemoveField,
   onThemeChange,
   onReset,
+  onImportDataset,
+  importSummary,
+  importError,
+  isImportingDataset,
 }: NameTagFormProps) {
   const activeLayer =
     tag.fields.find((field) => field.id === activeFieldId) ??
     tag.fields[0] ??
     null;
   const canRemove = tag.fields.length > 1 && activeLayer;
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleDatasetButton = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDatasetChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onImportDataset(file);
+    }
+    event.target.value = "";
+  };
+
+  const importDescription = useMemo(() => {
+    if (!importSummary) {
+      return "";
+    }
+    return describeImportSummary(importSummary);
+  }, [importSummary]);
+
+  const importStatus = importSummary
+    ? importStatusTokens[importSummary.status]
+    : null;
+
+  const importTimestamp = useMemo(() => {
+    if (!importSummary) {
+      return "";
+    }
+    const timestamp = new Date(importSummary.importedAt);
+    if (Number.isNaN(timestamp.getTime())) {
+      return "";
+    }
+    return timestamp.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }, [importSummary]);
 
   const handleLayerNameChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -147,6 +234,120 @@ export function NameTagForm({
       </div>
 
       <div className="mt-6 space-y-5">
+        <div className="space-y-3 rounded-[28px] border border-dashed border-slate-300 bg-slate-50/80 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Roster import
+              </p>
+              <p className="text-sm text-slate-600">
+                Upload CSV or Excel files to compare headers with the Tag Builder layers.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleDatasetButton}
+                disabled={isImportingDataset}
+                className={`rounded-full px-4 py-2 text-xs font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${
+                  isImportingDataset
+                    ? "cursor-not-allowed bg-slate-400"
+                    : "bg-slate-900 hover:bg-slate-700"
+                }`}
+              >
+                {isImportingDataset ? "Reading..." : "Upload file"}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                className="sr-only"
+                onChange={handleDatasetChange}
+              />
+            </div>
+          </div>
+          {importError ? (
+            <p className="text-sm font-semibold text-rose-600" role="alert">
+              {importError}
+            </p>
+          ) : null}
+          {importSummary ? (
+            <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/80 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                    {importSummary.fileName}
+                  </p>
+                  {importTimestamp ? (
+                    <p className="text-xs text-slate-500">
+                      Imported {importTimestamp}
+                    </p>
+                  ) : null}
+                </div>
+                {importStatus ? (
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${importStatus.pill}`}
+                  >
+                    {importStatus.label}
+                  </span>
+                ) : null}
+              </div>
+              {importDescription ? (
+                <p
+                  className={`text-sm font-medium ${
+                    importStatus?.text ?? "text-slate-700"
+                  }`}
+                >
+                  {importDescription}
+                </p>
+              ) : null}
+              <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                    Headers
+                  </dt>
+                  <dd className="text-lg font-semibold text-slate-900">
+                    {importSummary.headerCount}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                    Layers
+                  </dt>
+                  <dd className="text-lg font-semibold text-slate-900">
+                    {importSummary.layerCount}
+                  </dd>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <dt className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                    Rows detected
+                  </dt>
+                  <dd className="text-lg font-semibold text-slate-900">
+                    {importSummary.rowCount}
+                  </dd>
+                </div>
+              </dl>
+              {importSummary.headers.length ? (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                    Headers found
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {importSummary.headers.map((header, index) => (
+                      <span
+                        key={`${header}-${index}`}
+                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
+                      >
+                        {header}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
             Layers
