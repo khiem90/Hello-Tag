@@ -19,11 +19,13 @@ export type NameTagField = {
 export type NameTagData = {
   fields: Record<NameTagFieldKey, NameTagField>;
   accent: string;
-  background: NameTagBackgroundKey;
+  background: NameTagBackgroundOption;
+  customBackground: string;
   textAlign: "left" | "center" | "right";
 };
 
 export type NameTagBackgroundKey = "sky" | "sunset" | "charcoal";
+export type NameTagBackgroundOption = NameTagBackgroundKey | "custom";
 
 export type NameTagFieldUpdate = Partial<
   Omit<NameTagField, "id" | "label">

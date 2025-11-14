@@ -45,11 +45,18 @@ export function NameTagCanvas({
   onFieldPositionChange,
 }: NameTagCanvasProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const theme = backgroundThemes[tag.background];
+  const theme =
+    tag.background === "custom"
+      ? null
+      : backgroundThemes[tag.background];
 
   const visibleFields = fieldOrder
     .map((key) => tag.fields[key])
     .filter((field) => field.visible);
+  const cardBackgroundStyle =
+    tag.background === "custom"
+      ? { background: tag.customBackground }
+      : { backgroundImage: theme?.gradient };
 
   return (
     <section className="rounded-[32px] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-6 shadow-inner shadow-slate-200">
@@ -75,9 +82,7 @@ export function NameTagCanvas({
         <div
           ref={cardRef}
           className="relative aspect-[3/2] w-full max-w-3xl overflow-hidden rounded-[36px] border border-white/60 p-10 shadow-[0_30px_70px_-40px_rgba(15,23,42,0.65)]"
-          style={{
-            backgroundImage: theme.gradient,
-          }}
+          style={cardBackgroundStyle}
         >
           <div
             className="absolute inset-10 rounded-[28px] border border-white/30"

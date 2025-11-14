@@ -23,7 +23,9 @@ type NameTagFormProps = {
     update: Partial<NameTagData["fields"][NameTagFieldKey]>,
   ) => void;
   onThemeChange: (
-    update: Partial<Pick<NameTagData, "accent" | "background" | "textAlign">>,
+    update: Partial<
+      Pick<NameTagData, "accent" | "background" | "textAlign" | "customBackground">
+    >,
   ) => void;
   onReset: () => void;
 };
@@ -299,7 +301,34 @@ export function NameTagForm({
                   );
                 },
               )}
+              <button
+                type="button"
+                onClick={() => onThemeChange({ background: "custom" })}
+                className={`rounded-2xl border px-3 py-2 text-xs font-semibold transition ${
+                  tag.background === "custom"
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 text-slate-600 hover:border-slate-400"
+                }`}
+              >
+                Custom
+              </button>
             </div>
+            {tag.background === "custom" ? (
+              <label className="mt-3 flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Custom color
+                <input
+                  type="color"
+                  value={tag.customBackground}
+                  onChange={(event) =>
+                    onThemeChange({
+                      background: "custom",
+                      customBackground: event.target.value,
+                    })
+                  }
+                  className="h-10 w-full cursor-pointer rounded-2xl border border-slate-200 bg-white p-1"
+                />
+              </label>
+            ) : null}
           </div>
 
           <div className="space-y-2">

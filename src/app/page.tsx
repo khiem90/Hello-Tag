@@ -46,7 +46,7 @@ export default function Home() {
 
   const handleThemeChange = (
     update: Partial<
-      Pick<NameTagData, "accent" | "background" | "textAlign">
+      Pick<NameTagData, "accent" | "background" | "textAlign" | "customBackground">
     >,
   ) => {
     setTag((prev) => ({ ...prev, ...update }));

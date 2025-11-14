@@ -133,12 +133,14 @@ export const createDefaultTag = (): NameTagData => ({
   fields: createFields(),
   accent: accentPalette[0],
   background: "sky",
+  customBackground: "#f8fafc",
   textAlign: "center",
 });
 
 export const cloneTag = (tag: NameTagData): NameTagData => ({
   accent: tag.accent,
   background: tag.background,
+  customBackground: tag.customBackground,
   textAlign: tag.textAlign,
   fields: fieldOrder.reduce(
     (acc, key) => ({
