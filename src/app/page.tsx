@@ -1,195 +1,106 @@
 "use client";
 
+import { useState } from "react";
+import { NameTagCanvas } from "@/components/name-tag/name-tag-canvas";
+import { NameTagForm } from "@/components/name-tag/name-tag-form";
 import {
-  ChangeEvent,
-  FormEvent,
-  useMemo,
-  useState,
-} from "react";
+  clampPercent,
+  createDefaultTag,
+} from "@/lib/name-tag";
 import {
-  Axis,
-  NameTag,
-  NameTagDraft,
-  PositionKey,
+  NameTagData,
+  NameTagField,
+  NameTagFieldKey,
 } from "@/types/name-tag";
-import {
-  clonePositions,
-  createBlankDraft,
-  createDefaultPositions,
-  starterTags,
-} from "@/lib/name-tag-config";
-import { NameTagForm } from "@/components/name-tags/name-tag-form";
-import { NameTagPreviewPanel } from "@/components/name-tags/name-tag-preview-panel";
-import { SavedTagsSection } from "@/components/name-tags/saved-tags-section";
-
-const createId = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `tag-${Date.now().toString(36)}-${Math.random()
-        .toString(16)
-        .slice(2, 8)}`;
 
 export default function Home() {
-  const [tags, setTags] = useState<NameTag[]>(starterTags);
-  const [form, setForm] = useState<NameTagDraft>(() => createBlankDraft());
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [tag, setTag] = useState<NameTagData>(() => createDefaultTag());
+  const [activeField, setActiveField] =
+    useState<NameTagFieldKey>("name");
 
-  const isEditing = Boolean(editingId);
-  const disableSubmit = form.fullName.trim().length === 0;
+  const updateField = (
+    key: NameTagFieldKey,
+    patch: Partial<NameTagField>,
+  ) => {
+    setTag((prev) => {
+      const current = prev.fields[key];
+      const nextField: NameTagField = {
+        ...current,
+        ...patch,
+      };
+      if (patch.x !== undefined) {
+        nextField.x = clampPercent(patch.x);
+      }
+      if (patch.y !== undefined) {
+        nextField.y = clampPercent(patch.y);
+      }
+      return {
+        ...prev,
+        fields: {
+          ...prev.fields,
+          [key]: nextField,
+        },
+      };
+    });
+  };
 
-  const livePreview: NameTag = useMemo(
-    () => ({
-      id: editingId ?? "preview",
-      fullName: form.fullName,
-      role: form.role,
-      tagline: form.tagline,
-      accent: form.accent,
-      textAlign: form.textAlign,
-      positions: form.positions,
-    }),
-    [editingId, form],
-  );
-
-  const handleFieldChange = (
-    event: ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  const handleThemeChange = (
+    update: Partial<
+      Pick<NameTagData, "accent" | "background" | "textAlign">
     >,
   ) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setTag((prev) => ({ ...prev, ...update }));
   };
 
-  const handleAccentPick = (color: string) => {
-    setForm((prev) => ({ ...prev, accent: color }));
+  const handleReset = () => {
+    const defaults = createDefaultTag();
+    setTag(defaults);
+    setActiveField("name");
   };
 
-  const handleTextAlignChange = (value: NameTag["textAlign"]) => {
-    setForm((prev) => ({ ...prev, textAlign: value }));
+  const ensureActiveField = (key: NameTagFieldKey) => {
+    setActiveField(key);
   };
-
-  const adjustPosition = (key: PositionKey, axis: Axis, rawValue: number) => {
-    if (Number.isNaN(rawValue)) {
-      return;
-    }
-    const clamped = Math.min(100, Math.max(0, rawValue));
-
-    setForm((prev) => ({
-      ...prev,
-      positions: {
-        ...prev.positions,
-        [key]: {
-          ...prev.positions[key],
-          [axis]: clamped,
-        },
-      },
-    }));
-  };
-
-  const resetPosition = (key: PositionKey) => {
-    const defaults = createDefaultPositions();
-    setForm((prev) => ({
-      ...prev,
-      positions: {
-        ...prev.positions,
-        [key]: { ...defaults[key] },
-      },
-    }));
-  };
-
-  const resetAllPositions = () => {
-    setForm((prev) => ({
-      ...prev,
-      positions: createDefaultPositions(),
-    }));
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed: NameTagDraft = {
-      fullName: form.fullName.trim(),
-      role: form.role.trim(),
-      tagline: form.tagline.trim(),
-      accent: form.accent,
-      textAlign: form.textAlign,
-      positions: clonePositions(form.positions),
-    };
-
-    if (!trimmed.fullName) {
-      return;
-    }
-
-    setTags((prev) => {
-      if (!editingId) {
-        return [{ id: createId(), ...trimmed }, ...prev];
-      }
-
-      return prev.map((tag) =>
-        tag.id === editingId ? { ...tag, ...trimmed } : tag,
-      );
-    });
-
-    setForm(createBlankDraft());
-    setEditingId(null);
-  };
-
-  const startEditing = (tag: NameTag) => {
-    setEditingId(tag.id);
-    setForm({
-      fullName: tag.fullName,
-      role: tag.role,
-      tagline: tag.tagline,
-      accent: tag.accent,
-      textAlign: tag.textAlign ?? "left",
-      positions: clonePositions(
-        tag.positions ?? createDefaultPositions(),
-      ),
-    });
-  };
-
-  const cancelEditing = () => {
-    setEditingId(null);
-    setForm(createBlankDraft());
-  };
-
-  const clearForm = () => setForm(createBlankDraft());
 
   return (
     <main className="min-h-screen bg-slate-100/60 px-4 py-12 text-slate-900 sm:px-6 lg:px-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <header className="space-y-3 text-center sm:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600">
-            Hello Tag
+        <header className="space-y-4 text-center sm:text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+            Custom label studio
           </p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Create memorable name tags in seconds.
+            Build name tag labels you can drag, edit, and print.
           </h1>
           <p className="text-base text-slate-600 sm:max-w-3xl">
-            Capture the essentials for each person, add a splash of color, and
-            jump back into any tag to keep editing. The live preview updates as
-            you type so you know exactly what will print.
+            Fill out the fields, then drag each text block inside the preview
+            window. Every change updates instantly so you can explore layouts
+            and color combinations without leaving the browser.
           </p>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <section className="grid gap-6 lg:grid-cols-[minmax(320px,360px)_minmax(0,1fr)]">
           <NameTagForm
-            form={form}
-            isEditing={isEditing}
-            disableSubmit={disableSubmit}
-            onFieldChange={handleFieldChange}
-            onAccentPick={handleAccentPick}
-            onSubmit={handleSubmit}
-            onClear={clearForm}
-            onCancelEdit={cancelEditing}
-            onTextAlignChange={handleTextAlignChange}
-            onAdjustPosition={adjustPosition}
-            onResetPosition={resetPosition}
-            onResetAllPositions={resetAllPositions}
+            tag={tag}
+            activeField={activeField}
+            onSelectField={ensureActiveField}
+            onFieldChange={(key, patch) => {
+              ensureActiveField(key);
+              updateField(key, patch);
+            }}
+            onThemeChange={handleThemeChange}
+            onReset={handleReset}
           />
 
-          <NameTagPreviewPanel tag={livePreview} isEditing={isEditing} />
+          <NameTagCanvas
+            tag={tag}
+            activeField={activeField}
+            onSelectField={ensureActiveField}
+            onFieldPositionChange={(key, position) =>
+              updateField(key, position)
+            }
+          />
         </section>
-
-        <SavedTagsSection tags={tags} onEdit={startEditing} />
       </div>
     </main>
   );

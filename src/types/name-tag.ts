@@ -1,22 +1,30 @@
-export type TextAlignOption = "left" | "center" | "right";
-export type Axis = "x" | "y";
+export type NameTagFieldKey =
+  | "greeting"
+  | "name"
+  | "pronouns"
+  | "role"
+  | "tagline";
 
-export type LabelPositions = {
-  greeting: { x: number; y: number };
-  name: { x: number; y: number };
-  role: { x: number; y: number };
-  tagline: { x: number; y: number };
+export type NameTagField = {
+  id: NameTagFieldKey;
+  label: string;
+  text: string;
+  fontSize: number;
+  color: string;
+  x: number;
+  y: number;
+  visible: boolean;
 };
 
-export type NameTag = {
-  id: string;
-  fullName: string;
-  role: string;
-  tagline: string;
+export type NameTagData = {
+  fields: Record<NameTagFieldKey, NameTagField>;
   accent: string;
-  textAlign: TextAlignOption;
-  positions: LabelPositions;
+  background: NameTagBackgroundKey;
+  textAlign: "left" | "center" | "right";
 };
 
-export type NameTagDraft = Omit<NameTag, "id">;
-export type PositionKey = keyof LabelPositions;
+export type NameTagBackgroundKey = "sky" | "sunset" | "charcoal";
+
+export type NameTagFieldUpdate = Partial<
+  Omit<NameTagField, "id" | "label">
+>;
