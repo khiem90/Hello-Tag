@@ -1,45 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { NameTagCanvas } from "@/components/name-tag/name-tag-canvas";
 import { NameTagForm } from "@/components/name-tag/name-tag-form";
 import {
   clampPercent,
+  createBlankField,
   createDefaultTag,
 } from "@/lib/name-tag";
-import {
-  NameTagData,
-  NameTagField,
-  NameTagFieldKey,
-} from "@/types/name-tag";
+import { NameTagData, NameTagField } from "@/types/name-tag";
 
 export default function Home() {
-  const [tag, setTag] = useState<NameTagData>(() => createDefaultTag());
-  const [activeField, setActiveField] =
-    useState<NameTagFieldKey>("name");
+  const initialTag = useMemo(() => createDefaultTag(), []);
+  const [tag, setTag] = useState<NameTagData>(initialTag);
+  const [activeField, setActiveField] = useState<string>(
+    initialTag.fields[0]?.id ?? "",
+  );
 
-  const updateField = (
-    key: NameTagFieldKey,
-    patch: Partial<NameTagField>,
-  ) => {
+  const selectField = (id: string) => {
+    setActiveField(id);
+  };
+
+  const updateField = (id: string, patch: Partial<NameTagField>) => {
+    setTag((prev) => ({
+      ...prev,
+      fields: prev.fields.map((field) => {
+        if (field.id !== id) {
+          return field;
+        }
+        const next: NameTagField = {
+          ...field,
+          ...patch,
+        };
+        if (patch.x !== undefined) {
+          next.x = clampPercent(patch.x);
+        }
+        if (patch.y !== undefined) {
+          next.y = clampPercent(patch.y);
+        }
+        return next;
+      }),
+    }));
+  };
+
+  const addField = () => {
     setTag((prev) => {
-      const current = prev.fields[key];
-      const nextField: NameTagField = {
-        ...current,
-        ...patch,
+      const newField = createBlankField(`Layer ${prev.fields.length + 1}`);
+      setActiveField(newField.id);
+      return {
+        ...prev,
+        fields: [...prev.fields, newField],
       };
-      if (patch.x !== undefined) {
-        nextField.x = clampPercent(patch.x);
+    });
+  };
+
+  const removeField = (id: string) => {
+    setTag((prev) => {
+      if (prev.fields.length <= 1) {
+        return prev;
       }
-      if (patch.y !== undefined) {
-        nextField.y = clampPercent(patch.y);
+      const filtered = prev.fields.filter((field) => field.id !== id);
+      if (filtered.length === prev.fields.length) {
+        return prev;
+      }
+      if (activeField === id) {
+        setActiveField(filtered[filtered.length - 1]?.id ?? "");
       }
       return {
         ...prev,
-        fields: {
-          ...prev.fields,
-          [key]: nextField,
-        },
+        fields: filtered,
       };
     });
   };
@@ -55,11 +84,7 @@ export default function Home() {
   const handleReset = () => {
     const defaults = createDefaultTag();
     setTag(defaults);
-    setActiveField("name");
-  };
-
-  const ensureActiveField = (key: NameTagFieldKey) => {
-    setActiveField(key);
+    setActiveField(defaults.fields[0]?.id ?? "");
   };
 
   return (
@@ -79,27 +104,33 @@ export default function Home() {
           </p>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(320px,360px)_minmax(0,1fr)]">
-          <NameTagForm
-            tag={tag}
-            activeField={activeField}
-            onSelectField={ensureActiveField}
-            onFieldChange={(key, patch) => {
-              ensureActiveField(key);
-              updateField(key, patch);
-            }}
-            onThemeChange={handleThemeChange}
-            onReset={handleReset}
-          />
+        <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,380px)] lg:items-start">
+          <div className="order-1 lg:order-none">
+            <NameTagCanvas
+              tag={tag}
+              activeField={activeField}
+              onSelectField={selectField}
+              onFieldPositionChange={(id, position) =>
+                updateField(id, position)
+              }
+            />
+          </div>
 
-          <NameTagCanvas
-            tag={tag}
-            activeField={activeField}
-            onSelectField={ensureActiveField}
-            onFieldPositionChange={(key, position) =>
-              updateField(key, position)
-            }
-          />
+          <div className="order-2 lg:order-none">
+            <NameTagForm
+              tag={tag}
+              activeFieldId={activeField}
+              onSelectField={selectField}
+              onFieldChange={(id, patch) => {
+                selectField(id);
+                updateField(id, patch);
+              }}
+              onAddField={addField}
+              onRemoveField={removeField}
+              onThemeChange={handleThemeChange}
+              onReset={handleReset}
+            />
+          </div>
         </section>
       </div>
     </main>

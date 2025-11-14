@@ -5,29 +5,22 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from "react";
 import {
   DraggableCore,
   type DraggableData,
   type DraggableEvent,
 } from "react-draggable";
-import {
-  backgroundThemes,
-  clampPercent,
-  fieldOrder,
-} from "@/lib/name-tag";
-import {
-  NameTagData,
-  NameTagField,
-  NameTagFieldKey,
-} from "@/types/name-tag";
+import { backgroundThemes, clampPercent } from "@/lib/name-tag";
+import { NameTagData, NameTagField } from "@/types/name-tag";
 
 type NameTagCanvasProps = {
   tag: NameTagData;
-  activeField: NameTagFieldKey;
-  onSelectField: (key: NameTagFieldKey) => void;
+  activeField: string;
+  onSelectField: (key: string) => void;
   onFieldPositionChange: (
-    key: NameTagFieldKey,
+    key: string,
     position: Pick<NameTagField, "x" | "y">,
   ) => void;
 };
@@ -44,15 +37,21 @@ export function NameTagCanvas({
   onSelectField,
   onFieldPositionChange,
 }: NameTagCanvasProps) {
+  const placeholderRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isFloating, setIsFloating] = useState(false);
+  const [metrics, setMetrics] = useState({
+    width: 0,
+    height: 0,
+    left: 0,
+  });
   const theme =
     tag.background === "custom"
       ? null
       : backgroundThemes[tag.background];
 
-  const visibleFields = fieldOrder
-    .map((key) => tag.fields[key])
-    .filter((field) => field.visible);
+  const visibleFields = tag.fields.filter((field) => field.visible);
   const cardBackgroundStyle =
     tag.background === "custom"
       ? {
@@ -64,8 +63,78 @@ export function NameTagCanvas({
           backgroundImage: theme?.gradient ?? "none",
         };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!placeholderRef.current) {
+        setIsFloating(false);
+        return;
+      }
+      const { top } = placeholderRef.current.getBoundingClientRect();
+      setIsFloating(top < 16);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const updateMetrics = () => {
+      const node = sectionRef.current;
+      if (!node) {
+        return;
+      }
+      const rect = node.getBoundingClientRect();
+      setMetrics({
+        width: rect.width,
+        height: rect.height,
+        left: rect.left,
+      });
+    };
+    updateMetrics();
+    window.addEventListener("resize", updateMetrics);
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateMetrics)
+        : null;
+    if (observer && sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => {
+      window.removeEventListener("resize", updateMetrics);
+      observer?.disconnect();
+    };
+  }, [tag]);
+
+  const floatingStyles =
+    isFloating && metrics.width
+      ? {
+          position: "fixed" as const,
+          top: "1.5rem",
+          left: metrics.left,
+          width: metrics.width,
+          zIndex: 30,
+        }
+      : undefined;
+
+  const containerClasses = [
+    "rounded-[32px] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-6 shadow-inner shadow-slate-200",
+    isFloating ? "shadow-2xl" : "sticky top-6 self-start",
+  ].join(" ");
+
   return (
-    <section className="rounded-[32px] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-6 shadow-inner shadow-slate-200">
+    <>
+      <div
+        ref={placeholderRef}
+        style={{ height: isFloating ? metrics.height : 0 }}
+        aria-hidden
+      />
+      <section
+        ref={(node) => {
+          sectionRef.current = node;
+        }}
+        className={containerClasses}
+        style={floatingStyles}
+      >
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
@@ -95,12 +164,8 @@ export function NameTagCanvas({
             style={{ boxShadow: `0 0 60px -30px ${tag.accent}` }}
           />
 
-          {fieldOrder.map((key) => {
-            const field = tag.fields[key];
-            if (!field.visible) {
-              return null;
-            }
-            return (
+          {tag.fields.map((field) =>
+            field.visible ? (
               <FloatingField
                 key={field.id}
                 field={field}
@@ -113,8 +178,8 @@ export function NameTagCanvas({
                 }
                 cardRef={cardRef}
               />
-            );
-          })}
+            ) : null,
+          )}
 
           <span
             className="pointer-events-none absolute left-10 right-10 bottom-8 h-1.5 rounded-full opacity-80"
@@ -122,7 +187,8 @@ export function NameTagCanvas({
           />
         </div>
       </div>
-    </section>
+      </section>
+    </>
   );
 }
 

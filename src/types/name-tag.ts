@@ -1,13 +1,6 @@
-export type NameTagFieldKey =
-  | "greeting"
-  | "name"
-  | "pronouns"
-  | "role"
-  | "tagline";
-
 export type NameTagField = {
-  id: NameTagFieldKey;
-  label: string;
+  id: string;
+  name: string;
   text: string;
   fontSize: number;
   color: string;
@@ -17,7 +10,7 @@ export type NameTagField = {
 };
 
 export type NameTagData = {
-  fields: Record<NameTagFieldKey, NameTagField>;
+  fields: NameTagField[];
   accent: string;
   background: NameTagBackgroundOption;
   customBackground: string;
@@ -27,6 +20,4 @@ export type NameTagData = {
 export type NameTagBackgroundKey = "sky" | "sunset" | "charcoal";
 export type NameTagBackgroundOption = NameTagBackgroundKey | "custom";
 
-export type NameTagFieldUpdate = Partial<
-  Omit<NameTagField, "id" | "label">
->;
+export type NameTagFieldUpdate = Partial<Omit<NameTagField, "id">>;

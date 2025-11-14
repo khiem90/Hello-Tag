@@ -2,7 +2,6 @@ import {
   NameTagBackgroundKey,
   NameTagData,
   NameTagField,
-  NameTagFieldKey,
 } from "@/types/name-tag";
 
 export const accentPalette = [
@@ -39,19 +38,18 @@ export const backgroundThemes: Record<
   },
 };
 
-export const fieldOrder: NameTagFieldKey[] = [
-  "greeting",
-  "name",
-  "pronouns",
-  "role",
-  "tagline",
-];
+const createLayerId = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `layer-${Date.now().toString(36)}-${Math.random()
+        .toString(16)
+        .slice(2, 8)}`;
 
-const defaultFieldSettings: Record<
-  NameTagFieldKey,
-  Omit<NameTagField, "id" | "label">
-> = {
-  greeting: {
+type FieldPreset = Omit<NameTagField, "id">;
+
+const defaultFieldPresets: FieldPreset[] = [
+  {
+    name: "Greeting",
     text: "Hello, my name is",
     fontSize: 18,
     color: "#475569",
@@ -59,7 +57,8 @@ const defaultFieldSettings: Record<
     y: 22,
     visible: true,
   },
-  name: {
+  {
+    name: "Display name",
     text: "Jordan Avery",
     fontSize: 48,
     color: "#0f172a",
@@ -67,7 +66,8 @@ const defaultFieldSettings: Record<
     y: 45,
     visible: true,
   },
-  pronouns: {
+  {
+    name: "Pronouns",
     text: "they/them",
     fontSize: 20,
     color: "#475569",
@@ -75,7 +75,8 @@ const defaultFieldSettings: Record<
     y: 58,
     visible: true,
   },
-  role: {
+  {
+    name: "Role or team",
     text: "Product Designer / Research Ops",
     fontSize: 20,
     color: "#475569",
@@ -83,7 +84,8 @@ const defaultFieldSettings: Record<
     y: 68,
     visible: true,
   },
-  tagline: {
+  {
+    name: "Tagline",
     text: "Ask me about prototyping with low/no code tools.",
     fontSize: 18,
     color: "#475569",
@@ -91,15 +93,12 @@ const defaultFieldSettings: Record<
     y: 80,
     visible: true,
   },
-};
+];
 
-const fieldLabels: Record<NameTagFieldKey, string> = {
-  greeting: "Greeting",
-  name: "Display name",
-  pronouns: "Pronouns",
-  role: "Role or team",
-  tagline: "Tagline",
-};
+const createFieldFromPreset = (preset: FieldPreset): NameTagField => ({
+  id: createLayerId(),
+  ...preset,
+});
 
 export const clampPercent = (value: number) => {
   if (Number.isNaN(value) || !Number.isFinite(value)) {
@@ -108,33 +107,23 @@ export const clampPercent = (value: number) => {
   return Math.min(100, Math.max(0, value));
 };
 
-export const createFields = (): Record<
-  NameTagFieldKey,
-  NameTagField
-> => {
-  const entries = fieldOrder.map((key) => {
-    const base = defaultFieldSettings[key];
-    return [
-      key,
-      {
-        id: key,
-        label: fieldLabels[key],
-        ...base,
-      } satisfies NameTagField,
-    ] as const;
-  });
-  return Object.fromEntries(entries) as Record<
-    NameTagFieldKey,
-    NameTagField
-  >;
-};
-
 export const createDefaultTag = (): NameTagData => ({
-  fields: createFields(),
+  fields: defaultFieldPresets.map(createFieldFromPreset),
   accent: accentPalette[0],
   background: "sky",
   customBackground: "#f8fafc",
   textAlign: "center",
+});
+
+export const createBlankField = (label?: string): NameTagField => ({
+  id: createLayerId(),
+  name: label ?? "New layer",
+  text: "New text",
+  fontSize: 28,
+  color: "#0f172a",
+  x: 50,
+  y: 50,
+  visible: true,
 });
 
 export const cloneTag = (tag: NameTagData): NameTagData => ({
@@ -142,11 +131,5 @@ export const cloneTag = (tag: NameTagData): NameTagData => ({
   background: tag.background,
   customBackground: tag.customBackground,
   textAlign: tag.textAlign,
-  fields: fieldOrder.reduce(
-    (acc, key) => ({
-      ...acc,
-      [key]: { ...tag.fields[key] },
-    }),
-    {} as Record<NameTagFieldKey, NameTagField>,
-  ),
+  fields: tag.fields.map((field) => ({ ...field })),
 });
