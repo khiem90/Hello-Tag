@@ -197,7 +197,7 @@ type FloatingFieldProps = {
   alignClass: string;
   accent: string;
   isActive: boolean;
-  cardRef: React.RefObject<HTMLDivElement>;
+  cardRef: React.RefObject<HTMLDivElement | null>;
   onSelect: () => void;
   onDrag: (position: Pick<NameTagField, "x" | "y">) => void;
 };
