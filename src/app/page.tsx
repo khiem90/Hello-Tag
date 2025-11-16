@@ -8,9 +8,17 @@ import {
   createBlankField,
   createDefaultTag,
 } from "@/lib/name-tag";
-import { readDatasetSummary } from "@/lib/dataset";
+import {
+  readDataset,
+  type DatasetRow,
+} from "@/lib/dataset";
+import {
+  buildDocumentFromLabels,
+  buildLabelSvg,
+  svgToPngArrayBuffer,
+} from "@/lib/export";
 import { NameTagData, NameTagField } from "@/types/name-tag";
-import type { ImportSummary } from "@/types/import";
+import type { ExportFormat, ImportSummary } from "@/types/import";
 
 const resolveImportStatus = (
   headerCount: number,
@@ -20,6 +28,30 @@ const resolveImportStatus = (
     return "match";
   }
   return headerCount > layerCount ? "needs-layers" : "unused-layers";
+};
+
+const mapFieldsToRow = (
+  fields: NameTagField[],
+  row: DatasetRow,
+): NameTagField[] =>
+  fields.map((field) => {
+    const value = row[field.name];
+    if (typeof value !== "string" || value.length === 0) {
+      return field;
+    }
+    return {
+      ...field,
+      text: value,
+    };
+  });
+
+const triggerDownload = (blob: Blob, fileName: string) => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
 };
 
 const alignFieldsWithHeaders = (
@@ -78,7 +110,13 @@ export default function Home() {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [isImportingDataset, setIsImportingDataset] = useState(false);
+  const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("docx");
   const layerCount = tag.fields.length;
+  const datasetRowCount = datasetRows.length;
+  const canExport = datasetRowCount > 0;
 
   const selectField = (id: string) => {
     setActiveField(id);
@@ -172,20 +210,23 @@ export default function Home() {
   const handleDatasetImport = async (file: File) => {
     setImportError(null);
     setIsImportingDataset(true);
+    setExportError(null);
     try {
-      const summary = await readDatasetSummary(file);
-      const headerCount = summary.headers.length;
+      const dataset = await readDataset(file);
+      const headerCount = dataset.headers.length;
+      const rowCount = dataset.rows.length;
+      setDatasetRows(dataset.rows);
       if (headerCount > 0) {
-        syncLayersToHeaders(summary.headers);
+        syncLayersToHeaders(dataset.headers);
       }
       const resultingLayerCount =
         headerCount > 0 ? headerCount : layerCount;
       setImportSummary({
         fileName: file.name,
-        headers: summary.headers,
+        headers: dataset.headers,
         headerCount,
         layerCount: resultingLayerCount,
-        rowCount: summary.rowCount,
+        rowCount,
         status: resolveImportStatus(
           headerCount,
           resultingLayerCount,
@@ -194,6 +235,7 @@ export default function Home() {
       });
     } catch (error) {
       setImportSummary(null);
+      setDatasetRows([]);
       setImportError(
         error instanceof Error
           ? error.message
@@ -201,6 +243,50 @@ export default function Home() {
       );
     } finally {
       setIsImportingDataset(false);
+    }
+  };
+
+  const handleExportLabels = async () => {
+    if (!datasetRows.length) {
+      setExportError("Upload a CSV or Excel file before exporting.");
+      return;
+    }
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      const labelBuffers: ArrayBuffer[] = [];
+      const labelsData: NameTagField[][] = [];
+      for (const row of datasetRows) {
+        const rowFields = mapFieldsToRow(tag.fields, row);
+        labelsData.push(rowFields);
+        const svg = buildLabelSvg(tag, rowFields);
+        const buffer = await svgToPngArrayBuffer(svg);
+        labelBuffers.push(buffer);
+      }
+      if (!labelBuffers.length) {
+        throw new Error("No rows were detected in the imported file.");
+      }
+      const docBlob = await buildDocumentFromLabels(
+        exportFormat,
+        labelBuffers,
+        tag,
+        labelsData,
+      );
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-");
+      triggerDownload(
+        docBlob,
+        `name-tags-${timestamp}.${exportFormat}`,
+      );
+    } catch (error) {
+      setExportError(
+        error instanceof Error
+          ? error.message
+          : "Export failed. Please try again.",
+      );
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -219,6 +305,21 @@ export default function Home() {
       };
     });
   }, [layerCount]);
+
+  useEffect(() => {
+    setImportSummary((previous) => {
+      if (!previous) {
+        return previous;
+      }
+      if (previous.rowCount === datasetRowCount) {
+        return previous;
+      }
+      return {
+        ...previous,
+        rowCount: datasetRowCount,
+      };
+    });
+  }, [datasetRowCount]);
 
   return (
     <main className="min-h-screen bg-slate-100/60 px-4 py-12 text-slate-900 sm:px-6 lg:px-10">
@@ -266,6 +367,12 @@ export default function Home() {
               importSummary={importSummary}
               importError={importError}
               isImportingDataset={isImportingDataset}
+              canExport={canExport}
+              onExportLabels={handleExportLabels}
+              isExportingLabels={isExporting}
+              exportError={exportError}
+              exportFormat={exportFormat}
+              onExportFormatChange={setExportFormat}
             />
           </div>
         </section>

@@ -4,7 +4,7 @@ import {
   accentPalette,
   backgroundThemes,
 } from "@/lib/name-tag";
-import type { ImportSummary } from "@/types/import";
+import type { ExportFormat, ImportSummary } from "@/types/import";
 import { NameTagData, NameTagField } from "@/types/name-tag";
 import { ChangeEvent, useMemo, useRef } from "react";
 
@@ -28,6 +28,12 @@ type NameTagFormProps = {
   importSummary: ImportSummary | null;
   importError: string | null;
   isImportingDataset: boolean;
+  canExport: boolean;
+  onExportLabels: () => void;
+  isExportingLabels: boolean;
+  exportError: string | null;
+  exportFormat: ExportFormat;
+  onExportFormatChange: (format: ExportFormat) => void;
 };
 
 const alignOptions: Array<NameTagData["textAlign"]> = [
@@ -87,6 +93,12 @@ export function NameTagForm({
   importSummary,
   importError,
   isImportingDataset,
+  canExport,
+  onExportLabels,
+  isExportingLabels,
+  exportError,
+  exportFormat,
+  onExportFormatChange,
 }: NameTagFormProps) {
   const activeLayer =
     tag.fields.find((field) => field.id === activeFieldId) ??
@@ -133,6 +145,17 @@ export function NameTagForm({
       timeStyle: "short",
     });
   }, [importSummary]);
+
+  const exportButtonLabel = isExportingLabels
+    ? "Exporting..."
+    : importSummary?.rowCount
+      ? `Export ${importSummary.rowCount} labels`
+      : "Export labels";
+  const exportDisabled = !canExport || isExportingLabels;
+  const exportFormats: { label: string; value: ExportFormat }[] = [
+    { label: "Word (.docx)", value: "docx" },
+    { label: "Word 97-2003 (.doc)", value: "doc" },
+  ];
 
   const handleLayerNameChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -244,7 +267,7 @@ export function NameTagForm({
                 Upload CSV or Excel files to compare headers with the Tag Builder layers.
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={handleDatasetButton}
@@ -264,11 +287,44 @@ export function NameTagForm({
                 className="sr-only"
                 onChange={handleDatasetChange}
               />
+              <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600">
+                Format
+                <select
+                  value={exportFormat}
+                  onChange={(event) =>
+                    onExportFormatChange(event.target.value as ExportFormat)
+                  }
+                  className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
+                >
+                  {exportFormats.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                onClick={onExportLabels}
+                disabled={exportDisabled}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/40 ${
+                  exportDisabled
+                    ? "cursor-not-allowed border-slate-200 text-slate-400"
+                    : "border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
+                }`}
+              >
+                {exportButtonLabel}
+              </button>
             </div>
           </div>
           {importError ? (
             <p className="text-sm font-semibold text-rose-600" role="alert">
               {importError}
+            </p>
+          ) : null}
+          {exportError ? (
+            <p className="text-sm font-semibold text-rose-600" role="alert">
+              {exportError}
             </p>
           ) : null}
           {importSummary ? (
@@ -345,6 +401,11 @@ export function NameTagForm({
                 </div>
               ) : null}
             </div>
+          ) : null}
+          {!canExport ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              Import a roster to enable exports.
+            </p>
           ) : null}
         </div>
 

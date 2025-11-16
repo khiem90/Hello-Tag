@@ -12,3 +12,5 @@ export type ImportSummary = {
   status: ImportSummaryStatus;
   importedAt: string;
 };
+
+export type ExportFormat = "doc" | "docx";

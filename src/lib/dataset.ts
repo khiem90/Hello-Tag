@@ -1,8 +1,10 @@
 import { read, utils } from "xlsx";
 
-export type DatasetSummary = {
+export type DatasetRow = Record<string, string>;
+
+export type DatasetImport = {
   headers: string[];
-  rowCount: number;
+  rows: DatasetRow[];
 };
 
 const sanitizeCell = (value: unknown): string => {
@@ -15,9 +17,21 @@ const sanitizeCell = (value: unknown): string => {
   return String(value).trim();
 };
 
-export const readDatasetSummary = async (
+const ensureUniqueHeaders = (headers: string[]): string[] => {
+  const counts = new Map<string, number>();
+  return headers.map((header) => {
+    const count = counts.get(header) ?? 0;
+    counts.set(header, count + 1);
+    if (count === 0) {
+      return header;
+    }
+    return `${header} (${count + 1})`;
+  });
+};
+
+export const readDataset = async (
   file: Blob,
-): Promise<DatasetSummary> => {
+): Promise<DatasetImport> => {
   const buffer = await file.arrayBuffer();
   const workbook = read(buffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
@@ -36,22 +50,30 @@ export const readDatasetSummary = async (
   }) as unknown[][];
 
   if (!rows.length) {
-    return { headers: [], rowCount: 0 };
+    return { headers: [], rows: [] };
   }
 
   const headerRow = rows[0] ?? [];
-  const headers = headerRow
-    .map((cell) => sanitizeCell(cell))
-    .filter((cell) => cell.length > 0);
+  const normalizedHeaders = headerRow.map((cell, index) => {
+    const sanitized = sanitizeCell(cell);
+    return sanitized.length ? sanitized : `Column ${index + 1}`;
+  });
+  const headers = ensureUniqueHeaders(normalizedHeaders);
 
-  const rowCount = rows
-    .slice(1)
-    .filter((row) =>
-      row.some((cell) => sanitizeCell(cell).length > 0),
-    ).length;
+  const dataRows = rows.slice(1).map((cells) => {
+    const record: DatasetRow = {};
+    headers.forEach((header, index) => {
+      record[header] = sanitizeCell(cells[index]);
+    });
+    return record;
+  });
+
+  const filteredRows = dataRows.filter((record) =>
+    Object.values(record).some((value) => value.length > 0),
+  );
 
   return {
     headers,
-    rowCount,
+    rows: filteredRows,
   };
 };
