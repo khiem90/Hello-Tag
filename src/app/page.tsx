@@ -9,6 +9,11 @@ import {
   createDefaultTag,
 } from "@/lib/name-tag";
 import {
+  clearStoredTag,
+  loadStoredTag,
+  persistTag,
+} from "@/lib/tag-storage";
+import {
   readDataset,
   type DatasetRow,
 } from "@/lib/dataset";
@@ -107,6 +112,7 @@ export default function Home() {
   const [activeField, setActiveField] = useState<string>(
     initialTag.fields[0]?.id ?? "",
   );
+  const [hasLoadedStoredTag, setHasLoadedStoredTag] = useState(false);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [isImportingDataset, setIsImportingDataset] = useState(false);
@@ -117,6 +123,15 @@ export default function Home() {
   const layerCount = tag.fields.length;
   const datasetRowCount = datasetRows.length;
   const canExport = datasetRowCount > 0;
+
+  useEffect(() => {
+    const storedTag = loadStoredTag();
+    if (storedTag) {
+      setTag(storedTag);
+      setActiveField(storedTag.fields[0]?.id ?? "");
+    }
+    setHasLoadedStoredTag(true);
+  }, []);
 
   const selectField = (id: string) => {
     setActiveField(id);
@@ -186,6 +201,7 @@ export default function Home() {
     const defaults = createDefaultTag();
     setTag(defaults);
     setActiveField(defaults.fields[0]?.id ?? "");
+    clearStoredTag();
   };
 
   const syncLayersToHeaders = (headers: string[]) => {
@@ -320,6 +336,16 @@ export default function Home() {
       };
     });
   }, [datasetRowCount]);
+
+  useEffect(() => {
+    if (!hasLoadedStoredTag) {
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      persistTag(tag);
+    }, 250);
+    return () => window.clearTimeout(handle);
+  }, [tag, hasLoadedStoredTag]);
 
   return (
     <main className="min-h-screen bg-slate-100/60 px-4 py-12 text-slate-900 sm:px-6 lg:px-10">
