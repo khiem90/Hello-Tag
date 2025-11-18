@@ -156,7 +156,7 @@ export function NameTagCanvas({
       <div className="flex items-center justify-center">
         <div
           ref={cardRef}
-          className="relative aspect-[3/2] w-full max-w-3xl overflow-hidden rounded-[36px] border border-white/60 p-10 shadow-[0_30px_70px_-40px_rgba(15,23,42,0.65)]"
+          className="relative aspect-3/2 w-full max-w-3xl overflow-hidden rounded-[36px] border border-white/60 p-10 shadow-[0_30px_70px_-40px_rgba(15,23,42,0.65)]"
           style={cardBackgroundStyle}
         >
           <div
@@ -212,6 +212,7 @@ const FloatingField = memo(function FloatingField({
   onDrag,
 }: FloatingFieldProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(
     () => () => {
@@ -243,11 +244,13 @@ const FloatingField = memo(function FloatingField({
   );
 
   const handleStart = useCallback(() => {
+    setIsDragging(true);
     onSelect();
     document.body.classList.add("cursor-grabbing");
   }, [onSelect]);
 
   const handleStop = useCallback(() => {
+    setIsDragging(false);
     document.body.classList.remove("cursor-grabbing");
   }, []);
 
@@ -291,18 +294,20 @@ const FloatingField = memo(function FloatingField({
           transform: "translate(-50%, -50%)",
           lineHeight: 1.1,
         }}
-        className={`group absolute w-[82%] max-w-[82%] cursor-grab whitespace-pre-wrap px-4 py-2 font-semibold tracking-tight outline-none transition ${
-          alignClass
-        } ${
-          isActive
-            ? "ring-2 ring-white ring-offset-4 ring-offset-transparent"
-            : "ring-2 ring-transparent hover:ring-white/40"
-        }`}
+        className={`group absolute w-[82%] max-w-[82%] whitespace-pre-wrap px-4 py-2 font-semibold tracking-tight outline-none ${
+          isDragging ? "z-50 cursor-grabbing" : "cursor-grab transition"
+        } ${alignClass} ${
+          isDragging
+            ? ""
+            : "focus-visible:outline focus-visible:outline-white/80 focus-visible:outline-offset-4"
+        } ${isActive && !isDragging ? "drop-shadow-[0_0_35px_rgba(15,23,42,0.4)]" : ""}`}
       >
         {field.text || "Empty text"}
         <span
-          className={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.4em] text-white opacity-0 transition group-focus-visible:opacity-100 group-hover:opacity-100 ${
-            isActive ? "opacity-100" : ""
+          className={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.4em] text-white opacity-0 transition ${
+            !isDragging
+              ? "group-focus-visible:opacity-100 group-hover:opacity-100"
+              : ""
           }`}
           style={{ backgroundColor: accent }}
         >
