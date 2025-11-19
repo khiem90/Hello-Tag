@@ -1,48 +1,53 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
+import { Sparkles, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sign in | Name Tag Studio",
+  title: "Sign in | Label Buddy",
   description:
-    "Access your saved name tag layouts or start a new project after signing in with email or Google.",
+    "Access your saved label layouts or start a new project after signing in.",
 };
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-linear-to-b from-slate-100 via-slate-50 to-white px-4 py-14 sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-warm-cloud px-4 py-14 sm:px-6 lg:px-10 flex items-center justify-center">
       <div className="mx-auto flex w-full max-w-6xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center">
-        <div className="w-full max-w-xl space-y-6 text-center lg:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.45em] text-slate-400">
-            Name Tag Studio
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-            Save your layouts, sync datasets, and export anywhere.
+        <div className="w-full max-w-xl space-y-8 text-center lg:text-left">
+          <div className="inline-flex items-center rounded-full border-2 border-black bg-bubble-blue px-4 py-1.5 font-heading text-sm font-bold text-white shadow-cartoon-sm mb-2 transform -rotate-2">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Welcome Back!
+          </div>
+          
+          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-soft-graphite">
+            Ready to make more <span className="text-pop-purple underline decoration-4 decoration-wavy decoration-mint-gelato underline-offset-4">magic?</span>
           </h1>
-          <p className="text-base text-slate-600">
-            Sign in to keep iterating on your tags, import attendee data, and
-            export polished labels in a single click. Choose a secure email
-            login or connect with Google to get started faster.
+          
+          <p className="text-lg text-slate-600 font-medium">
+            Sign in to access your sticker wall, create new masterpieces, and export your labels in a snap.
           </p>
-          <div className="flex flex-col items-center gap-4 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:justify-start">
+          
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
             <Link
               href="/"
-              className="flex items-center justify-center rounded-full border border-slate-200 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-700 transition hover:border-slate-300 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900"
+              className="group flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-6 py-3 text-sm font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-black hover:text-soft-graphite hover:shadow-cartoon-sm"
             >
+              <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
               Back to Studio
             </Link>
             <Link
               href="/signup"
-              className="text-xs uppercase tracking-[0.4em] text-slate-400 transition hover:text-slate-900"
+              className="text-sm font-bold uppercase tracking-widest text-bubble-blue transition hover:text-pop-purple hover:underline decoration-2 underline-offset-4"
             >
-              Need an account? Sign up
+              New here? Join the fun!
             </Link>
           </div>
         </div>
 
-        <LoginForm redirectPath="/" />
+        <div className="w-full max-w-md">
+           <LoginForm redirectPath="/" />
+        </div>
       </div>
     </main>
   );
 }
-

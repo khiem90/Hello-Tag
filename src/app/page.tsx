@@ -1,516 +1,187 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { NameTagCanvas } from "@/components/name-tag/name-tag-canvas";
-import { NameTagForm } from "@/components/name-tag/name-tag-form";
-import {
-  clampPercent,
-  createBlankField,
-  createDefaultTag,
-} from "@/lib/name-tag";
-import {
-  clearStoredTag,
-  loadStoredTag,
-  persistTag,
-  saveDesignToFirebase,
-} from "@/lib/tag-storage";
-import { SaveDesignModal } from "@/components/ui/save-design-modal";
-import { SavedDesignsList } from "@/components/ui/saved-designs-list";
-import {
-  readDataset,
-  type DatasetRow,
-} from "@/lib/dataset";
-import {
-  buildDocumentFromLabels,
-  buildLabelSvg,
-  svgToPngArrayBuffer,
-} from "@/lib/export";
-import { NameTagData, NameTagField } from "@/types/name-tag";
-import type { ExportFormat, ImportSummary } from "@/types/import";
-import { useAuth } from "@/components/layout/auth-provider";
-
-const resolveImportStatus = (
-  headerCount: number,
-  layerCount: number,
-): ImportSummary["status"] => {
-  if (headerCount === layerCount) {
-    return "match";
-  }
-  return headerCount > layerCount ? "needs-layers" : "unused-layers";
-};
-
-const mapFieldsToRow = (
-  fields: NameTagField[],
-  row: DatasetRow,
-): NameTagField[] =>
-  fields.map((field) => {
-    const value = row[field.name];
-    if (typeof value !== "string" || value.length === 0) {
-      return field;
-    }
-    return {
-      ...field,
-      text: value,
-    };
-  });
-
-const triggerDownload = (blob: Blob, fileName: string) => {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  URL.revokeObjectURL(url);
-};
-
-const alignFieldsWithHeaders = (
-  fields: NameTagField[],
-  headers: string[],
-): {
-  fields: NameTagField[];
-  activeId: string;
-} => {
-  if (!headers.length) {
-    return {
-      fields,
-      activeId: fields[0]?.id ?? "",
-    };
-  }
-
-  const normalized = headers.map((header, index) => {
-    if (typeof header !== "string") {
-      return `Layer ${index + 1}`;
-    }
-    const trimmed = header.trim();
-    return trimmed.length ? trimmed : `Layer ${index + 1}`;
-  });
-
-  const nextFields: NameTagField[] = normalized.map(
-    (label, index) => {
-      const existing = fields[index];
-      if (existing) {
-        return {
-          ...existing,
-          name: label,
-          text: label,
-        };
-      }
-      const placeholder = createBlankField(label);
-      return {
-        ...placeholder,
-        name: label,
-        text: label,
-      };
-    },
-  );
-
-  return {
-    fields: nextFields,
-    activeId: nextFields[0]?.id ?? "",
-  };
-};
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Wand2, LayoutTemplate, Share2, Printer, Sparkles, Palette } from "lucide-react";
 
 export default function Home() {
-  const { isAuthenticated, firstName, email, logout } = useAuth();
-  const initialTag = useMemo(() => createDefaultTag(), []);
-  const [tag, setTag] = useState<NameTagData>(initialTag);
-  const [activeField, setActiveField] = useState<string>(
-    initialTag.fields[0]?.id ?? "",
-  );
-  const [hasLoadedStoredTag, setHasLoadedStoredTag] = useState(false);
-  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [isImportingDataset, setIsImportingDataset] = useState(false);
-  const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
-  const [exportFormat, setExportFormat] = useState<ExportFormat>("docx");
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [savingStatus, setSavingStatus] = useState<string | null>(null);
-  const layerCount = tag.fields.length;
-  const datasetRowCount = datasetRows.length;
-  const canExport = datasetRowCount > 0;
-  const greeting =
-    firstName ??
-    (email ? email.split("@")[0] : null);
-  const handleLogout = () => {
-    void logout().catch((error) => {
-      console.error("Failed to log out", error);
-    });
-  };
-
-  useEffect(() => {
-    const storedTag = loadStoredTag();
-    if (storedTag) {
-      setTag(storedTag);
-      setActiveField(storedTag.fields[0]?.id ?? "");
-    }
-    setHasLoadedStoredTag(true);
-  }, []);
-
-  const selectField = (id: string) => {
-    setActiveField(id);
-  };
-
-  const updateField = (id: string, patch: Partial<NameTagField>) => {
-    setTag((prev) => ({
-      ...prev,
-      fields: prev.fields.map((field) => {
-        if (field.id !== id) {
-          return field;
-        }
-        const next: NameTagField = {
-          ...field,
-          ...patch,
-        };
-        if (patch.x !== undefined) {
-          next.x = clampPercent(patch.x);
-        }
-        if (patch.y !== undefined) {
-          next.y = clampPercent(patch.y);
-        }
-        return next;
-      }),
-    }));
-  };
-
-  const addField = () => {
-    setTag((prev) => {
-      const newField = createBlankField(`Layer ${prev.fields.length + 1}`);
-      setActiveField(newField.id);
-      return {
-        ...prev,
-        fields: [...prev.fields, newField],
-      };
-    });
-  };
-
-  const removeField = (id: string) => {
-    setTag((prev) => {
-      if (prev.fields.length <= 1) {
-        return prev;
-      }
-      const filtered = prev.fields.filter((field) => field.id !== id);
-      if (filtered.length === prev.fields.length) {
-        return prev;
-      }
-      if (activeField === id) {
-        setActiveField(filtered[filtered.length - 1]?.id ?? "");
-      }
-      return {
-        ...prev,
-        fields: filtered,
-      };
-    });
-  };
-
-  const handleThemeChange = (
-    update: Partial<
-      Pick<NameTagData, "accent" | "background" | "textAlign" | "customBackground">
-    >,
-  ) => {
-    setTag((prev) => ({ ...prev, ...update }));
-  };
-
-  const handleReset = () => {
-    const defaults = createDefaultTag();
-    setTag(defaults);
-    setActiveField(defaults.fields[0]?.id ?? "");
-    clearStoredTag();
-  };
-
-  const syncLayersToHeaders = (headers: string[]) => {
-    if (!headers.length) {
-      return;
-    }
-
-    let nextActiveId = "";
-    setTag((prev) => {
-      const aligned = alignFieldsWithHeaders(prev.fields, headers);
-      nextActiveId = aligned.activeId || prev.fields[0]?.id || "";
-      return {
-        ...prev,
-        fields: aligned.fields,
-      };
-    });
-    if (nextActiveId) {
-      setActiveField(nextActiveId);
-    }
-  };
-
-  const handleDatasetImport = async (file: File) => {
-    setImportError(null);
-    setIsImportingDataset(true);
-    setExportError(null);
-    try {
-      const dataset = await readDataset(file);
-      const headerCount = dataset.headers.length;
-      const rowCount = dataset.rows.length;
-      setDatasetRows(dataset.rows);
-      if (headerCount > 0) {
-        syncLayersToHeaders(dataset.headers);
-      }
-      const resultingLayerCount =
-        headerCount > 0 ? headerCount : layerCount;
-      setImportSummary({
-        fileName: file.name,
-        headers: dataset.headers,
-        headerCount,
-        layerCount: resultingLayerCount,
-        rowCount,
-        status: resolveImportStatus(
-          headerCount,
-          resultingLayerCount,
-        ),
-        importedAt: new Date().toISOString(),
-      });
-    } catch (error) {
-      setImportSummary(null);
-      setDatasetRows([]);
-      setImportError(
-        error instanceof Error
-          ? error.message
-          : "Sorry, we couldn't read that file.",
-      );
-    } finally {
-      setIsImportingDataset(false);
-    }
-  };
-
-  const handleSaveDesign = () => {
-    setShowSaveModal(true);
-  };
-
-  const handleSaveSubmit = async (name: string, description?: string) => {
-    try {
-      setSavingStatus("Saving your design...");
-      await saveDesignToFirebase(name, tag, description);
-      setSavingStatus("Design saved successfully!");
-      setTimeout(() => setSavingStatus(null), 3000);
-    } catch (error) {
-      console.error("Failed to save design", error);
-      throw error; // Let the modal handle the error
-    }
-  };
-
-  const handleLoadDesign = (design: NameTagData) => {
-    setTag(design);
-    setActiveField(design.fields[0]?.id ?? "");
-    setSavingStatus("Design loaded successfully!");
-    setTimeout(() => setSavingStatus(null), 3000);
-  };
-
-  const handleExportLabels = async () => {
-    if (!datasetRows.length) {
-      setExportError("Upload a CSV or Excel file before exporting.");
-      return;
-    }
-    setIsExporting(true);
-    setExportError(null);
-    try {
-      const labelBuffers: ArrayBuffer[] = [];
-      const labelsData: NameTagField[][] = [];
-      for (const row of datasetRows) {
-        const rowFields = mapFieldsToRow(tag.fields, row);
-        labelsData.push(rowFields);
-        const svg = buildLabelSvg(tag, rowFields);
-        const buffer = await svgToPngArrayBuffer(svg);
-        labelBuffers.push(buffer);
-      }
-      if (!labelBuffers.length) {
-        throw new Error("No rows were detected in the imported file.");
-      }
-      const docBlob = await buildDocumentFromLabels(
-        exportFormat,
-        labelBuffers,
-        tag,
-        labelsData,
-      );
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[:.]/g, "-");
-      triggerDownload(
-        docBlob,
-        `name-tags-${timestamp}.${exportFormat}`,
-      );
-    } catch (error) {
-      setExportError(
-        error instanceof Error
-          ? error.message
-          : "Export failed. Please try again.",
-      );
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  useEffect(() => {
-    setImportSummary((previous) => {
-      if (!previous) {
-        return previous;
-      }
-      if (previous.layerCount === layerCount) {
-        return previous;
-      }
-      return {
-        ...previous,
-        layerCount,
-        status: resolveImportStatus(previous.headerCount, layerCount),
-      };
-    });
-  }, [layerCount]);
-
-  useEffect(() => {
-    setImportSummary((previous) => {
-      if (!previous) {
-        return previous;
-      }
-      if (previous.rowCount === datasetRowCount) {
-        return previous;
-      }
-      return {
-        ...previous,
-        rowCount: datasetRowCount,
-      };
-    });
-  }, [datasetRowCount]);
-
-  useEffect(() => {
-    if (!hasLoadedStoredTag) {
-      return;
-    }
-    const handle = window.setTimeout(() => {
-      persistTag(tag);
-    }, 250);
-    return () => window.clearTimeout(handle);
-  }, [tag, hasLoadedStoredTag]);
-
   return (
-    <main className="min-h-screen bg-slate-100/60 px-4 py-12 text-slate-900 sm:px-6 lg:px-10">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        {isAuthenticated ? (
-          <div className="flex justify-end">
-            <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow">
-              <span>Hello, {greeting ?? "Creator"}</span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-full border border-slate-200 p-2 text-slate-600 transition hover:border-slate-400 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900"
-                aria-label="Log out"
-              >
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                  focusable="false"
-                >
-                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                  <polyline points="10 17 15 12 10 7" />
-                  <line x1="15" y1="12" x2="3" y2="12" />
-                </svg>
-              </button>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-20 sm:py-32 bg-white">
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
+        
+        <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div className="max-w-2xl text-center lg:text-left">
+              <div className="inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1.5 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm mb-6 transform -rotate-2">
+                <Sparkles className="mr-2 h-4 w-4" />
+                The #1 Fun Label Maker
+              </div>
+              <h1 className="font-heading text-5xl font-extrabold tracking-tight text-soft-graphite sm:text-6xl mb-6 leading-tight">
+                Make Labels That <span className="text-bubble-blue underline decoration-4 decoration-wavy decoration-sunshine-yellow underline-offset-4">Pop!</span>
+              </h1>
+              <p className="text-lg text-slate-600 mb-8 max-w-lg mx-auto lg:mx-0 font-medium">
+                Create adorable, custom name tags and labels in seconds. Drag, drop, and print your way to organization bliss!
+              </p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                <Link href="/create">
+                  <Button size="lg" className="text-lg px-10">
+                    Start Creating
+                  </Button>
+                </Link>
+                <Link href="/templates">
+                  <Button variant="outline" size="lg" className="text-lg px-10">
+                    Browse Templates
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </div>
-        ) : null}
-        <header className="space-y-4 text-center sm:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-            Custom label studio
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Build name tag labels you can drag, edit, and print.
-          </h1>
-          <p className="text-base text-slate-600 sm:max-w-3xl">
-            Fill out the fields, then drag each text block inside the preview
-            window. Every change updates instantly so you can explore layouts
-            and color combinations without leaving the browser.
-          </p>
-          {!isAuthenticated ? (
-            <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
-              <Link
-                href="/login"
-                className="inline-flex items-center rounded-full border border-slate-900 px-6 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-900 transition hover:bg-slate-900 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900"
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                className="inline-flex items-center rounded-full border border-transparent bg-slate-900 px-6 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900"
-              >
-                Create account
-              </Link>
-            </div>
-          ) : null}
-        </header>
-
-        <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,380px)] lg:items-start">
-          <div className="order-1 lg:order-0">
-            <NameTagCanvas
-              tag={tag}
-              activeField={activeField}
-              onSelectField={selectField}
-              onFieldPositionChange={(id, position) =>
-                updateField(id, position)
-              }
-            />
-          </div>
-
-          <div className="order-2 lg:order-0">
-            <NameTagForm
-              tag={tag}
-              activeFieldId={activeField}
-              onSelectField={selectField}
-              onFieldChange={(id, patch) => {
-                selectField(id);
-                updateField(id, patch);
-              }}
-              onAddField={addField}
-              onRemoveField={removeField}
-              onThemeChange={handleThemeChange}
-              onReset={handleReset}
-              onImportDataset={handleDatasetImport}
-              importSummary={importSummary}
-              importError={importError}
-              isImportingDataset={isImportingDataset}
-              canExport={canExport}
-              onExportLabels={handleExportLabels}
-              isExportingLabels={isExporting}
-              exportError={exportError}
-              exportFormat={exportFormat}
-              onExportFormatChange={setExportFormat}
-              isAuthenticated={isAuthenticated}
-              onSaveDesign={handleSaveDesign}
-            />
             
-            {/* Saved Designs List */}
-            <div className="mt-6">
-              <SavedDesignsList
-                isAuthenticated={isAuthenticated}
-                onLoadDesign={handleLoadDesign}
-              />
+            {/* Hero Illustration Area */}
+            <div className="relative mx-auto w-full max-w-[500px] aspect-square lg:ml-auto">
+               {/* Simulated Label Maker Machine with CSS/SVG shapes */}
+               <div className="absolute inset-0 bg-bubble-blue/10 rounded-full blur-3xl transform scale-90" />
+               
+               <div className="relative z-10 h-full w-full flex items-center justify-center">
+                 {/* Card Stack Animation */}
+                 <div className="relative w-64 h-40 bg-white rounded-2xl border-4 border-black shadow-cartoon transform rotate-6 z-20 flex items-center justify-center">
+                    <span className="font-heading text-3xl text-candy-coral transform -rotate-2">Hello!</span>
+                    <div className="absolute -top-6 -right-6 w-12 h-12 bg-sunshine-yellow rounded-full border-2 border-black flex items-center justify-center shadow-cartoon-sm animate-bounce">
+                      <Sparkles className="w-6 h-6 text-black" />
+                    </div>
+                 </div>
+                 <div className="absolute w-64 h-40 bg-mint-gelato rounded-2xl border-4 border-black shadow-cartoon transform -rotate-6 z-10 translate-y-4"></div>
+                 
+                 {/* Decorative Elements */}
+                 <div className="absolute top-10 left-10 text-4xl animate-pulse">✨</div>
+                 <div className="absolute bottom-20 right-10 text-4xl animate-bounce">🎨</div>
+                 <div className="absolute top-1/2 left-0 w-20 h-20 bg-pop-purple rounded-full opacity-20 blur-xl"></div>
+               </div>
             </div>
           </div>
-        </section>
-      </div>
-
-      {/* Save Design Modal */}
-      <SaveDesignModal
-        isOpen={showSaveModal}
-        onClose={() => setShowSaveModal(false)}
-        onSave={handleSaveSubmit}
-      />
-
-      {/* Save Status Toast */}
-      {savingStatus && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-2xl bg-emerald-50 px-6 py-3 text-sm font-medium text-emerald-700 shadow-lg">
-          {savingStatus}
         </div>
-      )}
-    </main>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-20 bg-warm-cloud">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="font-heading text-4xl font-bold text-soft-graphite mb-4">
+              Everything You Need
+            </h2>
+            <p className="text-slate-600 text-lg">
+              Packed with features to make your labeling life easier and way more fun.
+            </p>
+          </div>
+
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Feature 1 */}
+            <Card variant="sticker" hoverEffect className="bg-white">
+              <CardContent className="pt-6 flex flex-col items-center text-center">
+                <div className="h-16 w-16 rounded-2xl bg-bubble-blue border-2 border-black shadow-cartoon-sm flex items-center justify-center mb-4 text-white">
+                  <Wand2 className="h-8 w-8" />
+                </div>
+                <h3 className="font-heading text-xl font-bold mb-2">Drag & Drop Magic</h3>
+                <p className="text-slate-500">
+                  Simply drag text fields where you want them. It works just like magic!
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 2 */}
+            <Card variant="sticker" hoverEffect className="bg-white">
+              <CardContent className="pt-6 flex flex-col items-center text-center">
+                <div className="h-16 w-16 rounded-2xl bg-sunshine-yellow border-2 border-black shadow-cartoon-sm flex items-center justify-center mb-4 text-black">
+                  <Palette className="h-8 w-8" />
+                </div>
+                <h3 className="font-heading text-xl font-bold mb-2">Custom Themes</h3>
+                <p className="text-slate-500">
+                  Choose from our playful palettes or mix your own colors to match your style.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 3 */}
+            <Card variant="sticker" hoverEffect className="bg-white">
+              <CardContent className="pt-6 flex flex-col items-center text-center">
+                <div className="h-16 w-16 rounded-2xl bg-candy-coral border-2 border-black shadow-cartoon-sm flex items-center justify-center mb-4 text-white">
+                  <Share2 className="h-8 w-8" />
+                </div>
+                <h3 className="font-heading text-xl font-bold mb-2">Bulk Import</h3>
+                <p className="text-slate-500">
+                  Upload a CSV or Excel file to generate hundreds of labels instantly.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 bg-white overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="text-center mb-16">
+             <h2 className="font-heading text-4xl font-bold text-soft-graphite">How It Works</h2>
+           </div>
+           
+           <div className="relative">
+             {/* Connecting Line (Desktop) */}
+             <div className="hidden lg:block absolute top-1/2 left-0 w-full h-2 bg-slate-100 -translate-y-1/2 z-0 rounded-full"></div>
+
+             <div className="grid gap-10 lg:grid-cols-3 relative z-10">
+               {/* Step 1 */}
+               <div className="flex flex-col items-center text-center">
+                 <div className="w-24 h-24 bg-white rounded-full border-4 border-bubble-blue shadow-cartoon mb-6 flex items-center justify-center text-4xl font-heading font-bold text-bubble-blue">
+                   1
+                 </div>
+                 <h3 className="font-heading text-2xl font-bold mb-2">Design</h3>
+                 <p className="text-slate-500 max-w-xs">
+                   Use our fun editor to customize your label's look and feel.
+                 </p>
+               </div>
+
+               {/* Step 2 */}
+               <div className="flex flex-col items-center text-center">
+                 <div className="w-24 h-24 bg-white rounded-full border-4 border-sunshine-yellow shadow-cartoon mb-6 flex items-center justify-center text-4xl font-heading font-bold text-sunshine-yellow">
+                   2
+                 </div>
+                 <h3 className="font-heading text-2xl font-bold mb-2">Import</h3>
+                 <p className="text-slate-500 max-w-xs">
+                   Add your list of names via CSV or Excel for bulk creation.
+                 </p>
+               </div>
+
+               {/* Step 3 */}
+               <div className="flex flex-col items-center text-center">
+                 <div className="w-24 h-24 bg-white rounded-full border-4 border-pop-purple shadow-cartoon mb-6 flex items-center justify-center text-4xl font-heading font-bold text-pop-purple">
+                   3
+                 </div>
+                 <h3 className="font-heading text-2xl font-bold mb-2">Print</h3>
+                 <p className="text-slate-500 max-w-xs">
+                   Export to Word or PDF and print them out. Done!
+                 </p>
+               </div>
+             </div>
+           </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-mint-gelato/30">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="font-heading text-4xl font-bold text-soft-graphite mb-6">
+            Ready to Get Started?
+          </h2>
+          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+            Join thousands of organized (and fun!) people making their labels with Label Buddy.
+          </p>
+          <Link href="/create">
+            <Button size="lg" className="text-lg px-12 py-6 h-auto shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
+              Create My First Label
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -1,45 +1,52 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SignUpForm } from "@/components/auth/sign-up-form";
+import { Sparkles, ArrowLeft, Star } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Create account | Name Tag Studio",
+  title: "Create account | Label Buddy",
   description:
-    "Create a Name Tag Studio account to save your layouts, sync attendee lists, and export labels faster.",
+    "Create a Label Buddy account to save your layouts and export labels faster.",
 };
 
 export default function SignUpPage() {
   return (
-    <main className="min-h-screen bg-linear-to-b from-white to-slate-100 px-4 py-14 sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-warm-cloud px-4 py-14 sm:px-6 lg:px-10 flex items-center justify-center">
       <div className="mx-auto flex w-full max-w-6xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center">
-        <div className="w-full max-w-xl space-y-6 text-center lg:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.45em] text-slate-400">
-            Name Tag Studio
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-            Keep every event label in sync.
+        <div className="w-full max-w-xl space-y-8 text-center lg:text-left">
+          <div className="inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1.5 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm mb-2 transform rotate-2">
+            <Star className="mr-2 h-4 w-4" />
+            Join the Club
+          </div>
+          
+          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-soft-graphite">
+            Let's get you <span className="text-candy-coral underline decoration-4 decoration-wavy decoration-bubble-blue underline-offset-4">organized!</span>
           </h1>
-          <p className="text-base text-slate-600">
-            Store your attendee information, reuse past layouts, and export fresh
-            batches of tags whenever schedules shift. Drop in your details and
-            you&apos;re ready to go.
+          
+          <p className="text-lg text-slate-600 font-medium">
+            Create an account to save your cute designs, build your sticker collection, and speed up your label making process.
           </p>
-          <div className="flex flex-col items-center gap-4 text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:justify-start">
+          
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
             <Link
               href="/login"
-              className="flex items-center justify-center rounded-full border border-slate-200 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-700 transition hover:border-slate-300 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900"
+              className="group flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-6 py-3 text-sm font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-black hover:text-soft-graphite hover:shadow-cartoon-sm"
             >
               Already have an account?
             </Link>
-            <span className="text-xs text-slate-400">
-              Prefer to browse? Head back to the studio any time.
-            </span>
+             <Link
+              href="/"
+              className="text-sm font-bold uppercase tracking-widest text-slate-400 transition hover:text-soft-graphite hover:underline decoration-2 underline-offset-4"
+            >
+              Just browsing?
+            </Link>
           </div>
         </div>
 
-        <SignUpForm redirectPath="/" postCreatePath="/" />
+        <div className="w-full max-w-md">
+          <SignUpForm redirectPath="/" postCreatePath="/" />
+        </div>
       </div>
     </main>
   );
 }
-

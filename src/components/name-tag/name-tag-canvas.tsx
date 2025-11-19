@@ -14,6 +14,7 @@ import {
 } from "react-draggable";
 import { backgroundThemes, clampPercent } from "@/lib/name-tag";
 import { NameTagData, NameTagField } from "@/types/name-tag";
+import { Move } from "lucide-react";
 
 type NameTagCanvasProps = {
   tag: NameTagData;
@@ -109,7 +110,7 @@ export function NameTagCanvas({
     isFloating && metrics.width
       ? {
           position: "fixed" as const,
-          top: "1.5rem",
+          top: "5rem", // Adjusted for sticky header
           left: metrics.left,
           width: metrics.width,
           zIndex: 30,
@@ -117,8 +118,8 @@ export function NameTagCanvas({
       : undefined;
 
   const containerClasses = [
-    "rounded-[32px] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-6 shadow-inner shadow-slate-200",
-    isFloating ? "shadow-2xl" : "sticky top-6 self-start",
+    "rounded-[32px] border-2 border-black bg-white p-6 shadow-cartoon transition-all duration-300",
+    isFloating ? "z-30" : "sticky top-24 self-start",
   ].join(" ");
 
   return (
@@ -137,31 +138,30 @@ export function NameTagCanvas({
       >
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-            Live canvas
+          <p className="font-heading text-lg font-bold uppercase tracking-wide text-bubble-blue">
+            Live Canvas
           </p>
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Drag to place each field
+          <h2 className="font-heading text-3xl font-bold tracking-tight text-soft-graphite">
+            Drag & Drop
           </h2>
-          <p className="text-sm text-slate-500">
-            Click any text block to focus it. Use your arrow keys to nudge the
-            selection (hold Shift for small steps).
+          <p className="text-sm font-medium text-slate-500">
+            Click text to edit. Drag to move!
           </p>
         </div>
-        <span className="rounded-full bg-slate-900/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white">
-          {visibleFields.length} field{visibleFields.length === 1 ? "" : "s"}
+        <span className="animate-bounce-hover inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm">
+          {visibleFields.length} item{visibleFields.length === 1 ? "" : "s"}
         </span>
       </header>
 
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center bg-slate-100 rounded-3xl p-4 border-2 border-slate-200 border-dashed">
         <div
           ref={cardRef}
-          className="relative aspect-3/2 w-full max-w-3xl overflow-hidden rounded-[36px] border border-white/60 p-10 shadow-[0_30px_70px_-40px_rgba(15,23,42,0.65)]"
+          className="relative aspect-3/2 w-full max-w-3xl overflow-hidden rounded-[36px] border-2 border-black shadow-lg"
           style={cardBackgroundStyle}
         >
+          {/* Inner border for print safe area visualization - optional but helpful */}
           <div
-            className="absolute inset-10 rounded-[28px] border border-white/30"
-            style={{ boxShadow: `0 0 60px -30px ${tag.accent}` }}
+            className="pointer-events-none absolute inset-4 rounded-[24px] border-2 border-dashed border-black/10"
           />
 
           {tag.fields.map((field) =>
@@ -180,11 +180,6 @@ export function NameTagCanvas({
               />
             ) : null,
           )}
-
-          <span
-            className="pointer-events-none absolute left-10 right-10 bottom-8 h-1.5 rounded-full opacity-80"
-            style={{ backgroundColor: tag.accent }}
-          />
         </div>
       </div>
       </section>
@@ -295,24 +290,24 @@ const FloatingField = memo(function FloatingField({
           lineHeight: 1.1,
         }}
         className={`group absolute w-[82%] max-w-[82%] whitespace-pre-wrap px-4 py-2 font-semibold tracking-tight outline-none ${
-          isDragging ? "z-50 cursor-grabbing" : "cursor-grab transition"
-        } ${alignClass} ${
-          isDragging
-            ? ""
-            : "focus-visible:outline focus-visible:outline-white/80 focus-visible:outline-offset-4"
-        } ${isActive && !isDragging ? "drop-shadow-[0_0_35px_rgba(15,23,42,0.4)]" : ""}`}
+          isDragging ? "z-50 cursor-grabbing scale-105" : "cursor-grab hover:scale-[1.02]"
+        } ${alignClass} transition-transform duration-200 ${
+          isActive
+            ? "ring-2 ring-black ring-offset-2 rounded-xl bg-white/20"
+            : "hover:bg-white/10 rounded-xl"
+        }`}
       >
         {field.text || "Empty text"}
-        <span
-          className={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.4em] text-white opacity-0 transition ${
-            !isDragging
-              ? "group-focus-visible:opacity-100 group-hover:opacity-100"
-              : ""
+        
+        {/* Drag Handle / Indicator */}
+        <div
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border-2 border-black bg-bubble-blue px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-white shadow-sm transition-opacity duration-200 ${
+             isActive || isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           }`}
-          style={{ backgroundColor: accent }}
         >
-          Drag
-        </span>
+          <Move className="w-3 h-3" />
+          <span>Move</span>
+        </div>
       </div>
     </DraggableCore>
   );
