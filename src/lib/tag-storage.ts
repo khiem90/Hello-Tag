@@ -1,4 +1,17 @@
 import { NameTagData, NameTagField } from "@/types/name-tag";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  serverTimestamp,
+  orderBy,
+  query,
+  type Timestamp,
+} from "firebase/firestore";
+import { getFirebaseAuth, getFirebaseFirestore } from "@/lib/firebase-client";
 
 const TAG_STORAGE_KEY = "name-tag-studio:design";
 
@@ -88,6 +101,147 @@ export const clearStoredTag = () => {
   } catch (error) {
     console.error("Failed to clear stored tag", error);
   }
+};
+
+// Firebase storage types
+export type SavedDesign = {
+  id: string;
+  name: string;
+  description?: string;
+  data: NameTagData;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
+};
+
+// Firebase storage functions
+export const saveDesignToFirebase = async (
+  name: string,
+  data: NameTagData,
+  description?: string,
+): Promise<string> => {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User must be authenticated to save designs");
+  }
+
+  const firestore = getFirebaseFirestore();
+  const designId = doc(collection(firestore, "users", user.uid, "designs")).id;
+  const designRef = doc(firestore, "users", user.uid, "designs", designId);
+
+  await setDoc(designRef, {
+    name,
+    description: description || "",
+    data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  return designId;
+};
+
+export const loadDesignFromFirebase = async (
+  designId: string,
+): Promise<SavedDesign | null> => {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User must be authenticated to load designs");
+  }
+
+  const firestore = getFirebaseFirestore();
+  const designRef = doc(firestore, "users", user.uid, "designs", designId);
+  const designSnap = await getDoc(designRef);
+
+  if (!designSnap.exists()) {
+    return null;
+  }
+
+  const data = designSnap.data();
+  if (!isValidTag(data.data)) {
+    console.error("Invalid design data", data);
+    return null;
+  }
+
+  return {
+    id: designSnap.id,
+    name: data.name,
+    description: data.description,
+    data: data.data,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+  };
+};
+
+export const listUserDesigns = async (): Promise<SavedDesign[]> => {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User must be authenticated to list designs");
+  }
+
+  const firestore = getFirebaseFirestore();
+  const designsRef = collection(firestore, "users", user.uid, "designs");
+  const q = query(designsRef, orderBy("updatedAt", "desc"));
+  const querySnapshot = await getDocs(q);
+
+  const designs: SavedDesign[] = [];
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (isValidTag(data.data)) {
+      designs.push({
+        id: doc.id,
+        name: data.name,
+        description: data.description,
+        data: data.data,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      });
+    }
+  });
+
+  return designs;
+};
+
+export const updateDesignInFirebase = async (
+  designId: string,
+  updates: {
+    name?: string;
+    description?: string;
+    data?: NameTagData;
+  },
+): Promise<void> => {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User must be authenticated to update designs");
+  }
+
+  const firestore = getFirebaseFirestore();
+  const designRef = doc(firestore, "users", user.uid, "designs", designId);
+
+  await setDoc(
+    designRef,
+    {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+};
+
+export const deleteDesignFromFirebase = async (
+  designId: string,
+): Promise<void> => {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User must be authenticated to delete designs");
+  }
+
+  const firestore = getFirebaseFirestore();
+  const designRef = doc(firestore, "users", user.uid, "designs", designId);
+  await deleteDoc(designRef);
 };
 
 

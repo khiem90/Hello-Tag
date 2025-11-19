@@ -20,6 +20,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to start designing.
 
+### Environment variables
+
+Create a `.env.local` file with your Firebase web app config:
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+```
+
+You can copy these values from the Firebase console under **Project Settings → General → Your apps**. Enable Google as a provider inside **Build → Authentication → Sign-in method** so the web app can offer “Sign in with Google”.
+
 ### Linting
 
 ```bash

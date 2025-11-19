@@ -34,6 +34,8 @@ type NameTagFormProps = {
   exportError: string | null;
   exportFormat: ExportFormat;
   onExportFormatChange: (format: ExportFormat) => void;
+  isAuthenticated?: boolean;
+  onSaveDesign?: () => void;
 };
 
 const alignOptions: Array<NameTagData["textAlign"]> = [
@@ -99,6 +101,8 @@ export function NameTagForm({
   exportError,
   exportFormat,
   onExportFormatChange,
+  isAuthenticated = false,
+  onSaveDesign,
 }: NameTagFormProps) {
   const activeLayer =
     tag.fields.find((field) => field.id === activeFieldId) ??
@@ -253,6 +257,15 @@ export function NameTagForm({
           >
             Reset tag
           </button>
+          {isAuthenticated && onSaveDesign && (
+            <button
+              type="button"
+              onClick={onSaveDesign}
+              className="rounded-full border border-transparent bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+            >
+              Save design
+            </button>
+          )}
         </div>
       </div>
 
