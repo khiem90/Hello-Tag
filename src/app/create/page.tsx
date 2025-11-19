@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { NameTagCanvas } from "@/components/name-tag/name-tag-canvas";
 import { NameTagForm } from "@/components/name-tag/name-tag-form";
 import {
@@ -110,7 +111,8 @@ const alignFieldsWithHeaders = (
 };
 
 export default function CreatePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
   const initialTag = useMemo(() => createDefaultTag(), []);
   const [tag, setTag] = useState<NameTagData>(initialTag);
   const [activeField, setActiveField] = useState<string>(
@@ -139,11 +141,11 @@ export default function CreatePage() {
     setHasLoadedStoredTag(true);
   }, []);
 
-  const selectField = (id: string) => {
+  const selectField = useCallback((id: string) => {
     setActiveField(id);
-  };
+  }, []);
 
-  const updateField = (id: string, patch: Partial<NameTagField>) => {
+  const updateField = useCallback((id: string, patch: Partial<NameTagField>) => {
     setTag((prev) => ({
       ...prev,
       fields: prev.fields.map((field) => {
@@ -163,9 +165,9 @@ export default function CreatePage() {
         return next;
       }),
     }));
-  };
+  }, []);
 
-  const addField = () => {
+  const addField = useCallback(() => {
     setTag((prev) => {
       const newField = createBlankField(`Layer ${prev.fields.length + 1}`);
       setActiveField(newField.id);
@@ -174,9 +176,9 @@ export default function CreatePage() {
         fields: [...prev.fields, newField],
       };
     });
-  };
+  }, []);
 
-  const removeField = (id: string) => {
+  const removeField = useCallback((id: string) => {
     setTag((prev) => {
       if (prev.fields.length <= 1) {
         return prev;
@@ -193,22 +195,22 @@ export default function CreatePage() {
         fields: filtered,
       };
     });
-  };
+  }, [activeField]);
 
-  const handleThemeChange = (
+  const handleThemeChange = useCallback((
     update: Partial<
       Pick<NameTagData, "accent" | "background" | "textAlign" | "customBackground">
     >,
   ) => {
     setTag((prev) => ({ ...prev, ...update }));
-  };
+  }, []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     const defaults = createDefaultTag();
     setTag(defaults);
     setActiveField(defaults.fields[0]?.id ?? "");
     clearStoredTag();
-  };
+  }, []);
 
   const syncLayersToHeaders = (headers: string[]) => {
     if (!headers.length) {
@@ -369,6 +371,29 @@ export default function CreatePage() {
     return () => window.clearTimeout(handle);
   }, [tag, hasLoadedStoredTag]);
 
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login?redirect=/create");
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  const handleFieldChange = useCallback((id: string, patch: Partial<NameTagField>) => {
+    selectField(id);
+    updateField(id, patch);
+  }, [selectField, updateField]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-pop-purple" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
@@ -379,9 +404,7 @@ export default function CreatePage() {
               tag={tag}
               activeField={activeField}
               onSelectField={selectField}
-              onFieldPositionChange={(id, position) =>
-                updateField(id, position)
-              }
+              onFieldPositionChange={updateField}
             />
           </div>
 
@@ -390,10 +413,7 @@ export default function CreatePage() {
               tag={tag}
               activeFieldId={activeField}
               onSelectField={selectField}
-              onFieldChange={(id, patch) => {
-                selectField(id);
-                updateField(id, patch);
-              }}
+              onFieldChange={handleFieldChange}
               onAddField={addField}
               onRemoveField={removeField}
               onThemeChange={handleThemeChange}

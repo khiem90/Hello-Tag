@@ -9,7 +9,17 @@ export const metadata: Metadata = {
     "Create a Label Buddy account to save your layouts and export labels faster.",
 };
 
-export default function SignUpPage() {
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function SignUpPage({ searchParams }: Props) {
+  const resolvedSearchParams = await searchParams;
+  const redirectPath =
+    typeof resolvedSearchParams.redirect === "string"
+      ? resolvedSearchParams.redirect
+      : "/";
+
   return (
     <main className="min-h-screen bg-warm-cloud px-4 py-14 sm:px-6 lg:px-10 flex items-center justify-center">
       <div className="mx-auto flex w-full max-w-6xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center">
@@ -29,7 +39,7 @@ export default function SignUpPage() {
           
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
             <Link
-              href="/login"
+              href={redirectPath && redirectPath !== "/" ? `/login?redirect=${encodeURIComponent(redirectPath)}` : "/login"}
               className="group flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-6 py-3 text-sm font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-black hover:text-soft-graphite hover:shadow-cartoon-sm"
             >
               Already have an account?
@@ -44,7 +54,7 @@ export default function SignUpPage() {
         </div>
 
         <div className="w-full max-w-md">
-          <SignUpForm redirectPath="/" postCreatePath="/" />
+          <SignUpForm redirectPath={redirectPath} postCreatePath={redirectPath} />
         </div>
       </div>
     </main>

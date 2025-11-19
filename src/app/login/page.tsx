@@ -9,7 +9,17 @@ export const metadata: Metadata = {
     "Access your saved label layouts or start a new project after signing in.",
 };
 
-export default function LoginPage() {
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function LoginPage({ searchParams }: Props) {
+  const resolvedSearchParams = await searchParams;
+  const redirectPath =
+    typeof resolvedSearchParams.redirect === "string"
+      ? resolvedSearchParams.redirect
+      : "/";
+
   return (
     <main className="min-h-screen bg-warm-cloud px-4 py-14 sm:px-6 lg:px-10 flex items-center justify-center">
       <div className="mx-auto flex w-full max-w-6xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center">
@@ -36,7 +46,7 @@ export default function LoginPage() {
               Back to Studio
             </Link>
             <Link
-              href="/signup"
+              href={redirectPath && redirectPath !== "/" ? `/signup?redirect=${encodeURIComponent(redirectPath)}` : "/signup"}
               className="text-sm font-bold uppercase tracking-widest text-bubble-blue transition hover:text-pop-purple hover:underline decoration-2 underline-offset-4"
             >
               New here? Join the fun!
@@ -45,7 +55,7 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full max-w-md">
-           <LoginForm redirectPath="/" />
+           <LoginForm redirectPath={redirectPath} />
         </div>
       </div>
     </main>

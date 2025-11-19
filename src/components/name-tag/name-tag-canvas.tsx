@@ -42,6 +42,7 @@ export function NameTagCanvas({
   const sectionRef = useRef<HTMLElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isFloating, setIsFloating] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [metrics, setMetrics] = useState({
     width: 0,
     height: 0,
@@ -104,7 +105,7 @@ export function NameTagCanvas({
       window.removeEventListener("resize", updateMetrics);
       observer?.disconnect();
     };
-  }, [tag]);
+  }, []);
 
   const floatingStyles =
     isFloating && metrics.width
@@ -121,6 +122,14 @@ export function NameTagCanvas({
     "rounded-[32px] border-2 border-black bg-white p-6 shadow-cartoon transition-all duration-300",
     isFloating ? "z-30" : "sticky top-24 self-start",
   ].join(" ");
+
+  const handleDragStart = useCallback((id: string) => {
+    setDraggingId(id);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggingId(null);
+  }, []);
 
   return (
     <>
@@ -164,17 +173,18 @@ export function NameTagCanvas({
             className="pointer-events-none absolute inset-4 rounded-[24px] border-2 border-dashed border-black/10"
           />
 
-          {tag.fields.map((field) =>
+            {tag.fields.map((field) =>
             field.visible ? (
               <FloatingField
                 key={field.id}
                 field={field}
                 alignClass={alignToClass[tag.textAlign]}
                 isActive={activeField === field.id}
-                onSelect={() => onSelectField(field.id)}
-                onDrag={(position) =>
-                  onFieldPositionChange(field.id, position)
-                }
+                isInteractionDisabled={draggingId !== null && draggingId !== field.id}
+                onSelect={onSelectField}
+                onDrag={onFieldPositionChange}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
                 cardRef={cardRef}
               />
             ) : null,
@@ -190,27 +200,51 @@ type FloatingFieldProps = {
   field: NameTagField;
   alignClass: string;
   isActive: boolean;
+  isInteractionDisabled?: boolean;
   cardRef: React.RefObject<HTMLDivElement | null>;
-  onSelect: () => void;
-  onDrag: (position: Pick<NameTagField, "x" | "y">) => void;
+  onSelect: (id: string) => void;
+  onDrag: (id: string, position: Pick<NameTagField, "x" | "y">) => void;
+  onDragStart?: (id: string) => void;
+  onDragEnd?: () => void;
 };
 
 const FloatingField = memo(function FloatingField({
   field,
   alignClass,
-  isActive,
+  isInteractionDisabled,
   cardRef,
   onSelect,
   onDrag,
+  onDragStart,
+  onDragEnd,
 }: FloatingFieldProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Local position state for smooth visual updates during drag
+  const [localPos, setLocalPos] = useState({ x: field.x, y: field.y });
+
+  // Use a ref to keep track of the latest field data to avoid re-creating drag handlers
+  const fieldRef = useRef(field);
+  // Keep track of local drag position to prevent jitter due to render lag
+  const dragPositionRef = useRef({ x: field.x, y: field.y });
+
+  useEffect(() => {
+    fieldRef.current = field;
+  });
 
   useEffect(
     () => () => {
       document.body.classList.remove("cursor-grabbing");
     },
     [],
+  );
+
+  const handleUpdatePosition = useCallback(
+    (newPos: Pick<NameTagField, "x" | "y">) => {
+      onDrag(fieldRef.current.id, newPos);
+    },
+    [onDrag],
   );
 
   const updatePosition = useCallback(
@@ -220,12 +254,17 @@ const FloatingField = memo(function FloatingField({
         return;
       }
       const { width, height } = root.getBoundingClientRect();
-      onDrag({
-        x: clampPercent(field.x + (deltaX / width) * 100),
-        y: clampPercent(field.y + (deltaY / height) * 100),
-      });
+      
+      const newX = clampPercent(dragPositionRef.current.x + (deltaX / width) * 100);
+      const newY = clampPercent(dragPositionRef.current.y + (deltaY / height) * 100);
+      
+      const newPos = { x: newX, y: newY };
+      dragPositionRef.current = newPos;
+      setLocalPos(newPos);
+      
+      handleUpdatePosition(newPos);
     },
-    [cardRef, field.x, field.y, onDrag],
+    [cardRef, handleUpdatePosition],
   );
 
   const handleDrag = useCallback(
@@ -237,14 +276,20 @@ const FloatingField = memo(function FloatingField({
 
   const handleStart = useCallback(() => {
     setIsDragging(true);
-    onSelect();
+    // Sync ref and local state with current props on start
+    dragPositionRef.current = { x: field.x, y: field.y };
+    setLocalPos({ x: field.x, y: field.y });
+    const id = fieldRef.current.id;
+    onSelect(id);
+    onDragStart?.(id);
     document.body.classList.add("cursor-grabbing");
-  }, [onSelect]);
+  }, [onSelect, onDragStart, field.x, field.y]);
 
   const handleStop = useCallback(() => {
     setIsDragging(false);
+    onDragEnd?.();
     document.body.classList.remove("cursor-grabbing");
-  }, []);
+  }, [onDragEnd]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const steps = event.shiftKey ? 0.5 : 2;
@@ -259,11 +304,24 @@ const FloatingField = memo(function FloatingField({
     }
     event.preventDefault();
     const [dx, dy] = map[event.key];
-    onDrag({
-      x: clampPercent(field.x + dx),
-      y: clampPercent(field.y + dy),
-    });
+    const currentField = fieldRef.current;
+    const newX = clampPercent(currentField.x + dx);
+    const newY = clampPercent(currentField.y + dy);
+    const newPos = { x: newX, y: newY };
+    dragPositionRef.current = newPos;
+    setLocalPos(newPos);
+    handleUpdatePosition(newPos);
   };
+
+  const activeStyle = isDragging 
+    ? {
+        left: `${localPos.x}%`,
+        top: `${localPos.y}%`,
+      }
+    : {
+        left: `${field.x}%`,
+        top: `${field.y}%`,
+      };
 
   return (
     <DraggableCore
@@ -276,22 +334,23 @@ const FloatingField = memo(function FloatingField({
         ref={nodeRef}
         role="button"
         tabIndex={0}
-        onClick={onSelect}
+        onClick={() => onSelect(field.id)}
         onKeyDown={handleKeyDown}
         style={{
-          left: `${field.x}%`,
-          top: `${field.y}%`,
+          ...activeStyle,
           color: field.color,
           fontSize: `${field.fontSize}px`,
           transform: "translate(-50%, -50%)",
           lineHeight: 1.1,
         }}
-        className={`group absolute w-[82%] max-w-[82%] whitespace-pre-wrap px-4 py-2 font-semibold tracking-tight outline-none ${
-          isDragging ? "z-50 cursor-grabbing scale-105" : "cursor-grab hover:scale-[1.02]"
-        } ${alignClass} transition-transform duration-200 ${
-          isActive
-            ? "ring-2 ring-black ring-offset-2 rounded-xl bg-white/20"
-            : "hover:bg-white/10 rounded-xl"
+        className={`group absolute w-auto max-w-[82%] whitespace-pre-wrap px-4 py-2 font-semibold tracking-tight outline-none rounded-xl bg-transparent ${
+          isDragging
+            ? "z-50 cursor-grabbing scale-105"
+            : isInteractionDisabled
+              ? "pointer-events-none opacity-50"
+              : "cursor-grab hover:scale-[1.02]"
+        } ${alignClass} ${
+          isDragging ? "transition-none" : "transition-transform duration-200"
         }`}
       >
         {field.text || "Empty text"}
@@ -299,7 +358,7 @@ const FloatingField = memo(function FloatingField({
         {/* Drag Handle / Indicator */}
         <div
           className={`absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border-2 border-black bg-bubble-blue px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-white shadow-sm transition-opacity duration-200 ${
-             isActive || isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           }`}
         >
           <Move className="w-3 h-3" />
