@@ -170,7 +170,6 @@ export function NameTagCanvas({
                 key={field.id}
                 field={field}
                 alignClass={alignToClass[tag.textAlign]}
-                accent={tag.accent}
                 isActive={activeField === field.id}
                 onSelect={() => onSelectField(field.id)}
                 onDrag={(position) =>
@@ -190,7 +189,6 @@ export function NameTagCanvas({
 type FloatingFieldProps = {
   field: NameTagField;
   alignClass: string;
-  accent: string;
   isActive: boolean;
   cardRef: React.RefObject<HTMLDivElement | null>;
   onSelect: () => void;
@@ -200,7 +198,6 @@ type FloatingFieldProps = {
 const FloatingField = memo(function FloatingField({
   field,
   alignClass,
-  accent,
   isActive,
   cardRef,
   onSelect,

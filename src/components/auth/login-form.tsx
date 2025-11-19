@@ -21,7 +21,7 @@ import { LogIn, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function LoginForm({
   redirectPath = "/",
-}: LoginFormProps): JSX.Element {
+}: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

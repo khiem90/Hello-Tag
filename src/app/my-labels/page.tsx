@@ -73,7 +73,7 @@ export default function MyLabelsPage() {
 
   const formatDate = (timestamp: Date | { toDate: () => Date }) => {
     if (!timestamp) return "";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = "toDate" in timestamp ? timestamp.toDate() : timestamp;
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",

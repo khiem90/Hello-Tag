@@ -26,7 +26,7 @@ import { UserPlus, AlertCircle, CheckCircle2 } from "lucide-react";
 export function SignUpForm({
   redirectPath = "/",
   postCreatePath = "/",
-}: SignUpFormProps): JSX.Element {
+}: SignUpFormProps) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

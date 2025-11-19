@@ -16,7 +16,7 @@ export const templates: Template[] = [
     data: {
       ...createDefaultTag(),
       accent: "#A96CFF",
-      background: "gradient-sunset",
+      background: "sunset",
       textAlign: "center",
       fields: [
         {
@@ -49,7 +49,7 @@ export const templates: Template[] = [
     data: {
       ...createDefaultTag(),
       accent: "#FF7865",
-      background: "gradient-warm",
+      background: "sunset",
       textAlign: "center",
       fields: [
         {
@@ -82,7 +82,7 @@ export const templates: Template[] = [
     data: {
       ...createDefaultTag(),
       accent: "#5BC8FF",
-      background: "gradient-ocean",
+      background: "sky",
       textAlign: "left",
       fields: [
         {
