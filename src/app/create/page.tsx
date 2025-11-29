@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { NameTagCanvas } from "@/components/name-tag/name-tag-canvas";
-import { NameTagForm } from "@/components/name-tag/name-tag-form";
+import { DocumentCanvas, DocumentForm, PreviewNavigation } from "@/components/merge-editor";
 import {
   clampPercent,
   createBlankField,
-  createDefaultTag,
+  createDefaultDocument,
 } from "@/lib/name-tag";
+import { createFieldsForDocumentType } from "@/lib/document-types";
 import {
-  clearStoredTag,
-  loadStoredTag,
-  persistTag,
+  clearStoredDocument,
+  loadStoredDocument,
+  persistDocument,
   saveDesignToFirebase,
 } from "@/lib/tag-storage";
 import { SaveDesignModal } from "@/components/ui/save-design-modal";
@@ -20,37 +20,36 @@ import {
   readDataset,
   type DatasetRow,
 } from "@/lib/dataset";
-import {
-  buildDocumentFromLabels,
-  buildLabelSvg,
-  svgToPngArrayBuffer,
-} from "@/lib/export";
-import { NameTagData, NameTagField } from "@/types/name-tag";
-import type { ExportFormat, ImportSummary } from "@/types/import";
+import { buildDocxWithText } from "@/lib/export";
+import { DocumentData, MergeField, DocumentType } from "@/types/document";
+import type { ImportSummary } from "@/types/import";
 import { useAuth } from "@/components/layout/auth-provider";
 
 const resolveImportStatus = (
   headerCount: number,
-  layerCount: number,
+  fieldCount: number,
 ): ImportSummary["status"] => {
-  if (headerCount === layerCount) {
+  if (headerCount === fieldCount) {
     return "match";
   }
-  return headerCount > layerCount ? "needs-layers" : "unused-layers";
+  return headerCount > fieldCount ? "needs-layers" : "unused-layers";
 };
 
 const mapFieldsToRow = (
-  fields: NameTagField[],
+  fields: MergeField[],
   row: DatasetRow,
-): NameTagField[] =>
+): MergeField[] =>
   fields.map((field) => {
-    const value = row[field.name];
-    if (typeof value !== "string" || value.length === 0) {
-      return field;
-    }
+    // Replace {{FieldName}} placeholders with actual values
+    // Use [^}]+ to match any characters including spaces inside the braces
+    const resolvedText = field.text.replace(/\{\{([^}]+)\}\}/g, (match, fieldName) => {
+      const trimmedName = fieldName.trim();
+      const value = row[trimmedName];
+      return typeof value === "string" && value.length > 0 ? value : match;
+    });
     return {
       ...field,
-      text: value,
+      text: resolvedText,
     };
   });
 
@@ -64,10 +63,10 @@ const triggerDownload = (blob: Blob, fileName: string) => {
 };
 
 const alignFieldsWithHeaders = (
-  fields: NameTagField[],
+  fields: MergeField[],
   headers: string[],
 ): {
-  fields: NameTagField[];
+  fields: MergeField[];
   activeId: string;
 } => {
   if (!headers.length) {
@@ -79,27 +78,27 @@ const alignFieldsWithHeaders = (
 
   const normalized = headers.map((header, index) => {
     if (typeof header !== "string") {
-      return `Layer ${index + 1}`;
+      return `Field ${index + 1}`;
     }
     const trimmed = header.trim();
-    return trimmed.length ? trimmed : `Layer ${index + 1}`;
+    return trimmed.length ? trimmed : `Field ${index + 1}`;
   });
 
-  const nextFields: NameTagField[] = normalized.map(
+  const nextFields: MergeField[] = normalized.map(
     (label, index) => {
       const existing = fields[index];
       if (existing) {
         return {
           ...existing,
           name: label,
-          text: label,
+          text: `{{${label}}}`,
         };
       }
       const placeholder = createBlankField(label);
       return {
         ...placeholder,
         name: label,
-        text: label,
+        text: `{{${label}}}`,
       };
     },
   );
@@ -113,46 +112,62 @@ const alignFieldsWithHeaders = (
 export default function CreatePage() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const initialTag = useMemo(() => createDefaultTag(), []);
-  const [tag, setTag] = useState<NameTagData>(initialTag);
+  const initialDoc = useMemo(() => createDefaultDocument("label"), []);
+  const [document, setDocument] = useState<DocumentData>(initialDoc);
   const [activeField, setActiveField] = useState<string>(
-    initialTag.fields[0]?.id ?? "",
+    initialDoc.fields[0]?.id ?? "",
   );
-  const [hasLoadedStoredTag, setHasLoadedStoredTag] = useState(false);
+  const [hasLoadedStoredDoc, setHasLoadedStoredDoc] = useState(false);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [isImportingDataset, setIsImportingDataset] = useState(false);
   const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [exportFormat, setExportFormat] = useState<ExportFormat>("docx");
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [savingStatus, setSavingStatus] = useState<string | null>(null);
-  const layerCount = tag.fields.length;
+  
+  // Preview mode state
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [previewRecordIndex, setPreviewRecordIndex] = useState(0);
+  
+  const fieldCount = document.fields.length;
   const datasetRowCount = datasetRows.length;
   const canExport = datasetRowCount > 0;
 
-  useEffect(() => {
-    const storedTag = loadStoredTag();
-    if (storedTag) {
-      setTag(storedTag);
-      setActiveField(storedTag.fields[0]?.id ?? "");
+  // Get current preview data
+  const currentPreviewData = useMemo(() => {
+    if (!isPreviewMode || datasetRows.length === 0) {
+      return undefined;
     }
-    setHasLoadedStoredTag(true);
+    return datasetRows[previewRecordIndex];
+  }, [isPreviewMode, datasetRows, previewRecordIndex]);
+
+  useEffect(() => {
+    const storedDoc = loadStoredDocument();
+    if (storedDoc) {
+      // Ensure documentType exists (backward compatibility)
+      if (!storedDoc.documentType) {
+        storedDoc.documentType = "label";
+      }
+      setDocument(storedDoc);
+      setActiveField(storedDoc.fields[0]?.id ?? "");
+    }
+    setHasLoadedStoredDoc(true);
   }, []);
 
   const selectField = useCallback((id: string) => {
     setActiveField(id);
   }, []);
 
-  const updateField = useCallback((id: string, patch: Partial<NameTagField>) => {
-    setTag((prev) => ({
+  const updateField = useCallback((id: string, patch: Partial<MergeField>) => {
+    setDocument((prev) => ({
       ...prev,
       fields: prev.fields.map((field) => {
         if (field.id !== id) {
           return field;
         }
-        const next: NameTagField = {
+        const next: MergeField = {
           ...field,
           ...patch,
         };
@@ -168,8 +183,8 @@ export default function CreatePage() {
   }, []);
 
   const addField = useCallback(() => {
-    setTag((prev) => {
-      const newField = createBlankField(`Layer ${prev.fields.length + 1}`);
+    setDocument((prev) => {
+      const newField = createBlankField(`Field ${prev.fields.length + 1}`);
       setActiveField(newField.id);
       return {
         ...prev,
@@ -179,7 +194,7 @@ export default function CreatePage() {
   }, []);
 
   const removeField = useCallback((id: string) => {
-    setTag((prev) => {
+    setDocument((prev) => {
       if (prev.fields.length <= 1) {
         return prev;
       }
@@ -199,26 +214,39 @@ export default function CreatePage() {
 
   const handleThemeChange = useCallback((
     update: Partial<
-      Pick<NameTagData, "accent" | "background" | "textAlign" | "customBackground">
+      Pick<DocumentData, "accent" | "background" | "textAlign" | "customBackground">
     >,
   ) => {
-    setTag((prev) => ({ ...prev, ...update }));
+    setDocument((prev) => ({ ...prev, ...update }));
+  }, []);
+
+  const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+    setDocument((prev) => {
+      // If switching document type, reset to default fields for that type
+      const newFields = createFieldsForDocumentType(type);
+      setActiveField(newFields[0]?.id ?? "");
+      return {
+        ...prev,
+        documentType: type,
+        fields: newFields,
+      };
+    });
   }, []);
 
   const handleReset = useCallback(() => {
-    const defaults = createDefaultTag();
-    setTag(defaults);
+    const defaults = createDefaultDocument(document.documentType);
+    setDocument(defaults);
     setActiveField(defaults.fields[0]?.id ?? "");
-    clearStoredTag();
-  }, []);
+    clearStoredDocument();
+  }, [document.documentType]);
 
-  const syncLayersToHeaders = (headers: string[]) => {
+  const syncFieldsToHeaders = (headers: string[]) => {
     if (!headers.length) {
       return;
     }
 
     let nextActiveId = "";
-    setTag((prev) => {
+    setDocument((prev) => {
       const aligned = alignFieldsWithHeaders(prev.fields, headers);
       nextActiveId = aligned.activeId || prev.fields[0]?.id || "";
       return {
@@ -241,22 +269,24 @@ export default function CreatePage() {
       const rowCount = dataset.rows.length;
       setDatasetRows(dataset.rows);
       if (headerCount > 0) {
-        syncLayersToHeaders(dataset.headers);
+        syncFieldsToHeaders(dataset.headers);
       }
-      const resultingLayerCount =
-        headerCount > 0 ? headerCount : layerCount;
+      const resultingFieldCount =
+        headerCount > 0 ? headerCount : fieldCount;
       setImportSummary({
         fileName: file.name,
         headers: dataset.headers,
         headerCount,
-        layerCount: resultingLayerCount,
+        layerCount: resultingFieldCount,
         rowCount,
         status: resolveImportStatus(
           headerCount,
-          resultingLayerCount,
+          resultingFieldCount,
         ),
         importedAt: new Date().toISOString(),
       });
+      // Reset preview to first record
+      setPreviewRecordIndex(0);
     } catch (error) {
       setImportSummary(null);
       setDatasetRows([]);
@@ -277,16 +307,16 @@ export default function CreatePage() {
   const handleSaveSubmit = async (name: string, description?: string) => {
     try {
       setSavingStatus("Saving your design...");
-      await saveDesignToFirebase(name, tag, description);
+      await saveDesignToFirebase(name, document, description);
       setSavingStatus("Design saved successfully!");
       setTimeout(() => setSavingStatus(null), 3000);
     } catch (error) {
       console.error("Failed to save design", error);
-      throw error; // Let the modal handle the error
+      throw error;
     }
   };
 
-  const handleExportLabels = async () => {
+  const handleExportDocuments = async () => {
     if (!datasetRows.length) {
       setExportError("Upload a CSV or Excel file before exporting.");
       return;
@@ -294,30 +324,22 @@ export default function CreatePage() {
     setIsExporting(true);
     setExportError(null);
     try {
-      const labelBuffers: ArrayBuffer[] = [];
-      const labelsData: NameTagField[][] = [];
+      const documentsData: MergeField[][] = [];
       for (const row of datasetRows) {
-        const rowFields = mapFieldsToRow(tag.fields, row);
-        labelsData.push(rowFields);
-        const svg = buildLabelSvg(tag, rowFields);
-        const buffer = await svgToPngArrayBuffer(svg);
-        labelBuffers.push(buffer);
+        const rowFields = mapFieldsToRow(document.fields, row);
+        documentsData.push(rowFields);
       }
-      if (!labelBuffers.length) {
+      if (!documentsData.length) {
         throw new Error("No rows were detected in the imported file.");
       }
-      const docBlob = await buildDocumentFromLabels(
-        exportFormat,
-        labelBuffers,
-        tag,
-        labelsData,
-      );
+      const docBlob = await buildDocxWithText(document, documentsData);
       const timestamp = new Date()
         .toISOString()
         .replace(/[:.]/g, "-");
+      const docTypeName = document.documentType;
       triggerDownload(
         docBlob,
-        `name-tags-${timestamp}.${exportFormat}`,
+        `mail-merge-${docTypeName}-${timestamp}.docx`,
       );
     } catch (error) {
       setExportError(
@@ -330,21 +352,29 @@ export default function CreatePage() {
     }
   };
 
+  const handleTogglePreview = useCallback(() => {
+    setIsPreviewMode((prev) => !prev);
+  }, []);
+
+  const handleRecordChange = useCallback((index: number) => {
+    setPreviewRecordIndex(index);
+  }, []);
+
   useEffect(() => {
     setImportSummary((previous) => {
       if (!previous) {
         return previous;
       }
-      if (previous.layerCount === layerCount) {
+      if (previous.layerCount === fieldCount) {
         return previous;
       }
       return {
         ...previous,
-        layerCount,
-        status: resolveImportStatus(previous.headerCount, layerCount),
+        layerCount: fieldCount,
+        status: resolveImportStatus(previous.headerCount, fieldCount),
       };
     });
-  }, [layerCount]);
+  }, [fieldCount]);
 
   useEffect(() => {
     setImportSummary((previous) => {
@@ -362,14 +392,14 @@ export default function CreatePage() {
   }, [datasetRowCount]);
 
   useEffect(() => {
-    if (!hasLoadedStoredTag) {
+    if (!hasLoadedStoredDoc) {
       return;
     }
     const handle = window.setTimeout(() => {
-      persistTag(tag);
+      persistDocument(document);
     }, 250);
     return () => window.clearTimeout(handle);
-  }, [tag, hasLoadedStoredTag]);
+  }, [document, hasLoadedStoredDoc]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -377,10 +407,17 @@ export default function CreatePage() {
     }
   }, [isLoading, isAuthenticated, router]);
 
-  const handleFieldChange = useCallback((id: string, patch: Partial<NameTagField>) => {
+  const handleFieldChange = useCallback((id: string, patch: Partial<MergeField>) => {
     selectField(id);
     updateField(id, patch);
   }, [selectField, updateField]);
+
+  // Ensure preview record index is valid
+  useEffect(() => {
+    if (previewRecordIndex >= datasetRows.length && datasetRows.length > 0) {
+      setPreviewRecordIndex(datasetRows.length - 1);
+    }
+  }, [datasetRows.length, previewRecordIndex]);
 
   if (isLoading) {
     return (
@@ -396,38 +433,49 @@ export default function CreatePage() {
 
   return (
     <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        
+        {/* Preview Navigation Bar */}
+        <PreviewNavigation
+          isPreviewMode={isPreviewMode}
+          onTogglePreview={handleTogglePreview}
+          currentRecord={previewRecordIndex}
+          totalRecords={datasetRows.length}
+          onRecordChange={handleRecordChange}
+          hasData={datasetRows.length > 0}
+        />
         
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,400px)] lg:items-start">
           <div className="order-1 lg:order-0">
-            <NameTagCanvas
-              tag={tag}
+            <DocumentCanvas
+              document={document}
               activeField={activeField}
+              previewMode={isPreviewMode}
+              previewData={currentPreviewData}
               onSelectField={selectField}
               onFieldPositionChange={updateField}
             />
           </div>
 
           <div className="order-2 lg:order-0">
-            <NameTagForm
-              tag={tag}
+            <DocumentForm
+              document={document}
               activeFieldId={activeField}
               onSelectField={selectField}
               onFieldChange={handleFieldChange}
               onAddField={addField}
               onRemoveField={removeField}
               onThemeChange={handleThemeChange}
+              onDocumentTypeChange={handleDocumentTypeChange}
               onReset={handleReset}
               onImportDataset={handleDatasetImport}
               importSummary={importSummary}
               importError={importError}
               isImportingDataset={isImportingDataset}
               canExport={canExport}
-              onExportLabels={handleExportLabels}
-              isExportingLabels={isExporting}
+              onExportDocuments={handleExportDocuments}
+              isExportingDocuments={isExporting}
               exportError={exportError}
-              exportFormat={exportFormat}
-              onExportFormatChange={setExportFormat}
               isAuthenticated={isAuthenticated}
               onSaveDesign={handleSaveDesign}
             />
@@ -451,4 +499,3 @@ export default function CreatePage() {
     </div>
   );
 }
-

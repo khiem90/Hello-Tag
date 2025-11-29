@@ -1,8 +1,10 @@
 import {
-  NameTagBackgroundKey,
-  NameTagData,
-  NameTagField,
-} from "@/types/name-tag";
+  BackgroundKey,
+  DocumentData,
+  DocumentType,
+  MergeField,
+} from "@/types/document";
+import { createFieldsForDocumentType } from "./document-types";
 
 export const accentPalette = [
   "#0ea5e9",
@@ -15,7 +17,7 @@ export const accentPalette = [
 ] as const;
 
 export const backgroundThemes: Record<
-  NameTagBackgroundKey,
+  BackgroundKey,
   {
     label: string;
     gradient: string;
@@ -58,14 +60,14 @@ export const backgroundThemes: Record<
   },
 };
 
-const createLayerId = () =>
+const createFieldId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
-    : `layer-${Date.now().toString(36)}-${Math.random()
+    : `field-${Date.now().toString(36)}-${Math.random()
         .toString(16)
         .slice(2, 8)}`;
 
-type FieldPreset = Omit<NameTagField, "id">;
+type FieldPreset = Omit<MergeField, "id">;
 
 const defaultFieldPresets: FieldPreset[] = [
   {
@@ -74,49 +76,49 @@ const defaultFieldPresets: FieldPreset[] = [
     fontSize: 18,
     color: "#475569",
     x: 50,
-    y: 22,
+    y: 15,
     visible: true,
   },
   {
-    name: "Display name",
-    text: "Jordan Avery",
+    name: "Name",
+    text: "{{Name}}",
     fontSize: 48,
     color: "#0f172a",
     x: 50,
-    y: 45,
+    y: 35,
     visible: true,
   },
   {
-    name: "Pronouns",
-    text: "they/them",
+    name: "Title",
+    text: "{{Title}}",
     fontSize: 20,
     color: "#475569",
     x: 50,
-    y: 58,
+    y: 55,
     visible: true,
   },
   {
-    name: "Role or team",
-    text: "Product Designer / Research Ops",
+    name: "Company",
+    text: "{{Company}}",
     fontSize: 20,
     color: "#475569",
     x: 50,
-    y: 68,
+    y: 70,
     visible: true,
   },
   {
     name: "Tagline",
-    text: "Ask me about prototyping with low/no code tools.",
+    text: "{{Tagline}}",
     fontSize: 18,
     color: "#475569",
     x: 50,
-    y: 80,
+    y: 85,
     visible: true,
   },
 ];
 
-const createFieldFromPreset = (preset: FieldPreset): NameTagField => ({
-  id: createLayerId(),
+const createFieldFromPreset = (preset: FieldPreset): MergeField => ({
+  id: createFieldId(),
   ...preset,
 });
 
@@ -127,18 +129,22 @@ export const clampPercent = (value: number) => {
   return Math.min(100, Math.max(0, value));
 };
 
-export const createDefaultTag = (): NameTagData => ({
-  fields: defaultFieldPresets.map(createFieldFromPreset),
+export const createDefaultDocument = (type: DocumentType = "label"): DocumentData => ({
+  documentType: type,
+  fields: createFieldsForDocumentType(type),
   accent: accentPalette[0],
   background: "sky",
   customBackground: "#f8fafc",
   textAlign: "center",
 });
 
-export const createBlankField = (label?: string): NameTagField => ({
-  id: createLayerId(),
-  name: label ?? "New layer",
-  text: "New text",
+// Legacy alias
+export const createDefaultTag = (): DocumentData => createDefaultDocument("label");
+
+export const createBlankField = (label?: string): MergeField => ({
+  id: createFieldId(),
+  name: label ?? "New Field",
+  text: `{{${label ?? "NewField"}}}`,
   fontSize: 28,
   color: "#0f172a",
   x: 50,
@@ -146,10 +152,14 @@ export const createBlankField = (label?: string): NameTagField => ({
   visible: true,
 });
 
-export const cloneTag = (tag: NameTagData): NameTagData => ({
-  accent: tag.accent,
-  background: tag.background,
-  customBackground: tag.customBackground,
-  textAlign: tag.textAlign,
-  fields: tag.fields.map((field) => ({ ...field })),
+export const cloneDocument = (doc: DocumentData): DocumentData => ({
+  documentType: doc.documentType,
+  accent: doc.accent,
+  background: doc.background,
+  customBackground: doc.customBackground,
+  textAlign: doc.textAlign,
+  fields: doc.fields.map((field) => ({ ...field })),
 });
+
+// Legacy alias
+export const cloneTag = cloneDocument;

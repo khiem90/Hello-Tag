@@ -1,32 +1,32 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Wand2, LayoutTemplate, Share2, Printer, Sparkles, Palette } from "lucide-react";
+import { Wand2, LayoutTemplate, FileSpreadsheet, Download, Sparkles, Mail, FileText, Award, Users } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 sm:py-32 bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-30" />
         
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="max-w-2xl text-center lg:text-left">
               <div className="inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1.5 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm mb-6 transform -rotate-2">
                 <Sparkles className="mr-2 h-4 w-4" />
-                The #1 Fun Label Maker
+                The Fun Mail Merge Tool
               </div>
               <h1 className="font-heading text-5xl font-extrabold tracking-tight text-soft-graphite sm:text-6xl mb-6 leading-tight">
-                Make Labels That <span className="text-bubble-blue underline decoration-4 decoration-wavy decoration-sunshine-yellow underline-offset-4">Pop!</span>
+                Personalize <span className="text-bubble-blue underline decoration-4 decoration-wavy decoration-sunshine-yellow underline-offset-4">Everything!</span>
               </h1>
               <p className="text-lg text-slate-600 mb-8 max-w-lg mx-auto lg:mx-0 font-medium">
-                Create adorable, custom name tags and labels in seconds. Drag, drop, and print your way to organization bliss!
+                Create beautiful personalized letters, certificates, labels, and envelopes in seconds. Import your data, design once, export hundreds.
               </p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">
                 <Link href="/create">
                   <Button size="lg" className="text-lg px-10">
-                    Start Creating
+                    Start Merging
                   </Button>
                 </Link>
                 <Link href="/templates">
@@ -39,22 +39,24 @@ export default function Home() {
             
             {/* Hero Illustration Area */}
             <div className="relative mx-auto w-full max-w-[500px] aspect-square lg:ml-auto">
-               {/* Simulated Label Maker Machine with CSS/SVG shapes */}
                <div className="absolute inset-0 bg-bubble-blue/10 rounded-full blur-3xl transform scale-90" />
                
                <div className="relative z-10 h-full w-full flex items-center justify-center">
-                 {/* Card Stack Animation */}
-                 <div className="relative w-64 h-40 bg-white rounded-2xl border-4 border-black shadow-cartoon transform rotate-6 z-20 flex items-center justify-center">
-                    <span className="font-heading text-3xl text-candy-coral transform -rotate-2">Hello!</span>
-                    <div className="absolute -top-6 -right-6 w-12 h-12 bg-sunshine-yellow rounded-full border-2 border-black flex items-center justify-center shadow-cartoon-sm animate-bounce">
-                      <Sparkles className="w-6 h-6 text-black" />
+                 {/* Mail Stack Animation */}
+                 <div className="relative w-72 h-48 bg-white rounded-2xl border-4 border-black shadow-cartoon transform rotate-3 z-30 flex flex-col items-center justify-center p-4">
+                    <p className="text-sm text-slate-500 mb-1">Dear {"{{FirstName}}"},</p>
+                    <span className="font-heading text-2xl text-bubble-blue">Welcome!</span>
+                    <p className="text-xs text-slate-400 mt-2">Your personalized message...</p>
+                    <div className="absolute -top-5 -right-5 w-10 h-10 bg-mint-gelato rounded-full border-2 border-black flex items-center justify-center shadow-cartoon-sm animate-bounce">
+                      <Mail className="w-5 h-5 text-black" />
                     </div>
                  </div>
-                 <div className="absolute w-64 h-40 bg-mint-gelato rounded-2xl border-4 border-black shadow-cartoon transform -rotate-6 z-10 translate-y-4"></div>
+                 <div className="absolute w-72 h-48 bg-candy-coral/20 rounded-2xl border-4 border-black shadow-cartoon transform -rotate-6 z-20 translate-y-2"></div>
+                 <div className="absolute w-72 h-48 bg-pop-purple/20 rounded-2xl border-4 border-black shadow-cartoon transform rotate-12 z-10 translate-y-4"></div>
                  
                  {/* Decorative Elements */}
-                 <div className="absolute top-10 left-10 text-4xl animate-pulse">✨</div>
-                 <div className="absolute bottom-20 right-10 text-4xl animate-bounce">🎨</div>
+                 <div className="absolute top-10 left-10 text-4xl animate-pulse">✉️</div>
+                 <div className="absolute bottom-20 right-10 text-4xl animate-bounce">📋</div>
                  <div className="absolute top-1/2 left-0 w-20 h-20 bg-pop-purple rounded-full opacity-20 blur-xl"></div>
                </div>
             </div>
@@ -62,15 +64,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Document Types Preview */}
+      <section className="py-16 bg-warm-cloud border-y-2 border-slate-100">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="font-heading text-3xl font-bold text-soft-graphite mb-3">
+              One Tool, Endless Possibilities
+            </h2>
+            <p className="text-slate-600">
+              Create any type of personalized document
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-4">
+            {[
+              { icon: FileText, label: "Letters", color: "bg-bubble-blue" },
+              { icon: Award, label: "Certificates", color: "bg-sunshine-yellow" },
+              { icon: Users, label: "Name Tags", color: "bg-mint-gelato" },
+              { icon: Mail, label: "Envelopes", color: "bg-candy-coral" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-2 rounded-full border-2 border-black bg-white px-5 py-2 shadow-cartoon-sm transition-transform hover:scale-105"
+              >
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${item.color} border-2 border-black`}>
+                  <item.icon className="h-4 w-4 text-black" />
+                </div>
+                <span className="font-heading font-bold text-soft-graphite">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Grid */}
-      <section className="py-20 bg-warm-cloud">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="font-heading text-4xl font-bold text-soft-graphite mb-4">
               Everything You Need
             </h2>
             <p className="text-slate-600 text-lg">
-              Packed with features to make your labeling life easier and way more fun.
+              Packed with features to make mail merge fun and effortless.
             </p>
           </div>
 
@@ -81,9 +116,9 @@ export default function Home() {
                 <div className="h-16 w-16 rounded-2xl bg-bubble-blue border-2 border-black shadow-cartoon-sm flex items-center justify-center mb-4 text-white">
                   <Wand2 className="h-8 w-8" />
                 </div>
-                <h3 className="font-heading text-xl font-bold mb-2">Drag & Drop Magic</h3>
+                <h3 className="font-heading text-xl font-bold mb-2">Visual Editor</h3>
                 <p className="text-slate-500">
-                  Simply drag text fields where you want them. It works just like magic!
+                  Drag and drop merge fields anywhere. See your design come to life instantly.
                 </p>
               </CardContent>
             </Card>
@@ -92,11 +127,11 @@ export default function Home() {
             <Card variant="sticker" hoverEffect className="bg-white">
               <CardContent className="pt-6 flex flex-col items-center text-center">
                 <div className="h-16 w-16 rounded-2xl bg-sunshine-yellow border-2 border-black shadow-cartoon-sm flex items-center justify-center mb-4 text-black">
-                  <Palette className="h-8 w-8" />
+                  <FileSpreadsheet className="h-8 w-8" />
                 </div>
-                <h3 className="font-heading text-xl font-bold mb-2">Custom Themes</h3>
+                <h3 className="font-heading text-xl font-bold mb-2">Easy Data Import</h3>
                 <p className="text-slate-500">
-                  Choose from our playful palettes or mix your own colors to match your style.
+                  Upload CSV or Excel files. Column headers become merge fields automatically.
                 </p>
               </CardContent>
             </Card>
@@ -105,11 +140,11 @@ export default function Home() {
             <Card variant="sticker" hoverEffect className="bg-white">
               <CardContent className="pt-6 flex flex-col items-center text-center">
                 <div className="h-16 w-16 rounded-2xl bg-candy-coral border-2 border-black shadow-cartoon-sm flex items-center justify-center mb-4 text-white">
-                  <Share2 className="h-8 w-8" />
+                  <Download className="h-8 w-8" />
                 </div>
-                <h3 className="font-heading text-xl font-bold mb-2">Bulk Import</h3>
+                <h3 className="font-heading text-xl font-bold mb-2">Instant Export</h3>
                 <p className="text-slate-500">
-                  Upload a CSV or Excel file to generate hundreds of labels instantly.
+                  Generate hundreds of personalized documents in seconds. Download as Word files.
                 </p>
               </CardContent>
             </Card>
@@ -118,7 +153,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-white overflow-hidden">
+      <section className="py-20 bg-warm-cloud overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
            <div className="text-center mb-16">
              <h2 className="font-heading text-4xl font-bold text-soft-graphite">How It Works</h2>
@@ -136,7 +171,7 @@ export default function Home() {
                  </div>
                  <h3 className="font-heading text-2xl font-bold mb-2">Design</h3>
                  <p className="text-slate-500 max-w-xs">
-                   Use our fun editor to customize your label's look and feel.
+                   Choose a document type and add merge fields like {"{{FirstName}}"} or {"{{Company}}"}.
                  </p>
                </div>
 
@@ -147,7 +182,7 @@ export default function Home() {
                  </div>
                  <h3 className="font-heading text-2xl font-bold mb-2">Import</h3>
                  <p className="text-slate-500 max-w-xs">
-                   Add your list of names via CSV or Excel for bulk creation.
+                   Upload your recipient list from CSV or Excel. Preview each merged document.
                  </p>
                </div>
 
@@ -156,9 +191,9 @@ export default function Home() {
                  <div className="w-24 h-24 bg-white rounded-full border-4 border-pop-purple shadow-cartoon mb-6 flex items-center justify-center text-4xl font-heading font-bold text-pop-purple">
                    3
                  </div>
-                 <h3 className="font-heading text-2xl font-bold mb-2">Print</h3>
+                 <h3 className="font-heading text-2xl font-bold mb-2">Export</h3>
                  <p className="text-slate-500 max-w-xs">
-                   Export to Word or PDF and print them out. Done!
+                   Download all your personalized documents in one Word file. Print or share!
                  </p>
                </div>
              </div>
@@ -166,18 +201,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Use Cases */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="font-heading text-4xl font-bold text-soft-graphite mb-4">
+              Perfect For
+            </h2>
+          </div>
+          
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
+            {[
+              { emoji: "🏫", title: "Schools", desc: "Certificates, report cards, parent letters" },
+              { emoji: "💼", title: "Businesses", desc: "Client letters, invoices, thank you notes" },
+              { emoji: "🎉", title: "Events", desc: "Name badges, place cards, invitations" },
+              { emoji: "🏠", title: "Personal", desc: "Holiday cards, wedding stationery, labels" },
+            ].map((item) => (
+              <div 
+                key={item.title}
+                className="rounded-2xl border-2 border-black bg-warm-cloud p-6 text-center shadow-cartoon-sm transition-transform hover:scale-105 hover:-rotate-1"
+              >
+                <div className="text-4xl mb-3">{item.emoji}</div>
+                <h3 className="font-heading text-xl font-bold text-soft-graphite mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-mint-gelato/30">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-heading text-4xl font-bold text-soft-graphite mb-6">
-            Ready to Get Started?
+            Ready to Start Merging?
           </h2>
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of organized (and fun!) people making their labels with Label Buddy.
+            Join thousands of happy users creating personalized documents with MailBuddy.
           </p>
           <Link href="/create">
             <Button size="lg" className="text-lg px-12 py-6 h-auto shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
-              Create My First Label
+              Create My First Merge
             </Button>
           </Link>
         </div>

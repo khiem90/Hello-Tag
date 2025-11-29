@@ -4,9 +4,9 @@ import { SignUpForm } from "@/components/auth/sign-up-form";
 import { Sparkles, ArrowLeft, Star } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Create account | Label Buddy",
+  title: "Create account | MailBuddy",
   description:
-    "Create a Label Buddy account to save your layouts and export labels faster.",
+    "Create a MailBuddy account to save your designs and export documents faster.",
 };
 
 type Props = {
@@ -34,7 +34,7 @@ export default async function SignUpPage({ searchParams }: Props) {
           </h1>
           
           <p className="text-lg text-slate-600 font-medium">
-            Create an account to save your cute designs, build your sticker collection, and speed up your label making process.
+            Create an account to save your mail merge designs, build your document collection, and speed up your workflow.
           </p>
           
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">

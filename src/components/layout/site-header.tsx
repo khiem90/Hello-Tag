@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/layout/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Printer, Tag, LayoutTemplate, User, LogOut } from "lucide-react";
+import { Mail, Merge, LayoutTemplate, User, LogOut } from "lucide-react";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -13,12 +13,12 @@ export function SiteHeader() {
   const isActive = (path: string) => pathname === path;
 
   const navItems = [
-    { href: "/create", label: "Create", icon: Tag },
+    { href: "/create", label: "Merge", icon: Merge },
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
   ];
 
   if (isAuthenticated) {
-    navItems.push({ href: "/my-labels", label: "My Labels", icon: User });
+    navItems.push({ href: "/my-labels", label: "My Documents", icon: User });
   }
 
   return (
@@ -26,10 +26,10 @@ export function SiteHeader() {
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bubble-blue border-2 border-black shadow-cartoon-sm">
-            <Printer className="h-6 w-6 text-white" />
+            <Mail className="h-6 w-6 text-white" />
           </div>
           <span className="font-heading text-2xl font-bold tracking-tight text-soft-graphite">
-            Label<span className="text-bubble-blue">Buddy</span>
+            Mail<span className="text-bubble-blue">Buddy</span>
           </span>
         </Link>
 

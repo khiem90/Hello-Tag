@@ -1,4 +1,4 @@
-import { NameTagData, NameTagField } from "@/types/name-tag";
+import { DocumentData, MergeField, DocumentType } from "@/types/document";
 import {
   collection,
   doc,
@@ -13,12 +13,14 @@ import {
 } from "firebase/firestore";
 import { getFirebaseAuth, getFirebaseFirestore } from "@/lib/firebase-client";
 
-const TAG_STORAGE_KEY = "name-tag-studio:design";
+const STORAGE_KEY = "mail-buddy:document";
+
+const validDocumentTypes: DocumentType[] = ["letter", "certificate", "label", "envelope"];
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const isValidField = (field: unknown): field is NameTagField => {
+const isValidField = (field: unknown): field is MergeField => {
   if (!isObject(field)) {
     return false;
   }
@@ -34,22 +36,29 @@ const isValidField = (field: unknown): field is NameTagField => {
   );
 };
 
-const isValidTag = (tag: unknown): tag is NameTagData => {
-  if (!isObject(tag) || !Array.isArray(tag.fields)) {
+const isValidDocument = (doc: unknown): doc is DocumentData => {
+  if (!isObject(doc) || !Array.isArray(doc.fields)) {
     return false;
   }
   if (
-    typeof tag.accent !== "string" ||
-    typeof tag.background !== "string" ||
-    typeof tag.customBackground !== "string" ||
-    (tag.textAlign !== "left" &&
-      tag.textAlign !== "center" &&
-      tag.textAlign !== "right")
+    typeof doc.accent !== "string" ||
+    typeof doc.background !== "string" ||
+    typeof doc.customBackground !== "string" ||
+    (doc.textAlign !== "left" &&
+      doc.textAlign !== "center" &&
+      doc.textAlign !== "right")
   ) {
     return false;
   }
-  return tag.fields.every(isValidField);
+  // documentType is optional for backward compatibility (defaults to "label")
+  if (doc.documentType !== undefined && !validDocumentTypes.includes(doc.documentType as DocumentType)) {
+    return false;
+  }
+  return doc.fields.every(isValidField);
 };
+
+// Legacy alias for backward compatibility
+const isValidTag = isValidDocument;
 
 const getStorage = (): Storage | null => {
   if (typeof window === "undefined") {
@@ -58,57 +67,70 @@ const getStorage = (): Storage | null => {
   return window.localStorage;
 };
 
-export const loadStoredTag = (): NameTagData | null => {
+export const loadStoredDocument = (): DocumentData | null => {
   try {
     const storage = getStorage();
     if (!storage) {
       return null;
     }
-    const raw = storage.getItem(TAG_STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     if (!raw) {
       return null;
     }
     const parsed = JSON.parse(raw);
-    if (!isValidTag(parsed)) {
+    if (!isValidDocument(parsed)) {
       return null;
+    }
+    // Ensure documentType exists (backward compatibility)
+    if (!parsed.documentType) {
+      parsed.documentType = "label";
     }
     return parsed;
   } catch (error) {
-    console.error("Failed to read stored tag", error);
+    console.error("Failed to read stored document", error);
     return null;
   }
 };
 
-export const persistTag = (tag: NameTagData) => {
+// Legacy alias
+export const loadStoredTag = loadStoredDocument;
+
+export const persistDocument = (doc: DocumentData) => {
   try {
     const storage = getStorage();
     if (!storage) {
       return;
     }
-    storage.setItem(TAG_STORAGE_KEY, JSON.stringify(tag));
+    storage.setItem(STORAGE_KEY, JSON.stringify(doc));
   } catch (error) {
-    console.error("Failed to persist tag", error);
+    console.error("Failed to persist document", error);
   }
 };
 
-export const clearStoredTag = () => {
+// Legacy alias
+export const persistTag = persistDocument;
+
+export const clearStoredDocument = () => {
   try {
     const storage = getStorage();
     if (!storage) {
       return;
     }
-    storage.removeItem(TAG_STORAGE_KEY);
+    storage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error("Failed to clear stored tag", error);
+    console.error("Failed to clear stored document", error);
   }
 };
+
+// Legacy alias
+export const clearStoredTag = clearStoredDocument;
 
 // Firebase storage types
 export type SavedDesign = {
   id: string;
   name: string;
   description?: string;
-  data: NameTagData;
+  data: DocumentData;
   createdAt: Timestamp | Date;
   updatedAt: Timestamp | Date;
 };
@@ -116,7 +138,7 @@ export type SavedDesign = {
 // Firebase storage functions
 export const saveDesignToFirebase = async (
   name: string,
-  data: NameTagData,
+  data: DocumentData,
   description?: string,
 ): Promise<string> => {
   const auth = getFirebaseAuth();
@@ -208,7 +230,7 @@ export const updateDesignInFirebase = async (
   updates: {
     name?: string;
     description?: string;
-    data?: NameTagData;
+    data?: DocumentData;
   },
 ): Promise<void> => {
   const auth = getFirebaseAuth();

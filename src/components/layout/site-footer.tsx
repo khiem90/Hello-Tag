@@ -7,10 +7,10 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row">
         <div className="flex flex-col items-center md:items-start">
           <p className="font-heading text-xl font-bold text-soft-graphite">
-            Label<span className="text-bubble-blue">Buddy</span>
+            Mail<span className="text-bubble-blue">Buddy</span>
           </p>
           <p className="text-sm text-slate-500 mt-1">
-            Make sticking things fun!
+            Make mail merge fun!
           </p>
         </div>
 
@@ -28,7 +28,7 @@ export function SiteFooter() {
             Templates
           </Link>
           <Link href="/create" className="hover:text-bubble-blue">
-            Create
+            Merge
           </Link>
         </div>
       </div>

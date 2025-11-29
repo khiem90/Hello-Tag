@@ -20,8 +20,8 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Label Buddy - Fun Label Maker",
-  description: "Create adorable, custom name tags and labels in seconds!",
+  title: "MailBuddy - Fun Mail Merge Tool",
+  description: "Create personalized letters, certificates, labels, and envelopes in seconds!",
 };
 
 export default function RootLayout({

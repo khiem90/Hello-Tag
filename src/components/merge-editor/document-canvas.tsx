@@ -13,16 +13,19 @@ import {
   type DraggableEvent,
 } from "react-draggable";
 import { backgroundThemes, clampPercent } from "@/lib/name-tag";
-import { NameTagData, NameTagField } from "@/types/name-tag";
+import { getAspectRatio } from "@/lib/document-types";
+import { DocumentData, MergeField, DocumentType } from "@/types/document";
 import { Move } from "lucide-react";
 
-type NameTagCanvasProps = {
-  tag: NameTagData;
+type DocumentCanvasProps = {
+  document: DocumentData;
   activeField: string;
+  previewMode?: boolean;
+  previewData?: Record<string, string>;
   onSelectField: (key: string) => void;
   onFieldPositionChange: (
     key: string,
-    position: Pick<NameTagField, "x" | "y">,
+    position: Pick<MergeField, "x" | "y">,
   ) => void;
 };
 
@@ -32,12 +35,29 @@ const alignToClass = {
   right: "text-right",
 } as const;
 
-export function NameTagCanvas({
-  tag,
+// Replace {{FieldName}} placeholders with actual values
+// Use [^}]+ to match any characters including spaces inside the braces
+const resolveFieldText = (
+  text: string,
+  previewData?: Record<string, string>,
+): string => {
+  if (!previewData) return text;
+  
+  return text.replace(/\{\{([^}]+)\}\}/g, (match, fieldName) => {
+    const trimmedName = fieldName.trim();
+    const value = previewData[trimmedName];
+    return value !== undefined ? value : match;
+  });
+};
+
+export function DocumentCanvas({
+  document,
   activeField,
+  previewMode = false,
+  previewData,
   onSelectField,
   onFieldPositionChange,
-}: NameTagCanvasProps) {
+}: DocumentCanvasProps) {
   const placeholderRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -48,17 +68,19 @@ export function NameTagCanvas({
     height: 0,
     left: 0,
   });
+  
   const theme =
-    tag.background === "custom"
+    document.background === "custom"
       ? null
-      : backgroundThemes[tag.background];
+      : backgroundThemes[document.background];
 
-  const visibleFields = tag.fields.filter((field) => field.visible);
+  const visibleFields = document.fields.filter((field) => field.visible);
+  const aspectRatio = getAspectRatio(document.documentType);
   
   const cardBackgroundStyle =
-    tag.background === "custom"
+    document.background === "custom"
       ? {
-          backgroundColor: tag.customBackground,
+          backgroundColor: document.customBackground,
           backgroundImage: "none",
         }
       : {
@@ -132,6 +154,13 @@ export function NameTagCanvas({
     setDraggingId(null);
   }, []);
 
+  const documentTypeLabel = {
+    letter: "Letter",
+    certificate: "Certificate",
+    label: "Label",
+    envelope: "Envelope",
+  }[document.documentType];
+
   return (
     <>
       <div
@@ -149,18 +178,25 @@ export function NameTagCanvas({
         <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="font-heading text-lg font-bold uppercase tracking-wide text-bubble-blue">
-              Live Canvas
+              {previewMode ? "Preview Mode" : "Template Editor"}
             </p>
             <h2 className="font-heading text-3xl font-bold tracking-tight text-soft-graphite">
-              Label Preview
+              {documentTypeLabel} Preview
             </h2>
             <p className="text-sm font-medium text-slate-500">
-              Drag layers to reposition
+              {previewMode ? "Viewing merged data" : "Drag fields to reposition"}
             </p>
           </div>
-          <span className="animate-bounce-hover inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm">
-            {visibleFields.length} item{visibleFields.length === 1 ? "" : "s"}
-          </span>
+          <div className="flex items-center gap-2">
+            {previewMode && (
+              <span className="inline-flex items-center rounded-full border-2 border-mint-gelato bg-mint-gelato/20 px-3 py-1 font-heading text-xs font-bold text-emerald-700">
+                LIVE DATA
+              </span>
+            )}
+            <span className="animate-bounce-hover inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm">
+              {visibleFields.length} field{visibleFields.length === 1 ? "" : "s"}
+            </span>
+          </div>
         </header>
 
         <div className="flex items-center justify-center bg-slate-100 rounded-3xl p-4 border-2 border-slate-200 border-dashed">
@@ -169,30 +205,32 @@ export function NameTagCanvas({
             className="relative w-full max-w-md overflow-hidden rounded-xl border-2 border-black shadow-lg"
             style={{
               ...cardBackgroundStyle,
-              aspectRatio: "3.25 / 3", // Match Word label cell ratio
+              aspectRatio: aspectRatio,
             }}
           >
-            {/* Content area with padding to match Word cell margins */}
+            {/* Content area with padding */}
             <div className="absolute inset-0 p-4">
               {visibleFields.map((field) => (
                 <FloatingField
                   key={field.id}
                   field={field}
-                  alignClass={alignToClass[tag.textAlign]}
+                  displayText={previewMode ? resolveFieldText(field.text, previewData) : field.text}
+                  alignClass={alignToClass[document.textAlign]}
                   isActive={activeField === field.id}
-                  isInteractionDisabled={draggingId !== null && draggingId !== field.id}
+                  isInteractionDisabled={previewMode || (draggingId !== null && draggingId !== field.id)}
                   onSelect={onSelectField}
                   onDrag={onFieldPositionChange}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   cardRef={cardRef}
+                  previewMode={previewMode}
                 />
               ))}
               
               {/* Empty state */}
               {visibleFields.length === 0 && (
                 <div className="flex h-full items-center justify-center text-slate-400">
-                  <p className="text-sm font-medium">No visible layers</p>
+                  <p className="text-sm font-medium">No visible fields</p>
                 </div>
               )}
             </div>
@@ -201,7 +239,9 @@ export function NameTagCanvas({
         
         {/* Info about the preview */}
         <p className="mt-4 text-center text-xs font-medium text-slate-400">
-          Preview matches Word document export format
+          {previewMode 
+            ? "Showing how merged document will appear" 
+            : "Preview matches Word document export format"}
         </p>
       </section>
     </>
@@ -209,22 +249,26 @@ export function NameTagCanvas({
 }
 
 type FloatingFieldProps = {
-  field: NameTagField;
+  field: MergeField;
+  displayText: string;
   alignClass: string;
   isActive: boolean;
   isInteractionDisabled?: boolean;
+  previewMode?: boolean;
   cardRef: React.RefObject<HTMLDivElement | null>;
   onSelect: (id: string) => void;
-  onDrag: (id: string, position: Pick<NameTagField, "x" | "y">) => void;
+  onDrag: (id: string, position: Pick<MergeField, "x" | "y">) => void;
   onDragStart?: (id: string) => void;
   onDragEnd?: () => void;
 };
 
 const FloatingField = memo(function FloatingField({
   field,
+  displayText,
   alignClass,
   isActive,
   isInteractionDisabled,
+  previewMode,
   cardRef,
   onSelect,
   onDrag,
@@ -262,7 +306,7 @@ const FloatingField = memo(function FloatingField({
   );
 
   const handleUpdatePosition = useCallback(
-    (newPos: Pick<NameTagField, "x" | "y">) => {
+    (newPos: Pick<MergeField, "x" | "y">) => {
       onDrag(fieldRef.current.id, newPos);
     },
     [onDrag],
@@ -296,6 +340,7 @@ const FloatingField = memo(function FloatingField({
   );
 
   const handleStart = useCallback(() => {
+    if (previewMode) return;
     setIsDragging(true);
     dragPositionRef.current = { x: field.x, y: field.y };
     setLocalPos({ x: field.x, y: field.y });
@@ -303,7 +348,7 @@ const FloatingField = memo(function FloatingField({
     onSelect(id);
     onDragStart?.(id);
     document.body.classList.add("cursor-grabbing");
-  }, [onSelect, onDragStart, field.x, field.y]);
+  }, [onSelect, onDragStart, field.x, field.y, previewMode]);
 
   const handleStop = useCallback(() => {
     setIsDragging(false);
@@ -312,6 +357,7 @@ const FloatingField = memo(function FloatingField({
   }, [onDragEnd]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (previewMode) return;
     const steps = event.shiftKey ? 0.5 : 2;
     const map: Record<string, [number, number]> = {
       ArrowUp: [0, -steps],
@@ -336,18 +382,22 @@ const FloatingField = memo(function FloatingField({
   const currentX = isDragging ? localPos.x : field.x;
   const currentY = isDragging ? localPos.y : field.y;
 
+  // Check if this is a placeholder field (contains {{...}})
+  const isPlaceholder = /\{\{.*\}\}/.test(displayText);
+
   return (
     <DraggableCore
       nodeRef={nodeRef}
       onStart={handleStart}
       onDrag={handleDrag}
       onStop={handleStop}
+      disabled={previewMode}
     >
       <div
         ref={nodeRef}
         role="button"
-        tabIndex={0}
-        onClick={() => onSelect(field.id)}
+        tabIndex={previewMode ? -1 : 0}
+        onClick={() => !previewMode && onSelect(field.id)}
         onKeyDown={handleKeyDown}
         style={{
           position: "absolute",
@@ -355,33 +405,38 @@ const FloatingField = memo(function FloatingField({
           top: `${currentY}%`,
           transform: "translate(-50%, -50%)",
           color: field.color,
-          fontSize: `${Math.min(field.fontSize, 48)}px`,
+          fontSize: `${field.fontSize}px`,
           lineHeight: 1.2,
         }}
         className={`group max-w-[90%] whitespace-pre-wrap px-2 py-1 font-semibold tracking-tight outline-none rounded-lg ${
           isDragging
             ? "z-50 cursor-grabbing bg-white/50 backdrop-blur-sm scale-[1.02]"
             : isInteractionDisabled
-              ? "pointer-events-none opacity-50"
+              ? "pointer-events-none"
               : isActive
                 ? "bg-bubble-blue/10 ring-2 ring-bubble-blue/30"
-                : "cursor-grab hover:bg-white/30"
+                : previewMode
+                  ? ""
+                  : "cursor-grab hover:bg-white/30"
         } ${alignClass} ${
           isDragging ? "transition-none" : "transition-all duration-200"
-        }`}
+        } ${isPlaceholder && !previewMode ? "border border-dashed border-slate-300 bg-slate-50/50" : ""}`}
       >
-        {field.text || "Empty text"}
+        {displayText || "Empty field"}
         
-        {/* Drag Handle / Indicator */}
-        <div
-          className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border-2 border-black bg-bubble-blue px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-white shadow-sm transition-opacity duration-200 ${
-            isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          }`}
-        >
-          <Move className="w-3 h-3" />
-          <span>Move</span>
-        </div>
+        {/* Drag Handle / Indicator - only show when not in preview mode */}
+        {!previewMode && (
+          <div
+            className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border-2 border-black bg-bubble-blue px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-white shadow-sm transition-opacity duration-200 ${
+              isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            }`}
+          >
+            <Move className="w-3 h-3" />
+            <span>Move</span>
+          </div>
+        )}
       </div>
     </DraggableCore>
   );
 });
+

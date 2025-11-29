@@ -4,8 +4,9 @@ import {
   accentPalette,
   backgroundThemes,
 } from "@/lib/name-tag";
+import { documentTypeList, getDocumentTypeConfig } from "@/lib/document-types";
 import type { ImportSummary } from "@/types/import";
-import { NameTagData, NameTagField } from "@/types/name-tag";
+import { DocumentData, MergeField, DocumentType } from "@/types/document";
 import { ChangeEvent, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,38 +21,43 @@ import {
   Eye, 
   EyeOff, 
   Trash2, 
-  FileText 
+  FileText,
+  FileSpreadsheet,
+  Mail,
+  Award,
+  Tag
 } from "lucide-react";
 
-type NameTagFormProps = {
-  tag: NameTagData;
+type DocumentFormProps = {
+  document: DocumentData;
   activeFieldId: string;
   onSelectField: (id: string) => void;
   onFieldChange: (
     id: string,
-    update: Partial<NameTagField>,
+    update: Partial<MergeField>,
   ) => void;
   onAddField: () => void;
   onRemoveField: (id: string) => void;
   onThemeChange: (
     update: Partial<
-      Pick<NameTagData, "accent" | "background" | "textAlign" | "customBackground">
+      Pick<DocumentData, "accent" | "background" | "textAlign" | "customBackground">
     >,
   ) => void;
+  onDocumentTypeChange: (type: DocumentType) => void;
   onReset: () => void;
   onImportDataset: (file: File) => void;
   importSummary: ImportSummary | null;
   importError: string | null;
   isImportingDataset: boolean;
   canExport: boolean;
-  onExportLabels: () => void;
-  isExportingLabels: boolean;
+  onExportDocuments: () => void;
+  isExportingDocuments: boolean;
   exportError: string | null;
   isAuthenticated?: boolean;
   onSaveDesign?: () => void;
 };
 
-const alignOptions: Array<NameTagData["textAlign"]> = [
+const alignOptions: Array<DocumentData["textAlign"]> = [
   "left",
   "center",
   "right",
@@ -71,12 +77,12 @@ const importStatusTokens: Record<
     text: "text-emerald-800",
   },
   "needs-layers": {
-    label: "Needs Layers",
+    label: "Needs Fields",
     pill: "border-2 border-amber-700 bg-amber-100 text-amber-800",
     text: "text-amber-800",
   },
   "unused-layers": {
-    label: "Extra Layers",
+    label: "Extra Fields",
     pill: "border-2 border-sky-700 bg-sky-100 text-sky-800",
     text: "text-sky-800",
   },
@@ -85,41 +91,49 @@ const importStatusTokens: Record<
 const describeImportSummary = (summary: ImportSummary) => {
   const { headerCount, layerCount } = summary;
   if (headerCount === layerCount) {
-    return "Each header in your file can map to a layer.";
+    return "Each column in your data maps to a merge field.";
   }
   if (headerCount > layerCount) {
     const difference = headerCount - layerCount;
-    return `The file has ${headerCount} headers but only ${layerCount} layers. Add ${difference} more layer${difference > 1 ? "s" : ""} or hide unused headers.`;
+    return `The file has ${headerCount} columns but only ${layerCount} fields. Add ${difference} more field${difference > 1 ? "s" : ""} to use all data.`;
   }
   const difference = layerCount - headerCount;
-  return `Your tag exposes ${layerCount} layers but the file only contains ${headerCount} headers. Hide or remove ${difference} layer${difference > 1 ? "s" : ""}.`;
+  return `Your document has ${layerCount} fields but the file only contains ${headerCount} columns. Remove ${difference} field${difference > 1 ? "s" : ""} or add more data columns.`;
 };
 
-export function NameTagForm({
-  tag,
+const documentTypeIcons: Record<DocumentType, React.ReactNode> = {
+  letter: <FileText className="h-4 w-4" />,
+  certificate: <Award className="h-4 w-4" />,
+  label: <Tag className="h-4 w-4" />,
+  envelope: <Mail className="h-4 w-4" />,
+};
+
+export function DocumentForm({
+  document,
   activeFieldId,
   onSelectField,
   onFieldChange,
   onAddField,
   onRemoveField,
   onThemeChange,
+  onDocumentTypeChange,
   onReset,
   onImportDataset,
   importSummary,
   importError,
   isImportingDataset,
   canExport,
-  onExportLabels,
-  isExportingLabels,
+  onExportDocuments,
+  isExportingDocuments,
   exportError,
   isAuthenticated = false,
   onSaveDesign,
-}: NameTagFormProps) {
-  const activeLayer =
-    tag.fields.find((field) => field.id === activeFieldId) ??
-    tag.fields[0] ??
+}: DocumentFormProps) {
+  const activeField =
+    document.fields.find((field) => field.id === activeFieldId) ??
+    document.fields[0] ??
     null;
-  const canRemove = tag.fields.length > 1 && activeLayer;
+  const canRemove = document.fields.length > 1 && activeField;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleDatasetButton = () => {
@@ -161,38 +175,38 @@ export function NameTagForm({
     });
   }, [importSummary]);
 
-  const exportButtonLabel = isExportingLabels
+  const exportButtonLabel = isExportingDocuments
     ? "Exporting..."
     : importSummary?.rowCount
-      ? `Export ${importSummary.rowCount} labels`
-      : "Export labels";
-  const exportDisabled = !canExport || isExportingLabels;
+      ? `Export ${importSummary.rowCount} documents`
+      : "Export documents";
+  const exportDisabled = !canExport || isExportingDocuments;
 
-  const handleLayerNameChange = (
+  const handleFieldNameChange = (
     event: ChangeEvent<HTMLInputElement>,
   ) => {
-    if (!activeLayer) {
+    if (!activeField) {
       return;
     }
-    onFieldChange(activeLayer.id, { name: event.target.value });
+    onFieldChange(activeField.id, { name: event.target.value });
   };
 
   const handleTextChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    if (!activeLayer) {
+    if (!activeField) {
       return;
     }
-    onFieldChange(activeLayer.id, { text: event.target.value });
+    onFieldChange(activeField.id, { text: event.target.value });
   };
 
   const handleFontSizeChange = (
     event: ChangeEvent<HTMLInputElement>,
   ) => {
-    if (!activeLayer) {
+    if (!activeField) {
       return;
     }
-    onFieldChange(activeLayer.id, {
+    onFieldChange(activeField.id, {
       fontSize: Number(event.target.value),
     });
   };
@@ -200,35 +214,76 @@ export function NameTagForm({
   const handleColorChange = (
     event: ChangeEvent<HTMLInputElement>,
   ) => {
-    if (!activeLayer) {
+    if (!activeField) {
       return;
     }
-    onFieldChange(activeLayer.id, { color: event.target.value });
+    onFieldChange(activeField.id, { color: event.target.value });
   };
 
   const handleCoordinateChange = (
     axis: "x" | "y",
     event: ChangeEvent<HTMLInputElement>,
   ) => {
-    if (!activeLayer) {
+    if (!activeField) {
       return;
     }
-    onFieldChange(activeLayer.id, {
+    onFieldChange(activeField.id, {
       [axis]: Number(event.target.value),
     });
   };
 
   const activeCoordinateValue = (axis: "x" | "y"): string => {
-    if (!activeLayer) {
+    if (!activeField) {
       return "0";
     }
-    return Number.isFinite(activeLayer[axis])
-      ? activeLayer[axis].toFixed(0)
+    return Number.isFinite(activeField[axis])
+      ? activeField[axis].toFixed(0)
       : "0";
   };
 
   return (
     <aside className="flex flex-col gap-6">
+      {/* Document Type Selector */}
+      <Card variant="sticker" className="bg-bubble-blue/10">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-bubble-blue text-white">
+              <FileText className="h-4 w-4" />
+            </div>
+            <CardTitle className="text-lg">Document Type</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2">
+            {documentTypeList.map((docType) => {
+              const isActive = document.documentType === docType.id;
+              return (
+                <button
+                  key={docType.id}
+                  type="button"
+                  onClick={() => onDocumentTypeChange(docType.id)}
+                  className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${
+                    isActive
+                      ? "border-black bg-bubble-blue text-white shadow-cartoon-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-bubble-blue hover:text-bubble-blue"
+                  }`}
+                >
+                  <span className={isActive ? "text-white" : "text-slate-400"}>
+                    {documentTypeIcons[docType.id]}
+                  </span>
+                  <div>
+                    <p className="font-heading text-sm font-bold">{docType.label}</p>
+                    <p className={`text-xs ${isActive ? "text-white/80" : "text-slate-400"}`}>
+                      {docType.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Actions Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border-2 border-black bg-white p-4 shadow-cartoon-sm">
         <div className="flex flex-col">
@@ -236,13 +291,13 @@ export function NameTagForm({
             Toolkit
           </p>
           <h2 className="font-heading text-xl font-bold text-soft-graphite">
-            Design Controls
+            Merge Controls
           </h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={onAddField} size="sm" variant="secondary" className="gap-1">
             <Plus className="h-4 w-4" />
-            Add Layer
+            Add Field
           </Button>
           <Button onClick={onReset} size="sm" variant="outline" className="gap-1">
             <RotateCcw className="h-4 w-4" />
@@ -257,21 +312,21 @@ export function NameTagForm({
         </div>
       </div>
 
-      {/* Roster Import Card */}
+      {/* Data Source Import Card */}
       <Card variant="sticker" className="bg-mint-gelato/10">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
              <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-mint-gelato text-black">
-                <FileText className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4" />
               </div>
-              <CardTitle className="text-lg">Roster Import</CardTitle>
+              <CardTitle className="text-lg">Data Source</CardTitle>
              </div>
           </div>
         </CardHeader>
         <CardContent>
            <p className="mb-4 text-sm font-medium text-slate-600">
-            Upload CSV or Excel files to create labels in bulk.
+            Upload CSV or Excel files with your recipient data.
            </p>
            
            <div className="flex flex-col gap-3">
@@ -295,7 +350,7 @@ export function NameTagForm({
                 </Button>
 
                 <Button
-                  onClick={onExportLabels}
+                  onClick={onExportDocuments}
                   disabled={exportDisabled}
                   variant="primary"
                   size="sm"
@@ -337,15 +392,15 @@ export function NameTagForm({
                  
                  <div className="grid grid-cols-3 gap-2 text-center">
                    <div className="rounded-xl bg-slate-50 p-2">
-                     <div className="text-xs font-bold uppercase text-slate-400">Headers</div>
+                     <div className="text-xs font-bold uppercase text-slate-400">Columns</div>
                      <div className="font-heading text-xl font-bold text-soft-graphite">{importSummary.headerCount}</div>
                    </div>
                    <div className="rounded-xl bg-slate-50 p-2">
-                     <div className="text-xs font-bold uppercase text-slate-400">Layers</div>
+                     <div className="text-xs font-bold uppercase text-slate-400">Fields</div>
                      <div className="font-heading text-xl font-bold text-soft-graphite">{importSummary.layerCount}</div>
                    </div>
                    <div className="rounded-xl bg-slate-50 p-2">
-                     <div className="text-xs font-bold uppercase text-slate-400">Rows</div>
+                     <div className="text-xs font-bold uppercase text-slate-400">Records</div>
                      <div className="font-heading text-xl font-bold text-soft-graphite">{importSummary.rowCount}</div>
                    </div>
                  </div>
@@ -355,14 +410,15 @@ export function NameTagForm({
         </CardContent>
       </Card>
 
-      {/* Layers List */}
+      {/* Merge Fields List */}
       <div className="space-y-2">
         <p className="px-1 font-heading text-xs font-bold uppercase tracking-widest text-slate-400">
-          Layers
+          Merge Fields
         </p>
         <div className="flex flex-col gap-2">
-          {tag.fields.map((field, index) => {
+          {document.fields.map((field, index) => {
             const isActive = field.id === activeFieldId;
+            const hasPlaceholder = /\{\{.*\}\}/.test(field.text);
             return (
               <button
                 key={field.id}
@@ -376,16 +432,25 @@ export function NameTagForm({
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-heading font-bold">
-                    {field.name || `Layer ${index + 1}`}
+                    {field.name || `Field ${index + 1}`}
                   </p>
-                  {field.visible ? (
-                     <Eye className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-300 group-hover:text-bubble-blue"}`} />
-                  ) : (
-                     <EyeOff className={`h-4 w-4 ${isActive ? "text-white/70" : "text-slate-300"}`} />
-                  )}
+                  <div className="flex items-center gap-2">
+                    {hasPlaceholder && (
+                      <span className={`rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase ${
+                        isActive ? "bg-white/20 text-white" : "bg-pop-purple/10 text-pop-purple"
+                      }`}>
+                        Merge
+                      </span>
+                    )}
+                    {field.visible ? (
+                       <Eye className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-300 group-hover:text-bubble-blue"}`} />
+                    ) : (
+                       <EyeOff className={`h-4 w-4 ${isActive ? "text-white/70" : "text-slate-300"}`} />
+                    )}
+                  </div>
                 </div>
                 <p className={`mt-1 truncate text-xs font-medium ${isActive ? "text-white/90" : "text-slate-400"}`}>
-                  {field.text.trim() || "Empty text"}
+                  {field.text.trim() || "Empty field"}
                 </p>
               </button>
             );
@@ -393,60 +458,63 @@ export function NameTagForm({
         </div>
       </div>
 
-      {/* Active Layer Properties */}
-      {activeLayer ? (
+      {/* Active Field Properties */}
+      {activeField ? (
         <Card variant="sticker" className="overflow-visible">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-pop-purple text-white">
                 <Type className="h-4 w-4" />
               </div>
-              <CardTitle className="text-lg">Edit Layer</CardTitle>
+              <CardTitle className="text-lg">Edit Field</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Name & Visibility */}
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Layer Name</label>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Field Name</label>
                 <input
                   className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-bold text-soft-graphite focus:border-pop-purple focus:outline-none focus:ring-2 focus:ring-pop-purple/20"
-                  value={activeLayer.name}
-                  onChange={handleLayerNameChange}
+                  value={activeField.name}
+                  onChange={handleFieldNameChange}
                 />
               </div>
               <div className="flex flex-col items-center pt-5">
                  <button
                     type="button"
-                    onClick={() => onFieldChange(activeLayer.id, { visible: !activeLayer.visible })}
+                    onClick={() => onFieldChange(activeField.id, { visible: !activeField.visible })}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl border-2 transition-all ${
-                      activeLayer.visible 
+                      activeField.visible 
                         ? "border-black bg-mint-gelato text-black shadow-cartoon-sm" 
                         : "border-slate-200 bg-slate-50 text-slate-300"
                     }`}
                  >
-                   {activeLayer.visible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                   {activeField.visible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                  </button>
               </div>
             </div>
 
-            {/* Text Input */}
+            {/* Text Input with placeholder hint */}
             <div>
-               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Text Content</label>
-               {activeLayer.name.toLowerCase().includes("tagline") || activeLayer.text.length > 50 ? (
+               <label className="mb-1 flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-400">
+                 <span>Content</span>
+                 <span className="font-normal normal-case text-pop-purple">Use {"{{FieldName}}"} for merge</span>
+               </label>
+               {activeField.name.toLowerCase().includes("body") || activeField.text.length > 50 ? (
                  <textarea
                    rows={3}
                    className="w-full resize-none rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-medium text-soft-graphite focus:border-pop-purple focus:outline-none focus:ring-2 focus:ring-pop-purple/20"
-                   value={activeLayer.text}
+                   value={activeField.text}
                    onChange={handleTextChange}
-                   placeholder="Type something fun..."
+                   placeholder="{{FirstName}} or static text..."
                  />
                ) : (
                  <input
                    className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-medium text-soft-graphite focus:border-pop-purple focus:outline-none focus:ring-2 focus:ring-pop-purple/20"
-                   value={activeLayer.text}
+                   value={activeField.text}
                    onChange={handleTextChange}
-                   placeholder="Type something fun..."
+                   placeholder="{{FirstName}} or static text..."
                  />
                )}
             </div>
@@ -455,28 +523,37 @@ export function NameTagForm({
             <div className="grid grid-cols-2 gap-4">
                <div>
                  <label className="mb-1 flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-400">
-                   <span>Size</span>
-                   <span>{activeLayer.fontSize}px</span>
+                   <span>Size (px)</span>
                  </label>
-                 <input
-                   type="range"
-                   min={14}
-                   max={96}
-                   value={activeLayer.fontSize}
-                   onChange={handleFontSizeChange}
-                   className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-pop-purple"
-                 />
+                 <div className="flex items-center gap-2">
+                   <input
+                     type="range"
+                     min={8}
+                     max={120}
+                     value={activeField.fontSize}
+                     onChange={handleFontSizeChange}
+                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-pop-purple"
+                   />
+                   <input
+                     type="number"
+                     min={8}
+                     max={200}
+                     value={activeField.fontSize}
+                     onChange={handleFontSizeChange}
+                     className="w-16 rounded-lg border-2 border-slate-200 bg-white py-1 px-2 text-center text-sm font-bold text-soft-graphite focus:border-pop-purple focus:outline-none"
+                   />
+                 </div>
                </div>
                <div>
                  <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Color</label>
                  <div className="flex items-center gap-2">
                    <input
                      type="color"
-                     value={activeLayer.color}
+                     value={activeField.color}
                      onChange={handleColorChange}
                      className="h-9 w-9 cursor-pointer overflow-hidden rounded-full border-2 border-black p-0 shadow-sm"
                    />
-                   <span className="text-xs font-mono text-slate-500">{activeLayer.color}</span>
+                   <span className="text-xs font-mono text-slate-500">{activeField.color}</span>
                  </div>
                </div>
             </div>
@@ -533,19 +610,19 @@ export function NameTagForm({
 
             <Button 
               variant="danger" 
-              onClick={() => onRemoveField(activeLayer.id)}
+              onClick={() => onRemoveField(activeField.id)}
               disabled={!canRemove}
               className="w-full gap-2"
             >
               <Trash2 className="h-4 w-4" />
-              Delete Layer
+              Delete Field
             </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="flex h-40 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center">
           <p className="text-sm font-medium text-slate-500">
-            No layer selected. Click a layer above to edit!
+            No field selected. Click a field above to edit!
           </p>
         </div>
       )}
@@ -566,7 +643,7 @@ export function NameTagForm({
              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Accent Color</p>
              <div className="flex flex-wrap gap-2">
                {accentPalette.map((color) => {
-                 const isActive = tag.accent === color;
+                 const isActive = document.accent === color;
                  return (
                    <button
                      key={color}
@@ -584,7 +661,7 @@ export function NameTagForm({
                  <span className="absolute inset-0 flex items-center justify-center text-slate-400">+</span>
                  <input
                    type="color"
-                   value={tag.accent}
+                   value={document.accent}
                    onChange={(event) => onThemeChange({ accent: event.target.value })}
                    className="absolute -inset-full h-[200%] w-[200%] cursor-pointer opacity-0"
                  />
@@ -598,7 +675,7 @@ export function NameTagForm({
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(backgroundThemes).map(([key, theme]) => {
                    const typedKey = key as keyof typeof backgroundThemes;
-                   const isActive = tag.background === typedKey;
+                   const isActive = document.background === typedKey;
                    return (
                      <button
                        key={key}
@@ -616,9 +693,9 @@ export function NameTagForm({
                 })}
                 <button
                    type="button"
-                   onClick={() => onThemeChange({ background: "custom", customBackground: tag.customBackground || "#ffffff" })}
+                   onClick={() => onThemeChange({ background: "custom", customBackground: document.customBackground || "#ffffff" })}
                    className={`rounded-xl border-2 px-3 py-2 text-xs font-bold transition-all ${
-                     tag.background === "custom"
+                     document.background === "custom"
                        ? "border-black bg-slate-800 text-white shadow-cartoon-sm"
                        : "border-slate-200 text-slate-600 hover:border-slate-400"
                    }`}
@@ -626,11 +703,11 @@ export function NameTagForm({
                   Custom
                 </button>
               </div>
-              {tag.background === "custom" && (
+              {document.background === "custom" && (
                 <div className="mt-2 flex items-center gap-2 rounded-xl border-2 border-slate-100 p-2">
                    <input
                      type="color"
-                     value={tag.customBackground || "#ffffff"}
+                     value={document.customBackground || "#ffffff"}
                      onChange={(e) => onThemeChange({ background: "custom", customBackground: e.target.value })}
                      className="h-8 w-8 rounded-lg border border-slate-200 p-0.5"
                    />
@@ -644,7 +721,7 @@ export function NameTagForm({
              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Alignment</p>
              <div className="flex rounded-xl border-2 border-slate-200 p-1">
                {alignOptions.map((align) => {
-                 const isActive = tag.textAlign === align;
+                 const isActive = document.textAlign === align;
                  return (
                    <button
                      key={align}
@@ -667,3 +744,4 @@ export function NameTagForm({
     </aside>
   );
 }
+

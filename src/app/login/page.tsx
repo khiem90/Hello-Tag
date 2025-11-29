@@ -4,9 +4,9 @@ import { LoginForm } from "@/components/auth/login-form";
 import { Sparkles, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sign in | Label Buddy",
+  title: "Sign in | MailBuddy",
   description:
-    "Access your saved label layouts or start a new project after signing in.",
+    "Access your saved mail merge designs or start a new project after signing in.",
 };
 
 type Props = {
@@ -34,7 +34,7 @@ export default async function LoginPage({ searchParams }: Props) {
           </h1>
           
           <p className="text-lg text-slate-600 font-medium">
-            Sign in to access your sticker wall, create new masterpieces, and export your labels in a snap.
+            Sign in to access your saved designs, create personalized documents, and export them in a snap.
           </p>
           
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
