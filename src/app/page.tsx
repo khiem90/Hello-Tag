@@ -73,21 +73,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Document Types */}
-      <section className="py-16 border-y border-ink/5 bg-stone/30">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
-            {["Letters", "Certificates", "Name Tags", "Envelopes"].map((type) => (
-              <span 
-                key={type}
-                className="text-sm text-ink-light font-medium tracking-wide"
-              >
-                {type}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Divider */}
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="h-px bg-linear-to-r from-transparent via-ink/10 to-transparent" />
+      </div>
 
       {/* Features */}
       <section className="py-24 sm:py-32">
@@ -158,38 +147,32 @@ export default function Home() {
           </div>
            
           <div className="grid gap-16 lg:grid-cols-3 lg:gap-8">
-            {[
-              {
-                step: "01",
-                title: "Design",
-                desc: "Choose a document type and add merge fields like {{FirstName}} or {{Company}}."
-              },
-              {
-                step: "02", 
-                title: "Import",
-                desc: "Upload your recipient list from CSV or Excel. Preview each merged document."
-              },
-              {
-                step: "03",
-                title: "Export",
-                desc: "Download all your personalized documents in one Word file. Print or share."
-              }
-            ].map((item, index) => (
-              <div key={item.step} className="relative">
-                {index < 2 && (
-                  <div className="hidden lg:block absolute top-6 left-full w-full h-px bg-ink/10" />
-                )}
-                <span className="block font-heading text-sm text-terracotta mb-4">
-                  {item.step}
-                </span>
-                <h3 className="font-heading text-2xl tracking-tight text-ink mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-ink-light leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
+            {/* Step 1: Design */}
+            <div>
+              <span className="block font-heading text-sm text-terracotta mb-4">01</span>
+              <h3 className="font-heading text-2xl tracking-tight text-ink mb-3">Design</h3>
+              <p className="text-ink-light leading-relaxed">
+                Choose a document type and add merge fields like {"{{FirstName}}"} or {"{{Company}}"}.
+              </p>
+            </div>
+            
+            {/* Step 2: Import */}
+            <div>
+              <span className="block font-heading text-sm text-terracotta mb-4">02</span>
+              <h3 className="font-heading text-2xl tracking-tight text-ink mb-3">Import</h3>
+              <p className="text-ink-light leading-relaxed">
+                Upload your recipient list from CSV or Excel. Preview each merged document.
+              </p>
+            </div>
+            
+            {/* Step 3: Export */}
+            <div>
+              <span className="block font-heading text-sm text-terracotta mb-4">03</span>
+              <h3 className="font-heading text-2xl tracking-tight text-ink mb-3">Export</h3>
+              <p className="text-ink-light leading-relaxed">
+                Download all your personalized documents in one Word file. Print or share.
+              </p>
+            </div>
           </div>
         </div>
       </section>
