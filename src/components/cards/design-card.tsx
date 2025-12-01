@@ -2,15 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit3, Calendar } from "lucide-react";
-import { DocumentData, DocumentType } from "@/types/document";
-
-type SavedDesign = {
-  id: string;
-  name: string;
-  description?: string;
-  data: DocumentData;
-  updatedAt: Date | { toDate: () => Date };
-};
+import { DocumentType } from "@/types/document";
+import { type SavedDesign } from "@/lib/tag-storage";
 
 type DesignCardProps = {
   design: SavedDesign;
