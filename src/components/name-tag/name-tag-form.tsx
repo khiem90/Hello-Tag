@@ -368,7 +368,7 @@ export function NameTagForm({
                 key={field.id}
                 type="button"
                 onClick={() => onSelectField(field.id)}
-                className={`group relative w-full overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-200 ${
+                className={`group relative w-full overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-200 cursor-pointer ${
                   isActive
                     ? "border-terracotta bg-terracotta/10 text-ink"
                     : "border-ink/10 bg-white text-ink-light hover:border-ink/20 hover:text-ink"
@@ -419,7 +419,7 @@ export function NameTagForm({
                  <button
                     type="button"
                     onClick={() => onFieldChange(activeLayer.id, { visible: !activeLayer.visible })}
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-all ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-all cursor-pointer ${
                       activeLayer.visible 
                         ? "border-sage bg-sage-light text-sage" 
                         : "border-ink/10 bg-stone text-ink-light/50"
@@ -572,7 +572,7 @@ export function NameTagForm({
                      key={color}
                      type="button"
                      onClick={() => onThemeChange({ accent: color })}
-                     className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
+                     className={`h-8 w-8 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 ${
                        isActive ? "border-ink ring-2 ring-ink/10 scale-110" : "border-transparent"
                      }`}
                      style={{ backgroundColor: color }}
@@ -604,7 +604,7 @@ export function NameTagForm({
                        key={key}
                        type="button"
                        onClick={() => onThemeChange({ background: typedKey })}
-                       className={`rounded-lg border px-3 py-2 text-sm transition-all ${
+                       className={`rounded-lg border px-3 py-2 text-sm transition-all cursor-pointer ${
                          isActive
                            ? "border-ink bg-ink text-white"
                            : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
@@ -617,7 +617,7 @@ export function NameTagForm({
                 <button
                    type="button"
                    onClick={() => onThemeChange({ background: "custom", customBackground: tag.customBackground || "#ffffff" })}
-                   className={`rounded-lg border px-3 py-2 text-sm transition-all ${
+                   className={`rounded-lg border px-3 py-2 text-sm transition-all cursor-pointer ${
                      tag.background === "custom"
                        ? "border-ink bg-ink text-white"
                        : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
@@ -632,7 +632,7 @@ export function NameTagForm({
                      type="color"
                      value={tag.customBackground || "#ffffff"}
                      onChange={(e) => onThemeChange({ background: "custom", customBackground: e.target.value })}
-                     className="h-8 w-8 rounded-lg border border-ink/10 p-0.5"
+                     className="h-8 w-8 rounded-lg border border-ink/10 p-0.5 cursor-pointer"
                    />
                    <span className="text-xs text-ink-light">Pick a solid color</span>
                 </div>
@@ -650,7 +650,7 @@ export function NameTagForm({
                      key={align}
                      type="button"
                      onClick={() => onThemeChange({ textAlign: align })}
-                     className={`flex-1 rounded-md py-1.5 text-sm capitalize transition-all ${
+                     className={`flex-1 rounded-md py-1.5 text-sm capitalize transition-all cursor-pointer ${
                        isActive
                          ? "bg-ink text-white"
                          : "text-ink-light hover:bg-stone/50 hover:text-ink"
