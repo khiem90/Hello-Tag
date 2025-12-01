@@ -246,14 +246,6 @@ const FloatingField = memo(function FloatingField({
     fieldRef.current = field;
   });
 
-  // Sync local state when not dragging
-  useEffect(() => {
-    if (!isDragging) {
-      setLocalPos({ x: field.x, y: field.y });
-      dragPositionRef.current = { x: field.x, y: field.y };
-    }
-  }, [field.x, field.y, isDragging]);
-
   useEffect(
     () => () => {
       document.body.classList.remove("cursor-grabbing");

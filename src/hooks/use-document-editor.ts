@@ -98,16 +98,20 @@ export const useDocumentEditor = (
 
   // Load stored document on mount
   useEffect(() => {
-    const storedDoc = loadStoredDocument();
-    if (storedDoc) {
-      // Ensure documentType exists (backward compatibility)
-      if (!storedDoc.documentType) {
-        storedDoc.documentType = "label";
+    const loadDocument = async () => {
+      const storedDoc = loadStoredDocument();
+      if (storedDoc) {
+        // Ensure documentType exists (backward compatibility)
+        if (!storedDoc.documentType) {
+          storedDoc.documentType = "label";
+        }
+        setDocument(storedDoc);
+        setActiveField(storedDoc.fields[0]?.id ?? "");
       }
-      setDocument(storedDoc);
-      setActiveField(storedDoc.fields[0]?.id ?? "");
-    }
-    setHasLoadedStoredDoc(true);
+      setHasLoadedStoredDoc(true);
+    };
+
+    loadDocument();
   }, []);
 
   // Persist document changes

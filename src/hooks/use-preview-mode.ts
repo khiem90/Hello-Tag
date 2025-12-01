@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { DatasetRow } from "@/lib/dataset";
 
 type UsePreviewModeOptions = {
@@ -22,7 +22,13 @@ export const usePreviewMode = (
   const { datasetRows } = options;
 
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [previewRecordIndex, setPreviewRecordIndex] = useState(0);
+  const [previewRecordIndexRaw, setPreviewRecordIndex] = useState(0);
+
+  // Compute a valid clamped index to avoid out-of-bounds access
+  const previewRecordIndex = useMemo(() => {
+    if (datasetRows.length === 0) return 0;
+    return Math.min(previewRecordIndexRaw, datasetRows.length - 1);
+  }, [previewRecordIndexRaw, datasetRows.length]);
 
   // Get current preview data
   const currentPreviewData = useMemo(() => {
@@ -31,13 +37,6 @@ export const usePreviewMode = (
     }
     return datasetRows[previewRecordIndex];
   }, [isPreviewMode, datasetRows, previewRecordIndex]);
-
-  // Ensure preview record index is valid when dataset changes
-  useEffect(() => {
-    if (previewRecordIndex >= datasetRows.length && datasetRows.length > 0) {
-      setPreviewRecordIndex(datasetRows.length - 1);
-    }
-  }, [datasetRows.length, previewRecordIndex]);
 
   const handleTogglePreview = useCallback(() => {
     setIsPreviewMode((prev) => !prev);

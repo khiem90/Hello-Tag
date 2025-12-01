@@ -67,61 +67,6 @@ const createFieldId = () =>
         .toString(16)
         .slice(2, 8)}`;
 
-type FieldPreset = Omit<MergeField, "id">;
-
-const defaultFieldPresets: FieldPreset[] = [
-  {
-    name: "Greeting",
-    text: "Hello, my name is",
-    fontSize: 18,
-    color: "#475569",
-    x: 50,
-    y: 15,
-    visible: true,
-  },
-  {
-    name: "Name",
-    text: "{{Name}}",
-    fontSize: 48,
-    color: "#0f172a",
-    x: 50,
-    y: 35,
-    visible: true,
-  },
-  {
-    name: "Title",
-    text: "{{Title}}",
-    fontSize: 20,
-    color: "#475569",
-    x: 50,
-    y: 55,
-    visible: true,
-  },
-  {
-    name: "Company",
-    text: "{{Company}}",
-    fontSize: 20,
-    color: "#475569",
-    x: 50,
-    y: 70,
-    visible: true,
-  },
-  {
-    name: "Tagline",
-    text: "{{Tagline}}",
-    fontSize: 18,
-    color: "#475569",
-    x: 50,
-    y: 85,
-    visible: true,
-  },
-];
-
-const createFieldFromPreset = (preset: FieldPreset): MergeField => ({
-  id: createFieldId(),
-  ...preset,
-});
-
 export const clampPercent = (value: number) => {
   if (Number.isNaN(value) || !Number.isFinite(value)) {
     return 50;

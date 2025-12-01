@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readDataset, type DatasetRow } from "@/lib/dataset";
 import type { ImportSummary } from "@/types/import";
 

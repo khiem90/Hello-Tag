@@ -175,7 +175,7 @@ const createParagraphsFromFields = (
   // Track cumulative height used (in twips)
   let cumulativeHeight = 0;
   
-  return groups.map((group, index) => {
+  return groups.map((group) => {
     const runs = createLineContent(group);
     
     // Determine alignment based on field positions
@@ -205,7 +205,7 @@ const createParagraphsFromFields = (
     const lineHeight = estimateLineHeight(avgFontSize);
     const centerOffset = Math.round(lineHeight / 2);
     
-    let spacingBefore = Math.max(0, targetPositionTwips - cumulativeHeight - centerOffset);
+    const spacingBefore = Math.max(0, targetPositionTwips - cumulativeHeight - centerOffset);
     
     // Update cumulative height: current spacing + estimated line height
     cumulativeHeight = targetPositionTwips + centerOffset;
