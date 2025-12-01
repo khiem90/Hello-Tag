@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sign in | MailBuddy",
@@ -21,41 +21,40 @@ export default async function LoginPage({ searchParams }: Props) {
       : "/";
 
   return (
-    <main className="min-h-screen bg-warm-cloud px-4 py-14 sm:px-6 lg:px-10 flex items-center justify-center">
-      <div className="mx-auto flex w-full max-w-6xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center">
-        <div className="w-full max-w-xl space-y-8 text-center lg:text-left">
-          <div className="inline-flex items-center rounded-full border-2 border-black bg-bubble-blue px-4 py-1.5 font-heading text-sm font-bold text-white shadow-cartoon-sm mb-2 transform -rotate-2">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Welcome Back!
-          </div>
-          
-          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-soft-graphite">
-            Ready to make more <span className="text-pop-purple underline decoration-4 decoration-wavy decoration-mint-gelato underline-offset-4">magic?</span>
-          </h1>
-          
-          <p className="text-lg text-slate-600 font-medium">
-            Sign in to access your saved designs, create personalized documents, and export them in a snap.
+    <main className="min-h-screen px-6 py-16 flex items-center justify-center">
+      <div className="mx-auto flex w-full max-w-5xl flex-col-reverse items-center gap-16 lg:flex-row lg:items-center">
+        <div className="w-full max-w-lg space-y-6 text-center lg:text-left">
+          <p className="text-sm font-medium text-terracotta tracking-wide">
+            Welcome back
           </p>
           
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start">
+          <h1 className="font-heading text-4xl sm:text-5xl tracking-tight text-ink">
+            Sign in to your account
+          </h1>
+          
+          <p className="text-lg text-ink-light leading-relaxed">
+            Access your saved designs, create personalized documents, and export them with ease.
+          </p>
+          
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start pt-2">
             <Link
               href="/"
-              className="group flex items-center justify-center rounded-full border-2 border-slate-200 bg-white px-6 py-3 text-sm font-bold uppercase tracking-widest text-slate-500 transition-all hover:border-black hover:text-soft-graphite hover:shadow-cartoon-sm"
+              className="group flex items-center justify-center rounded-lg border border-ink/10 bg-white px-5 py-2.5 text-sm font-medium text-ink-light transition-colors hover:border-ink/20 hover:text-ink"
             >
-              <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-              Back to Studio
+              <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+              Back to home
             </Link>
             <Link
               href={redirectPath && redirectPath !== "/" ? `/signup?redirect=${encodeURIComponent(redirectPath)}` : "/signup"}
-              className="text-sm font-bold uppercase tracking-widest text-bubble-blue transition hover:text-pop-purple hover:underline decoration-2 underline-offset-4"
+              className="text-sm font-medium text-terracotta transition hover:text-terracotta/80"
             >
-              New here? Join the fun!
+              New here? Create an account
             </Link>
           </div>
         </div>
 
         <div className="w-full max-w-md">
-           <LoginForm redirectPath={redirectPath} />
+          <LoginForm redirectPath={redirectPath} />
         </div>
       </div>
     </main>

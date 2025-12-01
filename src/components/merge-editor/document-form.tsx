@@ -72,19 +72,19 @@ const importStatusTokens: Record<
   }
 > = {
   match: {
-    label: "Perfect Match!",
-    pill: "border-2 border-emerald-700 bg-emerald-100 text-emerald-800",
-    text: "text-emerald-800",
+    label: "Perfect Match",
+    pill: "border border-sage/30 bg-sage-light text-ink",
+    text: "text-ink",
   },
   "needs-layers": {
     label: "Needs Fields",
-    pill: "border-2 border-amber-700 bg-amber-100 text-amber-800",
-    text: "text-amber-800",
+    pill: "border border-amber-200 bg-amber-50 text-amber-700",
+    text: "text-amber-700",
   },
   "unused-layers": {
     label: "Extra Fields",
-    pill: "border-2 border-sky-700 bg-sky-100 text-sky-800",
-    text: "text-sky-800",
+    pill: "border border-sky-200 bg-sky-50 text-sky-700",
+    text: "text-sky-700",
   },
 };
 
@@ -244,13 +244,13 @@ export function DocumentForm({
   return (
     <aside className="flex flex-col gap-6">
       {/* Document Type Selector */}
-      <Card variant="sticker" className="bg-bubble-blue/10">
-        <CardHeader className="pb-2">
+      <Card variant="elevated" className="bg-white">
+        <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-bubble-blue text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-terracotta/10 text-terracotta">
               <FileText className="h-4 w-4" />
             </div>
-            <CardTitle className="text-lg">Document Type</CardTitle>
+            <CardTitle>Document Type</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -262,18 +262,18 @@ export function DocumentForm({
                   key={docType.id}
                   type="button"
                   onClick={() => onDocumentTypeChange(docType.id)}
-                  className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left transition-all ${
                     isActive
-                      ? "border-black bg-bubble-blue text-white shadow-cartoon-sm"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-bubble-blue hover:text-bubble-blue"
+                      ? "border-terracotta bg-terracotta/10 text-ink"
+                      : "border-ink/10 bg-white text-ink-light hover:border-ink/20 hover:text-ink"
                   }`}
                 >
-                  <span className={isActive ? "text-white" : "text-slate-400"}>
+                  <span className={isActive ? "text-terracotta" : "text-ink-light"}>
                     {documentTypeIcons[docType.id]}
                   </span>
                   <div>
-                    <p className="font-heading text-sm font-bold">{docType.label}</p>
-                    <p className={`text-xs ${isActive ? "text-white/80" : "text-slate-400"}`}>
+                    <p className="font-medium text-sm">{docType.label}</p>
+                    <p className={`text-xs ${isActive ? "text-ink-light" : "text-ink-light/70"}`}>
                       {docType.description}
                     </p>
                   </div>
@@ -285,12 +285,12 @@ export function DocumentForm({
       </Card>
 
       {/* Actions Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border-2 border-black bg-white p-4 shadow-cartoon-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/5 bg-white p-4 shadow-soft-sm">
         <div className="flex flex-col">
-          <p className="font-heading text-xs font-bold uppercase tracking-widest text-slate-400">
+          <p className="text-xs font-medium text-ink-light tracking-wide">
             Toolkit
           </p>
-          <h2 className="font-heading text-xl font-bold text-soft-graphite">
+          <h2 className="font-heading text-lg tracking-tight text-ink">
             Merge Controls
           </h2>
         </div>
@@ -313,19 +313,19 @@ export function DocumentForm({
       </div>
 
       {/* Data Source Import Card */}
-      <Card variant="sticker" className="bg-mint-gelato/10">
-        <CardHeader className="pb-2">
+      <Card variant="elevated" className="bg-white">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
              <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-mint-gelato text-black">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sage/10 text-sage">
                 <FileSpreadsheet className="h-4 w-4" />
               </div>
-              <CardTitle className="text-lg">Data Source</CardTitle>
+              <CardTitle>Data Source</CardTitle>
              </div>
           </div>
         </CardHeader>
         <CardContent>
-           <p className="mb-4 text-sm font-medium text-slate-600">
+           <p className="mb-4 text-sm text-ink-light">
             Upload CSV or Excel files with your recipient data.
            </p>
            
@@ -362,46 +362,46 @@ export function DocumentForm({
              </div>
 
              {importError && (
-               <div className="rounded-xl border-2 border-candy-coral bg-red-50 p-3 text-sm font-bold text-candy-coral">
-                 ⚠️ {importError}
+               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                 {importError}
                </div>
              )}
              {exportError && (
-               <div className="rounded-xl border-2 border-candy-coral bg-red-50 p-3 text-sm font-bold text-candy-coral">
-                 ⚠️ {exportError}
+               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                 {exportError}
                </div>
              )}
 
              {importSummary && (
-               <div className="mt-2 space-y-3 rounded-2xl border-2 border-black bg-white p-4 shadow-sm">
-                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+               <div className="mt-2 space-y-3 rounded-xl border border-ink/5 bg-stone/30 p-4">
+                 <div className="flex items-center justify-between border-b border-ink/5 pb-2">
                    <div>
-                     <p className="font-heading text-sm font-bold text-soft-graphite">{importSummary.fileName}</p>
-                     {importTimestamp && <p className="text-xs text-slate-400">{importTimestamp}</p>}
+                     <p className="font-medium text-sm text-ink">{importSummary.fileName}</p>
+                     {importTimestamp && <p className="text-xs text-ink-light">{importTimestamp}</p>}
                    </div>
                    {importStatus && (
-                     <span className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide ${importStatus.pill}`}>
+                     <span className={`rounded-md px-2.5 py-1 text-xs font-medium ${importStatus.pill}`}>
                        {importStatus.label}
                      </span>
                    )}
                  </div>
                  
                  {importDescription && (
-                   <p className="text-sm font-medium text-slate-600">{importDescription}</p>
+                   <p className="text-sm text-ink-light">{importDescription}</p>
                  )}
                  
                  <div className="grid grid-cols-3 gap-2 text-center">
-                   <div className="rounded-xl bg-slate-50 p-2">
-                     <div className="text-xs font-bold uppercase text-slate-400">Columns</div>
-                     <div className="font-heading text-xl font-bold text-soft-graphite">{importSummary.headerCount}</div>
+                   <div className="rounded-lg bg-white p-2">
+                     <div className="text-xs text-ink-light">Columns</div>
+                     <div className="font-heading text-lg text-ink">{importSummary.headerCount}</div>
                    </div>
-                   <div className="rounded-xl bg-slate-50 p-2">
-                     <div className="text-xs font-bold uppercase text-slate-400">Fields</div>
-                     <div className="font-heading text-xl font-bold text-soft-graphite">{importSummary.layerCount}</div>
+                   <div className="rounded-lg bg-white p-2">
+                     <div className="text-xs text-ink-light">Fields</div>
+                     <div className="font-heading text-lg text-ink">{importSummary.layerCount}</div>
                    </div>
-                   <div className="rounded-xl bg-slate-50 p-2">
-                     <div className="text-xs font-bold uppercase text-slate-400">Records</div>
-                     <div className="font-heading text-xl font-bold text-soft-graphite">{importSummary.rowCount}</div>
+                   <div className="rounded-lg bg-white p-2">
+                     <div className="text-xs text-ink-light">Records</div>
+                     <div className="font-heading text-lg text-ink">{importSummary.rowCount}</div>
                    </div>
                  </div>
                </div>
@@ -412,7 +412,7 @@ export function DocumentForm({
 
       {/* Merge Fields List */}
       <div className="space-y-2">
-        <p className="px-1 font-heading text-xs font-bold uppercase tracking-widest text-slate-400">
+        <p className="px-1 text-xs font-medium text-ink-light tracking-wide">
           Merge Fields
         </p>
         <div className="flex flex-col gap-2">
@@ -424,32 +424,32 @@ export function DocumentForm({
                 key={field.id}
                 type="button"
                 onClick={() => onSelectField(field.id)}
-                className={`group relative w-full overflow-hidden rounded-2xl border-2 px-4 py-3 text-left transition-all duration-200 ${
+                className={`group relative w-full overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-200 ${
                   isActive
-                    ? "border-black bg-bubble-blue text-white shadow-cartoon-sm translate-x-1"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-bubble-blue hover:text-bubble-blue"
+                    ? "border-terracotta bg-terracotta/10 text-ink"
+                    : "border-ink/10 bg-white text-ink-light hover:border-ink/20 hover:text-ink"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-heading font-bold">
+                  <p className="font-medium">
                     {field.name || `Field ${index + 1}`}
                   </p>
                   <div className="flex items-center gap-2">
                     {hasPlaceholder && (
-                      <span className={`rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase ${
-                        isActive ? "bg-white/20 text-white" : "bg-pop-purple/10 text-pop-purple"
+                      <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-medium uppercase ${
+                        isActive ? "bg-terracotta/20 text-terracotta" : "bg-terracotta/10 text-terracotta"
                       }`}>
                         Merge
                       </span>
                     )}
                     {field.visible ? (
-                       <Eye className={`h-4 w-4 ${isActive ? "text-white" : "text-slate-300 group-hover:text-bubble-blue"}`} />
+                       <Eye className={`h-4 w-4 ${isActive ? "text-terracotta" : "text-ink-light/50 group-hover:text-ink-light"}`} />
                     ) : (
-                       <EyeOff className={`h-4 w-4 ${isActive ? "text-white/70" : "text-slate-300"}`} />
+                       <EyeOff className={`h-4 w-4 ${isActive ? "text-ink-light" : "text-ink-light/30"}`} />
                     )}
                   </div>
                 </div>
-                <p className={`mt-1 truncate text-xs font-medium ${isActive ? "text-white/90" : "text-slate-400"}`}>
+                <p className={`mt-1 truncate text-xs ${isActive ? "text-ink-light" : "text-ink-light/70"}`}>
                   {field.text.trim() || "Empty field"}
                 </p>
               </button>
@@ -460,34 +460,34 @@ export function DocumentForm({
 
       {/* Active Field Properties */}
       {activeField ? (
-        <Card variant="sticker" className="overflow-visible">
+        <Card variant="elevated" className="overflow-visible bg-white">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-pop-purple text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-ink">
                 <Type className="h-4 w-4" />
               </div>
-              <CardTitle className="text-lg">Edit Field</CardTitle>
+              <CardTitle>Edit Field</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Name & Visibility */}
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Field Name</label>
+                <label className="mb-2 block text-sm font-medium text-ink">Field Name</label>
                 <input
-                  className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-bold text-soft-graphite focus:border-pop-purple focus:outline-none focus:ring-2 focus:ring-pop-purple/20"
+                  className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm text-ink focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
                   value={activeField.name}
                   onChange={handleFieldNameChange}
                 />
               </div>
-              <div className="flex flex-col items-center pt-5">
+              <div className="flex flex-col items-center pt-6">
                  <button
                     type="button"
                     onClick={() => onFieldChange(activeField.id, { visible: !activeField.visible })}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border-2 transition-all ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-all ${
                       activeField.visible 
-                        ? "border-black bg-mint-gelato text-black shadow-cartoon-sm" 
-                        : "border-slate-200 bg-slate-50 text-slate-300"
+                        ? "border-sage bg-sage-light text-sage" 
+                        : "border-ink/10 bg-stone text-ink-light/50"
                     }`}
                  >
                    {activeField.visible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
@@ -497,21 +497,21 @@ export function DocumentForm({
 
             {/* Text Input with placeholder hint */}
             <div>
-               <label className="mb-1 flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-400">
+               <label className="mb-2 flex items-center justify-between text-sm font-medium text-ink">
                  <span>Content</span>
-                 <span className="font-normal normal-case text-pop-purple">Use {"{{FieldName}}"} for merge</span>
+                 <span className="font-normal text-xs text-terracotta">Use {"{{FieldName}}"} for merge</span>
                </label>
                {activeField.name.toLowerCase().includes("body") || activeField.text.length > 50 ? (
                  <textarea
                    rows={3}
-                   className="w-full resize-none rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-medium text-soft-graphite focus:border-pop-purple focus:outline-none focus:ring-2 focus:ring-pop-purple/20"
+                   className="w-full resize-none rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm text-ink focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
                    value={activeField.text}
                    onChange={handleTextChange}
                    placeholder="{{FirstName}} or static text..."
                  />
                ) : (
                  <input
-                   className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-sm font-medium text-soft-graphite focus:border-pop-purple focus:outline-none focus:ring-2 focus:ring-pop-purple/20"
+                   className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm text-ink focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
                    value={activeField.text}
                    onChange={handleTextChange}
                    placeholder="{{FirstName}} or static text..."
@@ -520,9 +520,9 @@ export function DocumentForm({
             </div>
 
             {/* Styles: Font Size & Color */}
-            <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <label className="mb-1 flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-400">
+            <div className="flex gap-4">
+               <div className="flex-1 min-w-0">
+                 <label className="mb-2 flex items-center justify-between text-sm font-medium text-ink">
                    <span>Size (px)</span>
                  </label>
                  <div className="flex items-center gap-2">
@@ -532,7 +532,7 @@ export function DocumentForm({
                      max={120}
                      value={activeField.fontSize}
                      onChange={handleFontSizeChange}
-                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-pop-purple"
+                     className="h-2 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-stone accent-terracotta"
                    />
                    <input
                      type="number"
@@ -540,38 +540,38 @@ export function DocumentForm({
                      max={200}
                      value={activeField.fontSize}
                      onChange={handleFontSizeChange}
-                     className="w-16 rounded-lg border-2 border-slate-200 bg-white py-1 px-2 text-center text-sm font-bold text-soft-graphite focus:border-pop-purple focus:outline-none"
+                     className="w-14 shrink-0 rounded-lg border border-ink/10 bg-paper py-1.5 px-2 text-center text-sm text-ink focus:border-terracotta/50 focus:outline-none"
                    />
                  </div>
                </div>
-               <div>
-                 <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Color</label>
+               <div className="shrink-0">
+                 <label className="mb-2 block text-sm font-medium text-ink">Color</label>
                  <div className="flex items-center gap-2">
                    <input
                      type="color"
                      value={activeField.color}
                      onChange={handleColorChange}
-                     className="h-9 w-9 cursor-pointer overflow-hidden rounded-full border-2 border-black p-0 shadow-sm"
+                     className="h-9 w-9 cursor-pointer overflow-hidden rounded-lg border border-ink/10 p-0.5"
                    />
-                   <span className="text-xs font-mono text-slate-500">{activeField.color}</span>
+                   <span className="text-xs font-mono text-ink-light">{activeField.color}</span>
                  </div>
                </div>
             </div>
 
             {/* Position */}
-            <div className="rounded-xl bg-slate-50 p-3">
-               <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Position (%)</p>
+            <div className="rounded-lg bg-stone/50 p-3">
+               <p className="mb-3 text-sm font-medium text-ink">Position (%)</p>
                <div className="space-y-3">
                  {/* X Position */}
                  <div className="flex items-center gap-3">
-                   <span className="w-6 text-xs font-bold text-slate-400">X</span>
+                   <span className="w-6 text-xs font-medium text-ink-light">X</span>
                    <input
                      type="range"
                      min={0}
                      max={100}
                      value={activeCoordinateValue("x")}
                      onChange={(e) => handleCoordinateChange("x", e)}
-                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-pop-purple"
+                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-white accent-terracotta"
                    />
                    <input
                      type="number"
@@ -579,19 +579,19 @@ export function DocumentForm({
                      onChange={(e) => handleCoordinateChange("x", e)}
                      min={0}
                      max={100}
-                     className="w-14 rounded-lg border-2 border-slate-200 bg-white py-1 px-2 text-center text-sm font-bold text-soft-graphite focus:border-pop-purple focus:outline-none"
+                     className="w-14 rounded-lg border border-ink/10 bg-white py-1.5 px-2 text-center text-sm text-ink focus:border-terracotta/50 focus:outline-none"
                    />
                  </div>
                  {/* Y Position */}
                  <div className="flex items-center gap-3">
-                   <span className="w-6 text-xs font-bold text-slate-400">Y</span>
+                   <span className="w-6 text-xs font-medium text-ink-light">Y</span>
                    <input
                      type="range"
                      min={0}
                      max={100}
                      value={activeCoordinateValue("y")}
                      onChange={(e) => handleCoordinateChange("y", e)}
-                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-pop-purple"
+                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-white accent-terracotta"
                    />
                    <input
                      type="number"
@@ -599,11 +599,11 @@ export function DocumentForm({
                      onChange={(e) => handleCoordinateChange("y", e)}
                      min={0}
                      max={100}
-                     className="w-14 rounded-lg border-2 border-slate-200 bg-white py-1 px-2 text-center text-sm font-bold text-soft-graphite focus:border-pop-purple focus:outline-none"
+                     className="w-14 rounded-lg border border-ink/10 bg-white py-1.5 px-2 text-center text-sm text-ink focus:border-terracotta/50 focus:outline-none"
                    />
                  </div>
                </div>
-               <p className="mt-2 text-xs text-slate-400">
+               <p className="mt-2 text-xs text-ink-light">
                  Use arrow keys for fine control (Shift for smaller steps)
                </p>
             </div>
@@ -620,27 +620,27 @@ export function DocumentForm({
           </CardContent>
         </Card>
       ) : (
-        <div className="flex h-40 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-          <p className="text-sm font-medium text-slate-500">
-            No field selected. Click a field above to edit!
+        <div className="flex h-40 flex-col items-center justify-center rounded-xl border border-dashed border-ink/10 bg-stone/30 p-6 text-center">
+          <p className="text-sm text-ink-light">
+            No field selected. Click a field above to edit.
           </p>
         </div>
       )}
 
       {/* Global Theme Controls */}
-      <Card variant="default" className="bg-white">
-         <CardHeader className="pb-2">
+      <Card variant="elevated" className="bg-white">
+         <CardHeader className="pb-3">
            <div className="flex items-center gap-2">
-             <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-sunshine-yellow text-black">
+             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-terracotta/10 text-terracotta">
                <Palette className="h-4 w-4" />
              </div>
-             <CardTitle className="text-lg">Theme</CardTitle>
+             <CardTitle>Theme</CardTitle>
            </div>
          </CardHeader>
          <CardContent className="space-y-5">
            {/* Accent Color */}
            <div>
-             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Accent Color</p>
+             <p className="mb-2 text-sm font-medium text-ink">Accent Color</p>
              <div className="flex flex-wrap gap-2">
                {accentPalette.map((color) => {
                  const isActive = document.accent === color;
@@ -650,15 +650,15 @@ export function DocumentForm({
                      type="button"
                      onClick={() => onThemeChange({ accent: color })}
                      className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                       isActive ? "border-black ring-2 ring-black/20 scale-110" : "border-transparent"
+                       isActive ? "border-ink ring-2 ring-ink/10 scale-110" : "border-transparent"
                      }`}
                      style={{ backgroundColor: color }}
                      aria-pressed={isActive}
                    />
                  );
                })}
-               <label className="relative h-8 w-8 cursor-pointer overflow-hidden rounded-full border-2 border-slate-200 bg-white hover:border-slate-400">
-                 <span className="absolute inset-0 flex items-center justify-center text-slate-400">+</span>
+               <label className="relative h-8 w-8 cursor-pointer overflow-hidden rounded-full border border-ink/10 bg-white hover:border-ink/30">
+                 <span className="absolute inset-0 flex items-center justify-center text-ink-light">+</span>
                  <input
                    type="color"
                    value={document.accent}
@@ -671,7 +671,7 @@ export function DocumentForm({
 
            {/* Background Theme */}
            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Background</p>
+              <p className="mb-2 text-sm font-medium text-ink">Background</p>
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(backgroundThemes).map(([key, theme]) => {
                    const typedKey = key as keyof typeof backgroundThemes;
@@ -681,10 +681,10 @@ export function DocumentForm({
                        key={key}
                        type="button"
                        onClick={() => onThemeChange({ background: typedKey })}
-                       className={`rounded-xl border-2 px-3 py-2 text-xs font-bold transition-all ${
+                       className={`rounded-lg border px-3 py-2 text-sm transition-all ${
                          isActive
-                           ? "border-black bg-slate-800 text-white shadow-cartoon-sm"
-                           : "border-slate-200 text-slate-600 hover:border-slate-400"
+                           ? "border-ink bg-ink text-white"
+                           : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
                        }`}
                      >
                        {theme.label}
@@ -694,32 +694,32 @@ export function DocumentForm({
                 <button
                    type="button"
                    onClick={() => onThemeChange({ background: "custom", customBackground: document.customBackground || "#ffffff" })}
-                   className={`rounded-xl border-2 px-3 py-2 text-xs font-bold transition-all ${
+                   className={`rounded-lg border px-3 py-2 text-sm transition-all ${
                      document.background === "custom"
-                       ? "border-black bg-slate-800 text-white shadow-cartoon-sm"
-                       : "border-slate-200 text-slate-600 hover:border-slate-400"
+                       ? "border-ink bg-ink text-white"
+                       : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
                    }`}
                 >
                   Custom
                 </button>
               </div>
               {document.background === "custom" && (
-                <div className="mt-2 flex items-center gap-2 rounded-xl border-2 border-slate-100 p-2">
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-ink/5 bg-stone/30 p-2">
                    <input
                      type="color"
                      value={document.customBackground || "#ffffff"}
                      onChange={(e) => onThemeChange({ background: "custom", customBackground: e.target.value })}
-                     className="h-8 w-8 rounded-lg border border-slate-200 p-0.5"
+                     className="h-8 w-8 rounded-lg border border-ink/10 p-0.5"
                    />
-                   <span className="text-xs font-medium text-slate-500">Pick a solid color</span>
+                   <span className="text-xs text-ink-light">Pick a solid color</span>
                 </div>
               )}
            </div>
 
            {/* Text Alignment */}
            <div>
-             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Alignment</p>
-             <div className="flex rounded-xl border-2 border-slate-200 p-1">
+             <p className="mb-2 text-sm font-medium text-ink">Alignment</p>
+             <div className="flex rounded-lg border border-ink/10 p-1">
                {alignOptions.map((align) => {
                  const isActive = document.textAlign === align;
                  return (
@@ -727,10 +727,10 @@ export function DocumentForm({
                      key={align}
                      type="button"
                      onClick={() => onThemeChange({ textAlign: align })}
-                     className={`flex-1 rounded-lg py-1.5 text-xs font-bold capitalize transition-all ${
+                     className={`flex-1 rounded-md py-1.5 text-sm capitalize transition-all ${
                        isActive
-                         ? "bg-slate-800 text-white shadow-sm"
-                         : "text-slate-500 hover:bg-slate-100"
+                         ? "bg-ink text-white"
+                         : "text-ink-light hover:bg-stone/50 hover:text-ink"
                      }`}
                    >
                      {align}
@@ -744,4 +744,3 @@ export function DocumentForm({
     </aside>
   );
 }
-

@@ -16,8 +16,7 @@ import {
 import { getFirebaseAuth } from "@/lib/firebase-client";
 import type { LoginFormProps } from "@/types/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn, AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function LoginForm({
   redirectPath = "/",
@@ -102,136 +101,131 @@ export function LoginForm({
   }, [googleProvider, redirectPath, router]);
 
   return (
-    <Card variant="sticker" className="w-full bg-white shadow-cartoon">
-      <CardHeader className="text-center pb-2">
-         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-bubble-blue border-2 border-black shadow-cartoon-sm">
-             <LogIn className="h-8 w-8 text-white" />
-         </div>
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-          Welcome Back
-        </p>
-        <CardTitle className="text-3xl">Sign In</CardTitle>
-      </CardHeader>
+    <div className="w-full rounded-xl border border-ink/5 bg-white p-8 shadow-soft">
+      <div className="mb-8">
+        <p className="text-sm font-medium text-terracotta mb-2">Welcome back</p>
+        <h2 className="font-heading text-2xl tracking-tight text-ink">
+          Sign in
+        </h2>
+      </div>
       
-      <CardContent>
-        <form className="space-y-5" onSubmit={handleEmailSubmit}>
-            <div>
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                Email address
-                </label>
-                <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={handleEmailChange}
-                autoComplete="email"
-                className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-soft-graphite placeholder:text-slate-400 focus:border-black focus:outline-none focus:ring-0"
-                placeholder="you@example.com"
-                required
-                aria-label="Email address"
-                disabled={isEmailSubmitting || isGoogleSubmitting}
-                />
-            </div>
+      <form className="space-y-5" onSubmit={handleEmailSubmit}>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-ink">
+            Email address
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={email}
+            onChange={handleEmailChange}
+            autoComplete="email"
+            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            placeholder="you@example.com"
+            required
+            aria-label="Email address"
+            disabled={isEmailSubmitting || isGoogleSubmitting}
+          />
+        </div>
 
-            <div>
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                Password
-                </label>
-                <input
-                type="password"
-                name="password"
-                value={password}
-                onChange={handlePasswordChange}
-                autoComplete="current-password"
-                className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-soft-graphite placeholder:text-slate-400 focus:border-black focus:outline-none focus:ring-0"
-                placeholder="••••••••"
-                required
-                aria-label="Password"
-                disabled={isEmailSubmitting || isGoogleSubmitting}
-                />
-            </div>
-
-            <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full text-base py-6"
-                disabled={isEmailSubmitting || isGoogleSubmitting}
-                isLoading={isEmailSubmitting}
-            >
-                Sign In
-            </Button>
-        </form>
-
-        <div className="my-6 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-300">
-            <span className="h-0.5 flex-1 bg-slate-100" aria-hidden />
-            <span>or</span>
-            <span className="h-0.5 flex-1 bg-slate-100" aria-hidden />
+        <div>
+          <label className="mb-2 block text-sm font-medium text-ink">
+            Password
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={password}
+            onChange={handlePasswordChange}
+            autoComplete="current-password"
+            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            placeholder="••••••••"
+            required
+            aria-label="Password"
+            disabled={isEmailSubmitting || isGoogleSubmitting}
+          />
         </div>
 
         <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={handleGoogleLogin}
-            className="w-full gap-3 text-base py-6 border-2"
-            disabled={isGoogleSubmitting || isEmailSubmitting}
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="w-full"
+          disabled={isEmailSubmitting || isGoogleSubmitting}
+          isLoading={isEmailSubmitting}
         >
-            {isGoogleSubmitting ? (
-            "Connecting..."
-            ) : (
-            <>
-                <svg
-                className="h-5 w-5"
-                viewBox="0 0 24 24"
-                aria-hidden
-                focusable="false"
-                >
-                <path
-                    fill="#4285F4"
-                    d="M23.5 12.3c0-.8-.1-1.5-.2-2.3h-11v4.4h6.3c-.3 1.6-1.3 3-2.8 3.8v3.1h4.5c2.6-2.3 4.2-5.8 4.2-9z"
-                />
-                <path
-                    fill="#34A853"
-                    d="M12.3 24c3.9 0 7.1-1.3 9.5-3.4l-4.5-3.1c-1.2.8-2.7 1.2-4.9 1.2-3.7 0-6.8-2.5-7.9-5.9H.8v3.2C3.2 21 7.4 24 12.3 24z"
-                />
-                <path
-                    fill="#FBBC05"
-                    d="M4.4 14.8c-.3-.8-.5-1.7-.5-2.6s.2-1.8.5-2.6V6.4H.8C-.3 8.6-.3 11.4.8 13.6l3.6-2.4z"
-                />
-                <path
-                    fill="#EA4335"
-                    d="M12.3 4.7c2.1 0 4 .7 5.5 2.1l4.1-4.1C19.4.9 16.2-.3 12.3-.3 7.4-.3 3.2 2.7.8 6.7l3.6 2.8c1.1-3.4 4.3-4.8 7.9-4.8z"
-                />
-                </svg>
-                <span>Sign in with Google</span>
-            </>
-            )}
+          Sign in
         </Button>
+      </form>
 
-        <div className="mt-6 space-y-3 text-sm">
-            {error ? (
-            <div
-                className="flex items-start gap-3 rounded-xl border-2 border-candy-coral bg-red-50 p-3 font-bold text-candy-coral"
-                role="alert"
-                aria-live="assertive"
+      <div className="my-6 flex items-center gap-3 text-xs font-medium text-ink-light/60">
+        <span className="h-px flex-1 bg-ink/5" aria-hidden />
+        <span>or</span>
+        <span className="h-px flex-1 bg-ink/5" aria-hidden />
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        onClick={handleGoogleLogin}
+        className="w-full gap-3"
+        disabled={isGoogleSubmitting || isEmailSubmitting}
+      >
+        {isGoogleSubmitting ? (
+          "Connecting..."
+        ) : (
+          <>
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              aria-hidden
+              focusable="false"
             >
-                <AlertCircle className="h-5 w-5 shrink-0" />
-                <p>{error}</p>
-            </div>
-            ) : null}
-            {statusMessage ? (
-            <div
-                className="flex items-start gap-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 p-3 font-bold text-emerald-700"
-                role="status"
-                aria-live="polite"
-            >
-                <CheckCircle2 className="h-5 w-5 shrink-0" />
-                <p>{statusMessage}</p>
-            </div>
-            ) : null}
-        </div>
-      </CardContent>
-    </Card>
+              <path
+                fill="#4285F4"
+                d="M23.5 12.3c0-.8-.1-1.5-.2-2.3h-11v4.4h6.3c-.3 1.6-1.3 3-2.8 3.8v3.1h4.5c2.6-2.3 4.2-5.8 4.2-9z"
+              />
+              <path
+                fill="#34A853"
+                d="M12.3 24c3.9 0 7.1-1.3 9.5-3.4l-4.5-3.1c-1.2.8-2.7 1.2-4.9 1.2-3.7 0-6.8-2.5-7.9-5.9H.8v3.2C3.2 21 7.4 24 12.3 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M4.4 14.8c-.3-.8-.5-1.7-.5-2.6s.2-1.8.5-2.6V6.4H.8C-.3 8.6-.3 11.4.8 13.6l3.6-2.4z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12.3 4.7c2.1 0 4 .7 5.5 2.1l4.1-4.1C19.4.9 16.2-.3 12.3-.3 7.4-.3 3.2 2.7.8 6.7l3.6 2.8c1.1-3.4 4.3-4.8 7.9-4.8z"
+              />
+            </svg>
+            <span>Sign in with Google</span>
+          </>
+        )}
+      </Button>
+
+      <div className="mt-6 space-y-3 text-sm">
+        {error ? (
+          <div
+            className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700"
+            role="alert"
+            aria-live="assertive"
+          >
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <p>{error}</p>
+          </div>
+        ) : null}
+        {statusMessage ? (
+          <div
+            className="flex items-start gap-3 rounded-lg border border-sage/30 bg-sage-light p-3 text-ink"
+            role="status"
+            aria-live="polite"
+          >
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-sage" />
+            <p>{statusMessage}</p>
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
 }

@@ -142,7 +142,7 @@ export function DocumentCanvas({
       : undefined;
 
   const containerClasses = [
-    "rounded-[32px] border-2 border-black bg-white p-6 shadow-cartoon transition-all duration-300",
+    "rounded-xl border border-ink/5 bg-white p-6 shadow-soft transition-all duration-300",
     isFloating ? "z-30" : "sticky top-24 self-start",
   ].join(" ");
 
@@ -177,32 +177,32 @@ export function DocumentCanvas({
       >
         <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-heading text-lg font-bold uppercase tracking-wide text-bubble-blue">
+            <p className="text-sm font-medium text-terracotta tracking-wide">
               {previewMode ? "Preview Mode" : "Template Editor"}
             </p>
-            <h2 className="font-heading text-3xl font-bold tracking-tight text-soft-graphite">
+            <h2 className="font-heading text-2xl tracking-tight text-ink">
               {documentTypeLabel} Preview
             </h2>
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm text-ink-light">
               {previewMode ? "Viewing merged data" : "Drag fields to reposition"}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {previewMode && (
-              <span className="inline-flex items-center rounded-full border-2 border-mint-gelato bg-mint-gelato/20 px-3 py-1 font-heading text-xs font-bold text-emerald-700">
-                LIVE DATA
+              <span className="inline-flex items-center rounded-md border border-sage/30 bg-sage-light px-2.5 py-1 text-xs font-medium text-ink">
+                Live Data
               </span>
             )}
-            <span className="animate-bounce-hover inline-flex items-center rounded-full border-2 border-black bg-sunshine-yellow px-4 py-1 font-heading text-sm font-bold text-soft-graphite shadow-cartoon-sm">
+            <span className="inline-flex items-center rounded-md border border-ink/10 bg-stone px-3 py-1 text-sm font-medium text-ink">
               {visibleFields.length} field{visibleFields.length === 1 ? "" : "s"}
             </span>
           </div>
         </header>
 
-        <div className="flex items-center justify-center bg-slate-100 rounded-3xl p-4 border-2 border-slate-200 border-dashed">
+        <div className="flex items-center justify-center bg-stone/50 rounded-xl p-4 border border-ink/5">
           <div
             ref={cardRef}
-            className="relative w-full max-w-md overflow-hidden rounded-xl border-2 border-black shadow-lg"
+            className="relative w-full max-w-md overflow-hidden rounded-lg border border-ink/10 shadow-soft"
             style={{
               ...cardBackgroundStyle,
               aspectRatio: aspectRatio,
@@ -229,8 +229,8 @@ export function DocumentCanvas({
               
               {/* Empty state */}
               {visibleFields.length === 0 && (
-                <div className="flex h-full items-center justify-center text-slate-400">
-                  <p className="text-sm font-medium">No visible fields</p>
+                <div className="flex h-full items-center justify-center text-ink-light">
+                  <p className="text-sm">No visible fields</p>
                 </div>
               )}
             </div>
@@ -238,7 +238,7 @@ export function DocumentCanvas({
         </div>
         
         {/* Info about the preview */}
-        <p className="mt-4 text-center text-xs font-medium text-slate-400">
+        <p className="mt-4 text-center text-xs text-ink-light">
           {previewMode 
             ? "Showing how merged document will appear" 
             : "Preview matches Word document export format"}
@@ -414,20 +414,20 @@ const FloatingField = memo(function FloatingField({
             : isInteractionDisabled
               ? "pointer-events-none"
               : isActive
-                ? "bg-bubble-blue/10 ring-2 ring-bubble-blue/30"
+                ? "bg-terracotta/10 ring-2 ring-terracotta/30"
                 : previewMode
                   ? ""
                   : "cursor-grab hover:bg-white/30"
         } ${alignClass} ${
           isDragging ? "transition-none" : "transition-all duration-200"
-        } ${isPlaceholder && !previewMode ? "border border-dashed border-slate-300 bg-slate-50/50" : ""}`}
+        } ${isPlaceholder && !previewMode ? "border border-dashed border-ink/20 bg-stone/30" : ""}`}
       >
         {displayText || "Empty field"}
         
         {/* Drag Handle / Indicator - only show when not in preview mode */}
         {!previewMode && (
           <div
-            className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border-2 border-black bg-bubble-blue px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-white shadow-sm transition-opacity duration-200 ${
+            className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-md border border-terracotta bg-terracotta px-2 py-0.5 text-[0.6rem] font-medium text-white shadow-sm transition-opacity duration-200 ${
               isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             }`}
           >
@@ -439,4 +439,3 @@ const FloatingField = memo(function FloatingField({
     </DraggableCore>
   );
 });
-

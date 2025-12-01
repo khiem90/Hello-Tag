@@ -84,17 +84,17 @@ export function PreviewNavigation({
   }, [isPreviewMode, hasData, handlePrev, handleNext, handleFirst, handleLast]);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border-2 border-black bg-white p-4 shadow-cartoon-sm">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ink/5 bg-white p-4 shadow-soft-sm">
       {/* Toggle Preview Mode */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onTogglePreview}
           disabled={!hasData}
-          className={`relative flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-heading text-sm font-bold transition-all ${
+          className={`relative flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
             isPreviewMode
-              ? "border-mint-gelato bg-mint-gelato text-emerald-800 shadow-cartoon-sm"
-              : "border-slate-200 bg-slate-50 text-slate-600 hover:border-bubble-blue hover:text-bubble-blue"
+              ? "border-sage bg-sage-light text-ink"
+              : "border-ink/10 bg-stone text-ink-light hover:border-ink/20 hover:text-ink"
           } ${!hasData ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         >
           {isPreviewMode ? (
@@ -111,7 +111,7 @@ export function PreviewNavigation({
         </button>
         
         {!hasData && (
-          <p className="text-xs font-medium text-slate-400">
+          <p className="text-xs text-ink-light">
             Import data to preview
           </p>
         )}
@@ -145,12 +145,12 @@ export function PreviewNavigation({
           </Button>
 
           {/* Record Counter */}
-          <div className="flex items-center gap-1 rounded-lg border-2 border-slate-200 bg-slate-50 px-3 py-1">
-            <span className="font-heading text-sm font-bold text-bubble-blue">
+          <div className="flex items-center gap-1 rounded-lg border border-ink/10 bg-stone px-3 py-1">
+            <span className="text-sm font-medium text-terracotta">
               {currentRecord + 1}
             </span>
-            <span className="text-sm text-slate-400">/</span>
-            <span className="font-heading text-sm font-bold text-soft-graphite">
+            <span className="text-sm text-ink-light">/</span>
+            <span className="text-sm font-medium text-ink">
               {totalRecords}
             </span>
           </div>
@@ -183,15 +183,14 @@ export function PreviewNavigation({
 
       {/* Keyboard shortcuts hint */}
       {isPreviewMode && hasData && (
-        <p className="hidden text-xs text-slate-400 lg:block">
-          <kbd className="rounded border border-slate-200 bg-slate-100 px-1 font-mono">Alt</kbd>
+        <p className="hidden text-xs text-ink-light lg:block">
+          <kbd className="rounded border border-ink/10 bg-stone px-1 font-mono text-[0.65rem]">Alt</kbd>
           {" + "}
-          <kbd className="rounded border border-slate-200 bg-slate-100 px-1 font-mono">←</kbd>
-          <kbd className="rounded border border-slate-200 bg-slate-100 px-1 font-mono">→</kbd>
+          <kbd className="rounded border border-ink/10 bg-stone px-1 font-mono text-[0.65rem]">←</kbd>
+          <kbd className="rounded border border-ink/10 bg-stone px-1 font-mono text-[0.65rem]">→</kbd>
           {" to navigate"}
         </p>
       )}
     </div>
   );
 }
-

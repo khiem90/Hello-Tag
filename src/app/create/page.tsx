@@ -422,7 +422,7 @@ export default function CreatePage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-pop-purple" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone border-t-terracotta" />
       </div>
     );
   }
@@ -492,7 +492,7 @@ export default function CreatePage() {
 
       {/* Save Status Toast */}
       {savingStatus && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounce-hover rounded-2xl border-2 border-emerald-700 bg-emerald-100 px-6 py-3 text-sm font-bold text-emerald-800 shadow-cartoon">
+        <div className="fixed bottom-6 right-6 z-50 animate-fade-up rounded-lg border border-sage/30 bg-sage-light px-5 py-3 text-sm font-medium text-ink shadow-soft">
           {savingStatus}
         </div>
       )}

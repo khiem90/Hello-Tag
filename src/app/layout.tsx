@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
-import { Baloo_2, Nunito } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/layout/auth-provider";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 
-const baloo = Baloo_2({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  variable: "--font-baloo",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
-const nunito = Nunito({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  variable: "--font-nunito",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "MailBuddy - Fun Mail Merge Tool",
-  description: "Create personalized letters, certificates, labels, and envelopes in seconds!",
+  title: "MailBuddy - Elegant Mail Merge",
+  description: "Create beautifully personalized letters, certificates, labels, and envelopes with ease.",
 };
 
 export default function RootLayout({
@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${baloo.variable} ${nunito.variable} antialiased font-body min-h-screen flex flex-col`}
+        className={`${fraunces.variable} ${dmSans.variable} antialiased font-body min-h-screen flex flex-col bg-paper`}
       >
         <AuthProvider>
           <SiteHeader />

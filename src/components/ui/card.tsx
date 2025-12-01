@@ -7,7 +7,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "sticker";
+  variant?: "default" | "elevated";
   hoverEffect?: boolean;
 }
 
@@ -16,12 +16,12 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const baseStyles = "overflow-hidden bg-white";
     
     const variants = {
-      default: "rounded-3xl border-2 border-slate-200 shadow-sm",
-      sticker: "rounded-2xl border-2 border-black shadow-cartoon",
+      default: "rounded-xl border border-ink/5",
+      elevated: "rounded-xl shadow-soft",
     };
 
     const hoverStyles = hoverEffect 
-      ? "transition-transform duration-300 hover:-rotate-1 hover:scale-[1.02]" 
+      ? "transition-shadow duration-300 ease-out hover:shadow-hover" 
       : "";
 
     return (
@@ -53,7 +53,7 @@ export const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttrib
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("font-heading text-2xl font-bold leading-none tracking-tight text-soft-graphite", className)}
+      className={cn("font-heading text-xl font-medium leading-snug tracking-tight text-ink", className)}
       {...props}
     />
   )
@@ -66,4 +66,3 @@ export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes
   )
 );
 CardContent.displayName = "CardContent";
-
