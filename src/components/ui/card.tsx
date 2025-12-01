@@ -8,11 +8,10 @@ function cn(...inputs: ClassValue[]) {
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "elevated";
-  hoverEffect?: boolean;
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = "default", hoverEffect = false, children, ...props }, ref) => {
+  ({ className, variant = "default", children, ...props }, ref) => {
     const baseStyles = "overflow-hidden bg-white";
     
     const variants = {
@@ -20,14 +19,10 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       elevated: "rounded-xl shadow-soft",
     };
 
-    const hoverStyles = hoverEffect 
-      ? "transition-shadow duration-300 ease-out hover:shadow-hover" 
-      : "";
-
     return (
       <div
         ref={ref}
-        className={cn(baseStyles, variants[variant], hoverStyles, className)}
+        className={cn(baseStyles, variants[variant], className)}
         {...props}
       >
         {children}
