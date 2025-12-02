@@ -2,15 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { DocumentData } from "@/types/document";
-
-type Template = {
-  id: string;
-  name: string;
-  category: string;
-  documentType: string;
-  data: DocumentData;
-};
+import { type Template } from "@/lib/templates";
 
 type TemplateCardProps = {
   template: Template;
