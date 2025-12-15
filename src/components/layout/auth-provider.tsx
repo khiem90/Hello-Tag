@@ -14,6 +14,8 @@ import {
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase-client";
+import { useInactivityTimeout } from "@/hooks/use-inactivity-timeout";
+import { InactivityWarningModal } from "@/components/ui/inactivity-warning-modal";
 
 type AuthContextValue = {
   user: User | null;
@@ -43,21 +45,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(getFirebaseAuth());
   }, []);
 
+  const isAuthenticated = Boolean(user);
+
+  const {
+    isWarningVisible,
+    timeRemaining,
+    handleStayLoggedIn,
+    handleLogout,
+  } = useInactivityTimeout({
+    enabled: isAuthenticated,
+    onLogout: logout,
+  });
+
   const value = useMemo<AuthContextValue>(() => {
     const displayName = user?.displayName ?? "";
     const firstName = displayName.trim().split(" ")[0] || null;
     return {
       user,
-      isAuthenticated: Boolean(user),
+      isAuthenticated,
       isLoading,
       firstName,
       email: user?.email ?? null,
       logout,
     };
-  }, [user, isLoading, logout]);
+  }, [user, isAuthenticated, isLoading, logout]);
 
   return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={value}>
+      {children}
+      <InactivityWarningModal
+        isOpen={isWarningVisible}
+        timeRemaining={timeRemaining}
+        onStayLoggedIn={handleStayLoggedIn}
+        onLogout={handleLogout}
+      />
+    </AuthContext.Provider>
   );
 }
 
