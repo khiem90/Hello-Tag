@@ -7,7 +7,7 @@ const WARNING_COUNTDOWN_SECONDS = 60; // 1 minute
 
 type UseInactivityTimeoutOptions = {
   enabled?: boolean;
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
 };
 
 type UseInactivityTimeoutReturn = {
@@ -44,6 +44,16 @@ export const useInactivityTimeout = ({
     }
   }, []);
 
+  const executeLogout = useCallback(() => {
+    const result = onLogoutRef.current();
+    // Handle async logout - catch any errors to prevent unhandled rejections
+    if (result instanceof Promise) {
+      result.catch((error) => {
+        console.error("Logout failed:", error);
+      });
+    }
+  }, []);
+
   const startCountdown = useCallback(() => {
     setTimeRemaining(WARNING_COUNTDOWN_SECONDS);
     setIsWarningVisible(true);
@@ -54,13 +64,13 @@ export const useInactivityTimeout = ({
           clearAllTimers();
           setIsWarningVisible(false);
           setTimeRemaining(WARNING_COUNTDOWN_SECONDS);
-          onLogoutRef.current();
+          executeLogout();
           return WARNING_COUNTDOWN_SECONDS;
         }
         return prev - 1;
       });
     }, 1000);
-  }, [clearAllTimers]);
+  }, [clearAllTimers, executeLogout]);
 
   const handleStayLoggedIn = useCallback(() => {
     clearAllTimers();
@@ -75,8 +85,8 @@ export const useInactivityTimeout = ({
   const handleLogout = useCallback(() => {
     clearAllTimers();
     setIsWarningVisible(false);
-    onLogoutRef.current();
-  }, [clearAllTimers]);
+    executeLogout();
+  }, [clearAllTimers, executeLogout]);
 
   useEffect(() => {
     if (!enabled) {

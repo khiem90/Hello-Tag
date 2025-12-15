@@ -222,12 +222,11 @@ textarea {
   }
 
   /* Labels grid - no gaps, borders touch for easy cutting */
+  /* Note: grid-template-columns and grid-template-rows are set dynamically via inline styles */
   .labels-grid {
     width: 100% !important;
     height: 100% !important;
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    grid-template-rows: 1fr 1fr 1fr !important;
     gap: 0 !important;
   }
 
