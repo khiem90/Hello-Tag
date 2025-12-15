@@ -3,7 +3,7 @@
 import { ChangeEvent, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Download, FileSpreadsheet } from "lucide-react";
+import { Upload, Eye, FileSpreadsheet } from "lucide-react";
 import type { ImportSummary } from "@/types/import";
 
 type DataSourceCardProps = {
@@ -11,10 +11,8 @@ type DataSourceCardProps = {
   importSummary: ImportSummary | null;
   importError: string | null;
   isImportingDataset: boolean;
-  canExport: boolean;
-  onExportDocuments: () => void;
-  isExportingDocuments: boolean;
-  exportError: string | null;
+  canPrint: boolean;
+  onOpenPrintPreview: () => void;
 };
 
 const importStatusTokens: Record<
@@ -60,10 +58,8 @@ export function DataSourceCard({
   importSummary,
   importError,
   isImportingDataset,
-  canExport,
-  onExportDocuments,
-  isExportingDocuments,
-  exportError,
+  canPrint,
+  onOpenPrintPreview,
 }: DataSourceCardProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -104,12 +100,9 @@ export function DataSourceCard({
     });
   }, [importSummary]);
 
-  const exportButtonLabel = isExportingDocuments
-    ? "Exporting..."
-    : importSummary?.rowCount
-      ? `Export ${importSummary.rowCount} documents`
-      : "Export documents";
-  const exportDisabled = !canExport || isExportingDocuments;
+  const printButtonLabel = importSummary?.rowCount
+    ? `Preview & Print (${importSummary.rowCount})`
+    : "Preview & Print";
 
   return (
     <Card variant="elevated" className="bg-white">
@@ -149,14 +142,14 @@ export function DataSourceCard({
             </Button>
 
             <Button
-              onClick={onExportDocuments}
-              disabled={exportDisabled}
+              onClick={onOpenPrintPreview}
+              disabled={!canPrint}
               variant="primary"
               size="sm"
               className="gap-2 ml-auto sm:ml-0"
             >
-              <Download className="h-4 w-4" />
-              {exportButtonLabel}
+              <Eye className="h-4 w-4" />
+              {printButtonLabel}
             </Button>
           </div>
 
@@ -166,14 +159,6 @@ export function DataSourceCard({
               role="alert"
             >
               {importError}
-            </div>
-          )}
-          {exportError && (
-            <div
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-              role="alert"
-            >
-              {exportError}
             </div>
           )}
 

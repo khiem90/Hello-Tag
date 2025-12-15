@@ -133,8 +133,116 @@ textarea {
 }
 
 /* Stagger delays for entrance animations */
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
+.delay-1 {
+  animation-delay: 0.1s;
+}
+.delay-2 {
+  animation-delay: 0.2s;
+}
+.delay-3 {
+  animation-delay: 0.3s;
+}
+.delay-4 {
+  animation-delay: 0.4s;
+}
+.delay-5 {
+  animation-delay: 0.5s;
+}
+
+/* Print styles */
+@media print {
+  /* Page setup */
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+
+  /* Ensure backgrounds print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When print preview is active, hide everything except the print preview modal */
+  body.print-preview-active > *:not(#print-preview-root) {
+    display: none !important;
+  }
+
+  body.print-preview-active {
+    background: white !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide non-printable elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset modal container for print */
+  #print-preview-root,
+  .print-preview-modal {
+    position: static !important;
+    background: white !important;
+    display: block !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Print content wrapper */
+  .print-content {
+    padding: 0 !important;
+    overflow: visible !important;
+    flex: none !important;
+  }
+
+  .print-content > div {
+    max-width: none !important;
+  }
+
+  /* Each page of labels */
+  .print-page {
+    background: white !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    page-break-after: always;
+    break-after: page;
+    width: 100% !important;
+    height: 9.5in !important;
+    box-sizing: border-box;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Labels grid - no gaps, borders touch for easy cutting */
+  .labels-grid {
+    width: 100% !important;
+    height: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr 1fr !important;
+    gap: 0 !important;
+  }
+
+  /* Empty placeholders should be invisible but maintain space */
+  .label-placeholder {
+    border-color: transparent !important;
+  }
+
+  /* Ensure label cards fill their grid cell with visible cutting border */
+  .labels-grid > div {
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid #cccccc !important;
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: unset !important;
+  }
+}

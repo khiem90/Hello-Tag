@@ -29,10 +29,8 @@ type DocumentFormProps = {
   importSummary: ImportSummary | null;
   importError: string | null;
   isImportingDataset: boolean;
-  canExport: boolean;
-  onExportDocuments: () => void;
-  isExportingDocuments: boolean;
-  exportError: string | null;
+  canPrint: boolean;
+  onOpenPrintPreview: () => void;
   isAuthenticated?: boolean;
   onSaveDesign?: () => void;
 };
@@ -51,10 +49,8 @@ export function DocumentForm({
   importSummary,
   importError,
   isImportingDataset,
-  canExport,
-  onExportDocuments,
-  isExportingDocuments,
-  exportError,
+  canPrint,
+  onOpenPrintPreview,
   isAuthenticated = false,
   onSaveDesign,
 }: DocumentFormProps) {
@@ -83,10 +79,8 @@ export function DocumentForm({
         importSummary={importSummary}
         importError={importError}
         isImportingDataset={isImportingDataset}
-        canExport={canExport}
-        onExportDocuments={onExportDocuments}
-        isExportingDocuments={isExportingDocuments}
-        exportError={exportError}
+        canPrint={canPrint}
+        onOpenPrintPreview={onOpenPrintPreview}
       />
 
       <FieldsList

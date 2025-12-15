@@ -4,13 +4,14 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DocumentCanvas, DocumentForm, PreviewNavigation } from "@/components/merge-editor";
 import { SaveDesignModal } from "@/components/ui/save-design-modal";
+import { PrintPreviewModal } from "@/components/ui/print-preview-modal";
 import { useAuth } from "@/components/layout/auth-provider";
 import {
   useDocumentEditor,
   useDatasetImport,
-  useDocumentExport,
   usePreviewMode,
   useSaveDesign,
+  usePrintPreview,
 } from "@/hooks";
 
 export default function CreatePage() {
@@ -44,16 +45,14 @@ export default function CreatePage() {
     onHeadersImported: syncFieldsToHeaders,
   });
 
-  // Document export handling
+  // Print preview handling
   const {
-    isExporting,
-    exportError,
-    canExport,
-    handleExportDocuments,
-  } = useDocumentExport({
-    document,
-    datasetRows,
-  });
+    isOpen: isPrintPreviewOpen,
+    handleOpenPrintPreview,
+    handleClosePrintPreview,
+  } = usePrintPreview();
+
+  const canPrint = datasetRows.length > 0;
 
   // Preview mode handling
   const {
@@ -136,10 +135,8 @@ export default function CreatePage() {
               importSummary={importSummary}
               importError={importError}
               isImportingDataset={isImportingDataset}
-              canExport={canExport}
-              onExportDocuments={handleExportDocuments}
-              isExportingDocuments={isExporting}
-              exportError={exportError}
+              canPrint={canPrint}
+              onOpenPrintPreview={handleOpenPrintPreview}
               isAuthenticated={isAuthenticated}
               onSaveDesign={handleOpenSaveModal}
             />
@@ -152,6 +149,14 @@ export default function CreatePage() {
         isOpen={showSaveModal}
         onClose={handleCloseSaveModal}
         onSave={handleSaveSubmit}
+      />
+
+      {/* Print Preview Modal */}
+      <PrintPreviewModal
+        isOpen={isPrintPreviewOpen}
+        onClose={handleClosePrintPreview}
+        documentData={document}
+        datasetRows={datasetRows}
       />
 
       {/* Save Status Toast */}
