@@ -78,8 +78,8 @@ export default function MyLabelsPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-6">
         <div className="pn-noise relative w-full max-w-md border border-ink bg-cream p-8 text-center shadow-paper sm:p-10">
-          <p className="pn-eyebrow mb-4 text-muted-ink">
-            Archive — Access required
+          <p className="pn-kicker mb-4 text-muted-ink">
+            Archive / Access required
           </p>
           <h1 className="pn-display-m mb-4 text-ink">
             Log in to see your documents
@@ -100,8 +100,8 @@ export default function MyLabelsPage() {
       <div className="mx-auto max-w-6xl px-6">
         {/* Editorial title block */}
         <header className="mb-12">
-          <p className="pn-eyebrow mb-4 text-muted-ink">
-            Archive — Your documents
+          <p className="pn-kicker mb-4 text-muted-ink">
+            Archive / Your documents
           </p>
           <h1 className="pn-display-l mb-4 text-ink">My Documents</h1>
           <p className="max-w-[62ch] text-base text-ink">

@@ -29,8 +29,8 @@ export default function AboutPage() {
       <div className="mx-auto max-w-6xl px-6">
         {/* Colophon header */}
         <div className="max-w-3xl">
-          <p className="pn-eyebrow text-muted-ink">
-            Colophon &mdash; our story
+          <p className="pn-kicker text-muted-ink">
+            Colophon / Our story
           </p>
           <h1 className="pn-display-xl mt-6 font-display text-ink">
             About Mail Buddy
@@ -65,8 +65,8 @@ export default function AboutPage() {
 
         {/* Manifesto: numbered index rows instead of icon cards */}
         <div className="mt-16">
-          <p className="pn-eyebrow text-muted-ink">
-            The manifesto &mdash; three rules we print by
+          <p className="pn-kicker text-muted-ink">
+            Manifesto / Three rules we print by
           </p>
           <div className="mt-8 border-t border-ink">
             {values.map((value) => (
@@ -80,7 +80,7 @@ export default function AboutPage() {
                 <h3 className="pn-display-m font-display text-ink md:col-span-4">
                   {value.title}
                 </h3>
-                <p className="max-w-[62ch] font-body text-sm leading-relaxed text-muted-ink md:col-span-6">
+                <p className="pn-serif max-w-[52ch] text-[13px] leading-relaxed text-muted-ink md:col-span-6">
                   {value.description}
                 </p>
               </div>

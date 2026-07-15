@@ -148,22 +148,40 @@ select {
 .pn-display-xl {
   font-family: var(--pn-font-display);
   font-size: 64px;
-  line-height: 56px;
+  line-height: 0.88;
   letter-spacing: -0.055em;
+  text-transform: uppercase;
 }
 
 .pn-display-l {
   font-family: var(--pn-font-display);
   font-size: 48px;
-  line-height: 44px;
+  line-height: 0.9;
   letter-spacing: -0.045em;
+  text-transform: uppercase;
 }
 
 .pn-display-m {
   font-family: var(--pn-font-display);
   font-size: 32px;
-  line-height: 30px;
+  line-height: 0.95;
   letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+/* Mono kicker: "SPECIMEN INDEX / REAL PEOPLE, REAL PAPER" */
+.pn-kicker {
+  font-family: var(--pn-font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Serif editorial aside: "Small stories, carefully saved." */
+.pn-serif {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
 }
 
 @media (max-width: 760px) {

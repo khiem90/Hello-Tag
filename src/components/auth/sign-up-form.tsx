@@ -114,7 +114,7 @@ export function SignUpForm({
   return (
     <div className="pn-noise relative w-full rounded-none border border-ink bg-cream p-6 shadow-paper sm:p-8">
       <div className="mb-8 border-b border-ink pb-4">
-        <p className="pn-eyebrow text-muted-ink">Form 02 — Create account</p>
+        <p className="pn-kicker text-muted-ink">Form 02 / Create account</p>
         <h2 className="pn-display-m mt-2 text-ink">Create account</h2>
       </div>
 

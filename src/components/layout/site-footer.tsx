@@ -1,61 +1,56 @@
+"use client";
+
 import Link from "next/link";
-import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  // The editor is a full-viewport studio with its own chrome.
+  if (pathname === "/create") return null;
+
   return (
     <footer className="mt-auto border-t border-ink bg-ink text-white-ink">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col items-start">
-            <p className="pn-annotation text-white-ink/60">The colophon</p>
-            <p className="mt-2 font-display text-2xl tracking-[-0.02em]">
-              MAIL BUDDY
-            </p>
-            <p className="pn-hand mt-3 -rotate-2 text-soft-pink">
-              design once, make many!
-            </p>
-          </div>
-
-          <nav
-            className="flex flex-col gap-3 md:flex-row md:gap-10"
-            aria-label="Footer navigation"
-          >
-            {[
-              { href: "/about", label: "About", index: "A" },
-              { href: "/templates", label: "Templates", index: "B" },
-              { href: "/create", label: "Merge", index: "C" },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="pn-eyebrow group flex items-center gap-2 text-white-ink/70 transition-colors duration-[160ms] hover:text-white-ink"
-              >
-                <span className="pn-annotation text-pink">{item.index}.</span>
-                <span className="group-hover:underline group-hover:decoration-2 group-hover:underline-offset-4">
-                  {item.label}
-                </span>
-              </Link>
-            ))}
-          </nav>
-
-          <Image
-            src="/press-notes/barcode-decorative.svg"
-            alt=""
-            width={40}
-            height={64}
-            className="hidden h-16 w-10 opacity-70 md:block"
-            aria-hidden="true"
-          />
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-4 py-12 sm:px-9 md:grid-cols-[1fr_1fr_250px]">
+        <div className="grid grid-cols-[auto_auto] items-center justify-start gap-x-6">
+          <span className="pn-kicker text-white-ink/50">The colophon</span>
+          <b className="font-display text-[19px] tracking-[-0.02em]">
+            MAIL BUDDY
+          </b>
+          <i className="pn-hand col-span-2 mt-2 -rotate-1 not-italic text-pink">
+            design once, make many!
+          </i>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white-ink/20 pt-6 sm:flex-row">
-          <p className="pn-annotation text-white-ink/50">
-            © {new Date().getFullYear()} Mail Buddy · Set in Archivo, Inter
-            &amp; DM Mono
+        <nav
+          className="flex flex-col gap-3 md:flex-row md:gap-6"
+          aria-label="Footer navigation"
+        >
+          {[
+            { href: "/templates", label: "A. Specimens" },
+            { href: "/create", label: "B. Process" },
+            { href: "/about", label: "C. Details" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="pn-kicker text-white-ink/70 transition-colors duration-[160ms] hover:text-white-ink hover:underline hover:decoration-2 hover:underline-offset-4"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="md:text-right">
+          <p
+            className="font-mono text-[22px] leading-none tracking-[-5px]"
+            aria-hidden="true"
+          >
+            |||| || ||||
           </p>
-          <p className="pn-annotation text-white-ink/50">
-            Printed on warm digital paper
-          </p>
+          <small className="pn-annotation mt-1 block text-white-ink/50">
+            © {new Date().getFullYear()} / Warm digital paper
+          </small>
         </div>
       </div>
     </footer>

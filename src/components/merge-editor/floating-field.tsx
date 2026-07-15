@@ -17,6 +17,8 @@ type FloatingFieldProps = {
   isActive: boolean;
   isInteractionDisabled?: boolean;
   previewMode?: boolean;
+  /** Annotation layer: keep the pink field-name note visible at all times */
+  showNote?: boolean;
   cardRef: React.RefObject<HTMLDivElement | null>;
   onSelect: (id: string) => void;
   onDrag: (id: string, position: Pick<MergeField, "x" | "y">) => void;
@@ -31,6 +33,7 @@ export const FloatingField = memo(function FloatingField({
   isActive,
   isInteractionDisabled,
   previewMode,
+  showNote,
   cardRef,
   onSelect,
   onDrag,
@@ -192,7 +195,9 @@ export const FloatingField = memo(function FloatingField({
         {!previewMode && (
           <div
             className={`pn-annotation absolute -top-5 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap border border-ink bg-pink px-2 py-0.5 text-ink transition-opacity duration-[160ms] ${
-              isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              isSelected || showNote
+                ? "opacity-100"
+                : "opacity-0 group-hover:opacity-100"
             }`}
           >
             <Move className="h-3 w-3" aria-hidden="true" />

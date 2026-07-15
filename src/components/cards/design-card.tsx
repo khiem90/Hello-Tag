@@ -120,7 +120,7 @@ export function DesignCard({
             {design.data.fields.length === 1 ? "" : "s"}
           </p>
           {design.description && (
-            <p className="mt-2 line-clamp-2 text-xs text-muted-ink">
+            <p className="pn-serif mt-2 line-clamp-2 text-[13px] leading-snug text-muted-ink">
               {design.description}
             </p>
           )}

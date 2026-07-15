@@ -36,7 +36,9 @@ export default function TemplatesPage() {
       <div className="mx-auto max-w-6xl px-6">
         {/* Editorial title block */}
         <header className="mb-12">
-          <p className="pn-eyebrow mb-4 text-muted-ink">Catalog — Templates</p>
+          <p className="pn-kicker mb-4 text-muted-ink">
+            Catalog / Design once, make many
+          </p>
           <h1 className="pn-display-l mb-4 text-ink">Start with a template</h1>
           <p className="max-w-[62ch] text-base text-ink">
             Pick a pre-set sheet, then merge in your own data — every specimen

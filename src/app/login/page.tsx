@@ -23,7 +23,7 @@ export default async function LoginPage({ searchParams }: Props) {
     <main className="flex min-h-screen items-center justify-center px-4 py-16 sm:px-6">
       <div className="mx-auto flex w-full max-w-5xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
         <div className="w-full max-w-lg space-y-5 text-center lg:text-left">
-          <p className="pn-eyebrow text-muted-ink">01 — Welcome back</p>
+          <p className="pn-kicker text-muted-ink">Form 01 / Welcome back</p>
 
           <h1 className="pn-display-l text-ink">Sign in to your account</h1>
 
