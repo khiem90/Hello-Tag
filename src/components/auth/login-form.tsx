@@ -16,7 +16,6 @@ import {
 import { getFirebaseAuth } from "@/lib/firebase-client";
 import type { LoginFormProps } from "@/types/auth";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function LoginForm({
   redirectPath = "/",
@@ -101,17 +100,15 @@ export function LoginForm({
   }, [googleProvider, redirectPath, router]);
 
   return (
-    <div className="w-full rounded-xl border border-ink/5 bg-white p-8 shadow-soft">
-      <div className="mb-8">
-        <p className="text-sm font-medium text-terracotta mb-2">Welcome back</p>
-        <h2 className="font-heading text-2xl tracking-tight text-ink">
-          Sign in
-        </h2>
+    <div className="pn-noise relative w-full rounded-none border border-ink bg-cream p-6 shadow-paper sm:p-8">
+      <div className="mb-8 border-b border-ink pb-4">
+        <p className="pn-kicker text-muted-ink">Form 01 / Sign in</p>
+        <h2 className="pn-display-m mt-2 text-ink">Sign in</h2>
       </div>
-      
-      <form className="space-y-5" onSubmit={handleEmailSubmit}>
+
+      <form className="space-y-6" onSubmit={handleEmailSubmit}>
         <div>
-          <label className="mb-2 block text-sm font-medium text-ink">
+          <label className="pn-eyebrow mb-2 block text-ink">
             Email address
           </label>
           <input
@@ -120,7 +117,7 @@ export function LoginForm({
             value={email}
             onChange={handleEmailChange}
             autoComplete="email"
-            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
             placeholder="you@example.com"
             required
             aria-label="Email address"
@@ -129,7 +126,7 @@ export function LoginForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-ink">
+          <label className="pn-eyebrow mb-2 block text-ink">
             Password
           </label>
           <input
@@ -138,7 +135,7 @@ export function LoginForm({
             value={password}
             onChange={handlePasswordChange}
             autoComplete="current-password"
-            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
             placeholder="••••••••"
             required
             aria-label="Password"
@@ -158,15 +155,15 @@ export function LoginForm({
         </Button>
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-xs font-medium text-ink-light/60">
-        <span className="h-px flex-1 bg-ink/5" aria-hidden />
-        <span>or</span>
-        <span className="h-px flex-1 bg-ink/5" aria-hidden />
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-ink/30" aria-hidden />
+        <span className="pn-annotation text-muted-ink">or</span>
+        <span className="h-px flex-1 bg-ink/30" aria-hidden />
       </div>
 
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="lg"
         onClick={handleGoogleLogin}
         className="w-full gap-3"
@@ -177,7 +174,7 @@ export function LoginForm({
         ) : (
           <>
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4"
               viewBox="0 0 24 24"
               aria-hidden
               focusable="false"
@@ -207,25 +204,40 @@ export function LoginForm({
       <div className="mt-6 space-y-3 text-sm">
         {error ? (
           <div
-            className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700"
+            className="flex items-start gap-2 border-l-2 border-yellow pl-3 text-ink"
             role="alert"
             aria-live="assertive"
           >
-            <AlertCircle className="h-5 w-5 shrink-0" />
+            <span
+              className="mt-[7px] block h-1.5 w-1.5 shrink-0 bg-yellow"
+              aria-hidden
+            />
             <p>{error}</p>
           </div>
         ) : null}
         {statusMessage ? (
           <div
-            className="flex items-start gap-3 rounded-lg border border-sage/30 bg-sage-light p-3 text-ink"
+            className="flex items-start gap-2 border-l-2 border-green pl-3 text-ink"
             role="status"
             aria-live="polite"
           >
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-sage" />
+            <span
+              className="mt-[7px] block h-1.5 w-1.5 shrink-0 bg-green"
+              aria-hidden
+            />
             <p>{statusMessage}</p>
           </div>
         ) : null}
       </div>
+
+      <p className="pn-hand mt-6 inline-block -rotate-2 text-ink">
+        we&rsquo;ll keep your seat warm
+      </p>
+
+      <p className="pn-annotation mt-6 flex items-center justify-between border-t border-ink pt-3 text-muted-ink">
+        <span>Press Notes · Form A-1</span>
+        <span>Mail Buddy</span>
+      </p>
     </div>
   );
 }

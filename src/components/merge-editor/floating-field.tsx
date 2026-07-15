@@ -17,6 +17,8 @@ type FloatingFieldProps = {
   isActive: boolean;
   isInteractionDisabled?: boolean;
   previewMode?: boolean;
+  /** Annotation layer: keep the pink field-name note visible at all times */
+  showNote?: boolean;
   cardRef: React.RefObject<HTMLDivElement | null>;
   onSelect: (id: string) => void;
   onDrag: (id: string, position: Pick<MergeField, "x" | "y">) => void;
@@ -31,6 +33,7 @@ export const FloatingField = memo(function FloatingField({
   isActive,
   isInteractionDisabled,
   previewMode,
+  showNote,
   cardRef,
   onSelect,
   onDrag,
@@ -143,6 +146,20 @@ export const FloatingField = memo(function FloatingField({
   // Check if this is a placeholder field (contains {{...}})
   const isPlaceholder = /\{\{.*\}\}/.test(displayText);
 
+  const isSelected = isDragging || isActive;
+
+  const stateClasses = isDragging
+    ? "z-50 cursor-grabbing pn-field-selected"
+    : isInteractionDisabled
+      ? "pointer-events-none"
+      : isActive
+        ? "pn-field-selected cursor-grab"
+        : previewMode
+          ? ""
+          : isPlaceholder
+            ? "pn-field-outline cursor-grab"
+            : "cursor-grab hover:outline-1 hover:outline-dashed hover:outline-ink hover:outline-offset-2";
+
   return (
     <DraggableCore
       nodeRef={nodeRef}
@@ -166,35 +183,28 @@ export const FloatingField = memo(function FloatingField({
           fontSize: `${field.fontSize}px`,
           lineHeight: 1.2,
         }}
-        className={`group max-w-[90%] whitespace-pre-wrap px-2 py-1 font-semibold tracking-tight outline-none rounded-lg ${
+        className={`group max-w-[90%] whitespace-pre-wrap rounded-none px-2 py-1 font-semibold tracking-tight outline-none ${stateClasses} ${alignClass} ${
           isDragging
-            ? "z-50 cursor-grabbing bg-white/50 backdrop-blur-sm scale-[1.02]"
-            : isInteractionDisabled
-              ? "pointer-events-none"
-              : isActive
-                ? "bg-terracotta/10 ring-2 ring-terracotta/30"
-                : previewMode
-                  ? ""
-                  : "cursor-grab hover:bg-white/30"
-        } ${alignClass} ${
-          isDragging ? "transition-none" : "transition-all duration-200"
-        } ${isPlaceholder && !previewMode ? "border border-dashed border-ink/20 bg-stone/30" : ""}`}
+            ? "transition-none"
+            : "transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)]"
+        }`}
       >
         {displayText || "Empty field"}
 
-        {/* Drag Handle / Indicator - only show when not in preview mode */}
+        {/* Solid pink handle with the field name as a real-text annotation */}
         {!previewMode && (
           <div
-            className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-md border border-terracotta bg-terracotta px-2 py-0.5 text-[0.6rem] font-medium text-white shadow-sm transition-opacity duration-200 ${
-              isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            className={`pn-annotation absolute -top-5 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap border border-ink bg-pink px-2 py-0.5 text-ink transition-opacity duration-[160ms] ${
+              isSelected || showNote
+                ? "opacity-100"
+                : "opacity-0 group-hover:opacity-100"
             }`}
           >
-            <Move className="w-3 h-3" />
-            <span>Move</span>
+            <Move className="h-3 w-3" aria-hidden="true" />
+            <span>{field.name || "Field"}</span>
           </div>
         )}
       </div>
     </DraggableCore>
   );
 });
-

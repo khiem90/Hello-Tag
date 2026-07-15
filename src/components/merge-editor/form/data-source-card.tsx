@@ -1,9 +1,9 @@
 "use client";
 
 import { ChangeEvent, useMemo, useRef } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Eye, FileSpreadsheet } from "lucide-react";
+import { Eye } from "lucide-react";
 import type { ImportSummary } from "@/types/import";
 
 type DataSourceCardProps = {
@@ -24,19 +24,19 @@ const importStatusTokens: Record<
   }
 > = {
   match: {
-    label: "Perfect Match",
-    pill: "border border-sage/30 bg-sage-light text-ink",
+    label: "✓ Perfect Match",
+    pill: "border border-green bg-green text-white-ink",
     text: "text-ink",
   },
   "needs-layers": {
-    label: "Needs Fields",
-    pill: "border border-amber-200 bg-amber-50 text-amber-700",
-    text: "text-amber-700",
+    label: "! Needs Fields",
+    pill: "border border-ink bg-yellow text-ink",
+    text: "text-ink",
   },
   "unused-layers": {
-    label: "Extra Fields",
-    pill: "border border-sky-200 bg-sky-50 text-sky-700",
-    text: "text-sky-700",
+    label: "＋ Extra Fields",
+    pill: "border border-ink bg-cream text-ink",
+    text: "text-ink",
   },
 };
 
@@ -105,112 +105,113 @@ export function DataSourceCard({
     : "Preview & Print";
 
   return (
-    <Card variant="elevated" className="bg-white">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sage/10 text-sage">
-              <FileSpreadsheet className="h-4 w-4" />
-            </div>
-            <CardTitle>Data Source</CardTitle>
+    <section className="p-5">
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <p className="pn-eyebrow text-ink">02 — Data source</p>
+        <p className="pn-hand -rotate-2 text-muted-ink">design once, print many</p>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          className="hidden"
+          onChange={handleDatasetChange}
+        />
+
+        {/* Drop-zone style import trigger */}
+        <button
+          type="button"
+          onClick={handleDatasetButton}
+          disabled={isImportingDataset}
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-none border border-dashed border-ink bg-cream px-4 py-5 text-center transition-colors duration-[160ms] hover:bg-sage/40 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Image
+            src="/press-notes/running-forms.svg"
+            alt=""
+            width={120}
+            height={40}
+          />
+          <span className="pn-eyebrow text-ink">
+            {isImportingDataset ? "Reading file…" : "Upload CSV / XLSX"}
+          </span>
+          <span className="pn-annotation text-muted-ink">
+            Recipient columns become merge fields
+          </span>
+        </button>
+
+        <Button
+          onClick={onOpenPrintPreview}
+          disabled={!canPrint}
+          variant="primary"
+          size="sm"
+          className="gap-2 self-start"
+        >
+          <Eye className="h-4 w-4" aria-hidden="true" />
+          {printButtonLabel}
+        </Button>
+
+        {importError && (
+          <div
+            className="rounded-none border border-ink bg-yellow/50 p-3"
+            role="alert"
+          >
+            <p className="pn-annotation text-ink">Import error</p>
+            <p className="mt-1 text-sm text-ink">{importError}</p>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="mb-4 text-sm text-ink-light">
-          Upload CSV or Excel files with your recipient data.
-        </p>
+        )}
 
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              className="hidden"
-              onChange={handleDatasetChange}
-            />
-            <Button
-              onClick={handleDatasetButton}
-              disabled={isImportingDataset}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              {isImportingDataset ? "Reading..." : "Upload File"}
-            </Button>
-
-            <Button
-              onClick={onOpenPrintPreview}
-              disabled={!canPrint}
-              variant="primary"
-              size="sm"
-              className="gap-2 ml-auto sm:ml-0"
-            >
-              <Eye className="h-4 w-4" />
-              {printButtonLabel}
-            </Button>
-          </div>
-
-          {importError && (
-            <div
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-              role="alert"
-            >
-              {importError}
-            </div>
-          )}
-
-          {importSummary && (
-            <div className="mt-2 space-y-3 rounded-xl border border-ink/5 bg-stone/30 p-4">
-              <div className="flex items-center justify-between border-b border-ink/5 pb-2">
-                <div>
-                  <p className="font-medium text-sm text-ink">
-                    {importSummary.fileName}
+        {importSummary && (
+          <div className="mt-1 border border-ink bg-cream">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink px-4 py-3">
+              <div>
+                <p className="pn-eyebrow text-ink">{importSummary.fileName}</p>
+                {importTimestamp && (
+                  <p className="pn-annotation mt-1 text-muted-ink">
+                    Imported {importTimestamp}
                   </p>
-                  {importTimestamp && (
-                    <p className="text-xs text-ink-light">{importTimestamp}</p>
-                  )}
-                </div>
-                {importStatus && (
-                  <span
-                    className={`rounded-md px-2.5 py-1 text-xs font-medium ${importStatus.pill}`}
-                  >
-                    {importStatus.label}
-                  </span>
                 )}
               </div>
-
-              {importDescription && (
-                <p className="text-sm text-ink-light">{importDescription}</p>
+              {importStatus && (
+                <span
+                  className={`pn-annotation px-2.5 py-1 ${importStatus.pill}`}
+                >
+                  {importStatus.label}
+                </span>
               )}
+            </div>
 
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg bg-white p-2">
-                  <div className="text-xs text-ink-light">Columns</div>
-                  <div className="font-heading text-lg text-ink">
-                    {importSummary.headerCount}
-                  </div>
+            {importDescription && (
+              <p className="border-b border-ink px-4 py-3 text-sm text-muted-ink">
+                {importDescription}
+              </p>
+            )}
+
+            {/* Connected-sheet stats */}
+            <div className="grid grid-cols-3 divide-x divide-ink text-center">
+              <div className="px-2 py-3">
+                <div className="pn-annotation text-muted-ink">Columns</div>
+                <div className="font-display text-lg text-ink">
+                  {importSummary.headerCount}
                 </div>
-                <div className="rounded-lg bg-white p-2">
-                  <div className="text-xs text-ink-light">Fields</div>
-                  <div className="font-heading text-lg text-ink">
-                    {importSummary.layerCount}
-                  </div>
+              </div>
+              <div className="px-2 py-3">
+                <div className="pn-annotation text-muted-ink">Fields</div>
+                <div className="font-display text-lg text-ink">
+                  {importSummary.layerCount}
                 </div>
-                <div className="rounded-lg bg-white p-2">
-                  <div className="text-xs text-ink-light">Records</div>
-                  <div className="font-heading text-lg text-ink">
-                    {importSummary.rowCount}
-                  </div>
+              </div>
+              <div className="px-2 py-3">
+                <div className="pn-annotation text-muted-ink">Records</div>
+                <div className="font-display text-lg text-ink">
+                  {importSummary.rowCount}
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
-

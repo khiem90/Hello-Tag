@@ -54,7 +54,7 @@ export function NameTagCanvas({
       : backgroundThemes[tag.background];
 
   const visibleFields = tag.fields.filter((field) => field.visible);
-  
+
   const cardBackgroundStyle =
     tag.background === "custom"
       ? {
@@ -120,7 +120,7 @@ export function NameTagCanvas({
       : undefined;
 
   const containerClasses = [
-    "rounded-xl border border-ink/5 bg-white p-6 shadow-soft transition-all duration-300",
+    "pn-noise relative rounded-none border border-ink bg-cream p-6 shadow-paper transition-all duration-300",
     isFloating ? "z-30" : "sticky top-24 self-start",
   ].join(" ");
 
@@ -146,27 +146,27 @@ export function NameTagCanvas({
         className={containerClasses}
         style={floatingStyles}
       >
-        <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-3 border-b border-ink pb-4">
           <div>
-            <p className="text-sm font-medium text-terracotta tracking-wide">
-              Live Canvas
+            <p className="pn-eyebrow text-muted-ink">
+              The working file
             </p>
-            <h2 className="font-heading text-2xl tracking-tight text-ink">
-              Label Preview
+            <h2 className="pn-display-m mt-1 text-ink">
+              Label sheet
             </h2>
-            <p className="text-sm text-ink-light">
+            <p className="pn-eyebrow mt-2 text-muted-ink">
               Drag layers to reposition
             </p>
           </div>
-          <span className="inline-flex items-center rounded-md border border-ink/10 bg-stone px-3 py-1 text-sm font-medium text-ink">
+          <span className="pn-eyebrow inline-flex items-center border border-ink bg-cream px-3 py-1 text-ink">
             {visibleFields.length} item{visibleFields.length === 1 ? "" : "s"}
           </span>
         </header>
 
-        <div className="flex items-center justify-center bg-stone/50 rounded-xl p-4 border border-ink/5">
+        <div className="flex items-center justify-center border border-ink bg-sage p-5 sm:p-8">
           <div
             ref={cardRef}
-            className="relative w-full max-w-md overflow-hidden rounded-lg border border-ink/10 shadow-soft"
+            className="relative w-full max-w-md overflow-hidden rounded-none border border-ink shadow-paper-sm"
             style={{
               ...cardBackgroundStyle,
               aspectRatio: "3.25 / 3", // Match Word label cell ratio
@@ -188,19 +188,24 @@ export function NameTagCanvas({
                   cardRef={cardRef}
                 />
               ))}
-              
+
               {/* Empty state */}
               {visibleFields.length === 0 && (
-                <div className="flex h-full items-center justify-center text-ink-light">
-                  <p className="text-sm">No visible layers</p>
+                <div className="flex h-full flex-col items-center justify-center gap-2 border border-dashed border-ink bg-cream p-6 text-center">
+                  <p className="pn-hand -rotate-2 text-ink">
+                    a blank label, waiting
+                  </p>
+                  <p className="pn-eyebrow text-muted-ink">
+                    Add a layer to start setting type
+                  </p>
                 </div>
               )}
             </div>
           </div>
         </div>
-        
+
         {/* Info about the preview */}
-        <p className="mt-4 text-center text-xs text-ink-light">
+        <p className="pn-annotation mt-4 text-center text-muted-ink">
           Preview matches Word document export format
         </p>
       </section>
@@ -233,7 +238,7 @@ const FloatingField = memo(function FloatingField({
 }: FloatingFieldProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   // Local position state for smooth visual updates during drag
   const [localPos, setLocalPos] = useState({ x: field.x, y: field.y });
 
@@ -267,14 +272,14 @@ const FloatingField = memo(function FloatingField({
         return;
       }
       const { width, height } = root.getBoundingClientRect();
-      
+
       const newX = clampPercent(dragPositionRef.current.x + (deltaX / width) * 100);
       const newY = clampPercent(dragPositionRef.current.y + (deltaY / height) * 100);
-      
+
       const newPos = { x: newX, y: newY };
       dragPositionRef.current = newPos;
       setLocalPos(newPos);
-      
+
       handleUpdatePosition(newPos);
     },
     [cardRef, handleUpdatePosition],
@@ -328,6 +333,21 @@ const FloatingField = memo(function FloatingField({
   const currentX = isDragging ? localPos.x : field.x;
   const currentY = isDragging ? localPos.y : field.y;
 
+  // Check if this is a data-bound layer (contains {{...}})
+  const isPlaceholder = /\{\{.*\}\}/.test(field.text);
+
+  const isSelected = isDragging || isActive;
+
+  const stateClasses = isDragging
+    ? "z-50 cursor-grabbing pn-field-selected"
+    : isInteractionDisabled
+      ? "pointer-events-none opacity-50"
+      : isActive
+        ? "pn-field-selected cursor-grab"
+        : isPlaceholder
+          ? "pn-field-outline cursor-grab"
+          : "cursor-grab hover:outline-1 hover:outline-dashed hover:outline-ink hover:outline-offset-2";
+
   return (
     <DraggableCore
       nodeRef={nodeRef}
@@ -350,28 +370,22 @@ const FloatingField = memo(function FloatingField({
           fontSize: `${Math.min(field.fontSize, 48)}px`,
           lineHeight: 1.2,
         }}
-        className={`group max-w-[90%] whitespace-pre-wrap px-2 py-1 font-semibold tracking-tight outline-none rounded-lg ${
+        className={`group max-w-[90%] whitespace-pre-wrap rounded-none px-2 py-1 font-semibold tracking-tight outline-none ${stateClasses} ${alignClass} ${
           isDragging
-            ? "z-50 cursor-grabbing bg-white/50 backdrop-blur-sm scale-[1.02]"
-            : isInteractionDisabled
-              ? "pointer-events-none opacity-50"
-              : isActive
-                ? "bg-terracotta/10 ring-2 ring-terracotta/30"
-                : "cursor-grab hover:bg-white/30"
-        } ${alignClass} ${
-          isDragging ? "transition-none" : "transition-all duration-200"
+            ? "transition-none"
+            : "transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)]"
         }`}
       >
         {field.text || "Empty text"}
-        
-        {/* Drag Handle / Indicator */}
+
+        {/* Solid pink handle with the layer name as a real-text annotation */}
         <div
-          className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-md border border-terracotta bg-terracotta px-2 py-0.5 text-[0.6rem] font-medium text-white shadow-sm transition-opacity duration-200 ${
-            isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          className={`pn-annotation absolute -top-5 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap border border-ink bg-pink px-2 py-0.5 text-ink transition-opacity duration-[160ms] ${
+            isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           }`}
         >
-          <Move className="w-3 h-3" />
-          <span>Move</span>
+          <Move className="h-3 w-3" aria-hidden="true" />
+          <span>{field.name || "Layer"}</span>
         </div>
       </div>
     </DraggableCore>

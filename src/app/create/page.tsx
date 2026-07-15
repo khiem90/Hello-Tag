@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DocumentCanvas, DocumentForm, PreviewNavigation } from "@/components/merge-editor";
+import { DocumentCanvas } from "@/components/merge-editor";
 import { SaveDesignModal } from "@/components/ui/save-design-modal";
 import { PrintPreviewModal } from "@/components/ui/print-preview-modal";
 import { useAuth } from "@/components/layout/auth-provider";
+import { documentTypeList, getDocumentTypeConfig } from "@/lib/document-types";
+import { accentPalette, backgroundThemes } from "@/lib/name-tag";
+import type { DocumentData } from "@/types/document";
 import {
   useDocumentEditor,
   useDatasetImport,
@@ -13,6 +17,9 @@ import {
   useSaveDesign,
   usePrintPreview,
 } from "@/hooks";
+import "./press-notes-editor.css";
+
+const MAX_RAIL_RECORDS = 150;
 
 export default function CreatePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -76,6 +83,10 @@ export default function CreatePage() {
     document,
   });
 
+  // Annotation layer ("Show notes" per the Press Notes anatomy)
+  const [notesVisible, setNotesVisible] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Auth redirect
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -83,10 +94,56 @@ export default function CreatePage() {
     }
   }, [isLoading, isAuthenticated, router]);
 
+  // Alt + arrow keys page through connected records while previewing
+  useEffect(() => {
+    if (!isPreviewMode || datasetRows.length === 0) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!event.altKey) return;
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        handleRecordChange(
+          Math.min(previewRecordIndex + 1, datasetRows.length - 1)
+        );
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        handleRecordChange(Math.max(previewRecordIndex - 1, 0));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isPreviewMode, datasetRows.length, previewRecordIndex, handleRecordChange]);
+
+  const handlePickFile = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        void handleDatasetImport(file);
+      }
+      event.target.value = "";
+    },
+    [handleDatasetImport]
+  );
+
+  const handleRecordClick = useCallback(
+    (index: number) => {
+      handleRecordChange(index);
+      if (!isPreviewMode) {
+        handleTogglePreview();
+      }
+    },
+    [handleRecordChange, isPreviewMode, handleTogglePreview]
+  );
+
+  const handleViewTemplate = useCallback(() => {
+    if (isPreviewMode) {
+      handleTogglePreview();
+    }
+  }, [isPreviewMode, handleTogglePreview]);
+
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone border-t-terracotta" />
+      <div className="flex min-h-screen items-center justify-center bg-sage">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/20 border-t-ink" />
       </div>
     );
   }
@@ -95,54 +152,403 @@ export default function CreatePage() {
     return null;
   }
 
+  const config = getDocumentTypeConfig(document.documentType);
+  const activeFieldData = document.fields.find(
+    (field) => field.id === activeField
+  );
+  const headers = importSummary?.headers ?? [];
+  const railRecords = datasetRows.slice(0, MAX_RAIL_RECORDS);
+  const backgroundKeys = Object.keys(backgroundThemes) as Array<
+    Exclude<DocumentData["background"], "custom">
+  >;
+
   return (
-    <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        {/* Preview Navigation Bar */}
-        <PreviewNavigation
-          isPreviewMode={isPreviewMode}
-          onTogglePreview={handleTogglePreview}
-          currentRecord={previewRecordIndex}
-          totalRecords={datasetRows.length}
-          onRecordChange={handleRecordChange}
-          hasData={datasetRows.length > 0}
+    <div className="pn-app">
+      {/* Issue header */}
+      <header className="pn-ed-header">
+        <Link href="/">Mail Buddy</Link>
+        <span>
+          {importSummary
+            ? `${importSummary.fileName} / ${datasetRows.length} rows`
+            : "No sheet connected / template mode"}
+        </span>
+        <nav aria-label="Editor actions">
+          <button
+            type="button"
+            className="pn-ed-pink"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImportingDataset}
+          >
+            {isImportingDataset ? "Reading file…" : "Import data"}
+          </button>
+          <button type="button" onClick={() => setNotesVisible((v) => !v)}>
+            {notesVisible ? "Hide notes" : "Show notes"}
+          </button>
+          <button type="button" onClick={handleReset}>
+            Reset
+          </button>
+          <button type="button" onClick={handleOpenSaveModal}>
+            Save design
+          </button>
+          <button
+            type="button"
+            className="pn-ed-dark"
+            onClick={handleOpenPrintPreview}
+            disabled={!canPrint}
+          >
+            Preview &amp; print
+          </button>
+        </nav>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          onChange={handlePickFile}
+          className="hidden"
+          aria-label="Import CSV or Excel file"
         />
+      </header>
 
-        <section className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,400px)] lg:items-start">
-          <div className="order-1 lg:order-0">
-            <DocumentCanvas
-              document={document}
-              activeField={activeField}
-              previewMode={isPreviewMode}
-              previewData={currentPreviewData}
-              onSelectField={selectField}
-              onFieldPositionChange={updateField}
-            />
+      {/* Editorial title block */}
+      <section className="pn-ed-title">
+        <div>
+          <span>Visual document editor</span>
+          <div className="pn-ed-types" role="tablist" aria-label="Document type">
+            {documentTypeList.map((type, index) => (
+              <button
+                key={type.id}
+                type="button"
+                role="tab"
+                aria-selected={document.documentType === type.id}
+                className={document.documentType === type.id ? "on" : ""}
+                onClick={() => handleDocumentTypeChange(type.id)}
+              >
+                <i>{String(index + 1).padStart(2, "0")}</i>
+                {type.label}
+              </button>
+            ))}
           </div>
+        </div>
+        <h1>
+          {config.label}
+          <br />
+          breakdown.
+        </h1>
+        <p>
+          A living editorial system for{" "}
+          <i>
+            {datasetRows.length
+              ? `${datasetRows.length} record${datasetRows.length === 1 ? "" : "s"}.`
+              : "your list."}
+          </i>
+          <br />
+          One carefully considered composition.
+        </p>
+      </section>
 
-          <div className="order-2 lg:order-0">
-            <DocumentForm
-              document={document}
-              activeFieldId={activeField}
-              onSelectField={selectField}
-              onFieldChange={handleFieldChange}
-              onAddField={addField}
-              onRemoveField={removeField}
-              onThemeChange={handleThemeChange}
-              onDocumentTypeChange={handleDocumentTypeChange}
-              onReset={handleReset}
-              onImportDataset={handleDatasetImport}
-              importSummary={importSummary}
-              importError={importError}
-              isImportingDataset={isImportingDataset}
-              canPrint={canPrint}
-              onOpenPrintPreview={handleOpenPrintPreview}
-              isAuthenticated={isAuthenticated}
-              onSaveDesign={handleOpenSaveModal}
-            />
-          </div>
-        </section>
-      </div>
+      {/* Contents index / document sheet / properties */}
+      <section className="pn-ed-board">
+        <div className="pn-ed-index">
+          <span>Contents</span>
+          {document.fields.map((field, index) => (
+            <button
+              key={field.id}
+              type="button"
+              className={`${field.id === activeField ? "on" : ""} ${
+                field.visible ? "" : "is-hidden"
+              }`}
+              onClick={() => selectField(field.id)}
+            >
+              {String(index + 1).padStart(2, "0")} /{" "}
+              {field.name || `Field ${index + 1}`}
+            </button>
+          ))}
+          <button type="button" className="pn-ed-add" onClick={addField}>
+            + Add field
+          </button>
+          <p>Every annotation maps to a reusable document field.</p>
+        </div>
+
+        <div className="pn-ed-stage">
+          {importError && (
+            <p className="pn-ed-error" role="alert">
+              ■ {importError}
+            </p>
+          )}
+          <DocumentCanvas
+            document={document}
+            activeField={activeField}
+            previewMode={isPreviewMode}
+            previewData={currentPreviewData}
+            notesVisible={notesVisible && !isPreviewMode}
+            onSelectField={selectField}
+            onFieldPositionChange={updateField}
+          />
+          <p className="pn-ed-status">
+            {isPreviewMode ? (
+              <>
+                Viewing record{" "}
+                <i>{String(previewRecordIndex + 1).padStart(3, "0")}</i> / live
+                merged data · Alt + arrows to page
+              </>
+            ) : (
+              <>Template mode / drag fields to reposition</>
+            )}
+          </p>
+        </div>
+
+        <aside className="pn-ed-properties">
+          {activeFieldData ? (
+            <>
+              <span>Field / {activeFieldData.name || "Untitled"}</span>
+              <h2>{activeFieldData.name || "Untitled field"}</h2>
+              <p className="pn-ed-token">{activeFieldData.text || "—"}</p>
+
+              <label>
+                Field name
+                <input
+                  type="text"
+                  value={activeFieldData.name}
+                  onChange={(event) =>
+                    handleFieldChange(activeFieldData.id, {
+                      name: event.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <label>
+                Content — {"{{ Field }}"} merges data
+                <input
+                  type="text"
+                  value={activeFieldData.text}
+                  onChange={(event) =>
+                    handleFieldChange(activeFieldData.id, {
+                      text: event.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <label>
+                Size (px)
+                <input
+                  type="number"
+                  min={8}
+                  max={96}
+                  value={activeFieldData.fontSize}
+                  onChange={(event) =>
+                    handleFieldChange(activeFieldData.id, {
+                      fontSize: Number(event.target.value) || 8,
+                    })
+                  }
+                />
+              </label>
+
+              <label>
+                Ink
+                <span className="pn-ed-ink-row">
+                  <input
+                    type="color"
+                    value={activeFieldData.color}
+                    onChange={(event) =>
+                      handleFieldChange(activeFieldData.id, {
+                        color: event.target.value,
+                      })
+                    }
+                    aria-label="Field ink color"
+                  />
+                  <b>{activeFieldData.color}</b>
+                </span>
+              </label>
+
+              <button
+                type="button"
+                className="pn-ed-row-btn"
+                onClick={() =>
+                  handleFieldChange(activeFieldData.id, {
+                    visible: !activeFieldData.visible,
+                  })
+                }
+              >
+                {activeFieldData.visible ? "Hide on sheet" : "Show on sheet"}
+              </button>
+              <button
+                type="button"
+                className="pn-ed-row-btn pn-ed-delete"
+                onClick={() => removeField(activeFieldData.id)}
+                disabled={document.fields.length <= 1}
+              >
+                Delete field
+              </button>
+
+              <div className="pn-rule" />
+
+              <label>
+                Alignment
+                <span className="pn-ed-seg">
+                  {(["left", "center", "right"] as const).map((align) => (
+                    <button
+                      key={align}
+                      type="button"
+                      className={document.textAlign === align ? "on" : ""}
+                      onClick={() => handleThemeChange({ textAlign: align })}
+                    >
+                      {align}
+                    </button>
+                  ))}
+                </span>
+              </label>
+
+              <label>
+                Background
+                <span className="pn-ed-seg">
+                  {backgroundKeys.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={document.background === key ? "on" : ""}
+                      onClick={() => handleThemeChange({ background: key })}
+                    >
+                      {key}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className={document.background === "custom" ? "on" : ""}
+                    onClick={() => handleThemeChange({ background: "custom" })}
+                  >
+                    Custom
+                  </button>
+                </span>
+              </label>
+
+              {document.background === "custom" && (
+                <label>
+                  Custom paper
+                  <span className="pn-ed-ink-row">
+                    <input
+                      type="color"
+                      value={document.customBackground}
+                      onChange={(event) =>
+                        handleThemeChange({
+                          customBackground: event.target.value,
+                        })
+                      }
+                      aria-label="Custom background color"
+                    />
+                    <b>{document.customBackground}</b>
+                  </span>
+                </label>
+              )}
+
+              <label>
+                Accent
+                <span className="pn-ed-swatches">
+                  {accentPalette.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={document.accent === color ? "on" : ""}
+                      style={{ backgroundColor: color }}
+                      onClick={() => handleThemeChange({ accent: color })}
+                      aria-label={`Select accent color ${color}`}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={document.accent}
+                    onChange={(event) =>
+                      handleThemeChange({ accent: event.target.value })
+                    }
+                    aria-label="Custom accent color"
+                  />
+                </span>
+              </label>
+
+              <div className="pn-rule" />
+
+              <small>Founder note</small>
+              <blockquote>
+                &ldquo;Clarity can still have a sense of humor.&rdquo;
+              </blockquote>
+            </>
+          ) : (
+            <>
+              <span>Field / none selected</span>
+              <h2>Pick a field</h2>
+              <p className="pn-ed-token">
+                Select an entry in the contents index to edit it here.
+              </p>
+            </>
+          )}
+        </aside>
+      </section>
+
+      {/* Connected-sheet rail */}
+      <footer className="pn-ed-data">
+        <div className="pn-ed-data-meta">
+          <span>Connected sheet</span>
+          <b>
+            {datasetRows.length
+              ? `${datasetRows.length} row${datasetRows.length === 1 ? "" : "s"}`
+              : "Nothing yet"}
+          </b>
+          {datasetRows.length > 0 && (
+            <button
+              type="button"
+              className={!isPreviewMode ? "on" : ""}
+              onClick={handleViewTemplate}
+            >
+              View template
+            </button>
+          )}
+        </div>
+
+        <div className="pn-ed-records">
+          {railRecords.length === 0 ? (
+            <button
+              type="button"
+              className="pn-ed-import"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImportingDataset}
+            >
+              + Connect a CSV / XLSX — recipient columns become merge fields
+            </button>
+          ) : (
+            <>
+              {railRecords.map((row, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className={
+                    isPreviewMode && previewRecordIndex === index ? "on" : ""
+                  }
+                  onClick={() => handleRecordClick(index)}
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <b>{row[headers[0]] || "—"}</b>
+                  <small>{row[headers[1]] || ""}</small>
+                </button>
+              ))}
+              {datasetRows.length > MAX_RAIL_RECORDS && (
+                <span className="pn-ed-more">
+                  +{datasetRows.length - MAX_RAIL_RECORDS} more
+                </span>
+              )}
+            </>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="pn-ed-generate"
+          onClick={handleOpenPrintPreview}
+          disabled={!canPrint}
+        >
+          Generate issue -&gt;
+        </button>
+      </footer>
 
       {/* Save Design Modal */}
       <SaveDesignModal
@@ -160,11 +566,7 @@ export default function CreatePage() {
       />
 
       {/* Save Status Toast */}
-      {savingStatus && (
-        <div className="fixed bottom-6 right-6 z-50 animate-fade-up rounded-lg border border-sage/30 bg-sage-light px-5 py-3 text-sm font-medium text-ink shadow-soft">
-          {savingStatus}
-        </div>
-      )}
+      {savingStatus && <div className="pn-ed-toast">{savingStatus}</div>}
     </div>
   );
 }

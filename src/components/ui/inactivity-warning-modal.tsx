@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 
 type InactivityWarningModalProps = {
   isOpen: boolean;
@@ -52,16 +53,16 @@ export const InactivityWarningModal = ({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 animate-fade-in bg-ink/60"
         aria-hidden="true"
       />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-md rounded-xl border border-ink/5 bg-white p-8 shadow-soft-lg animate-fade-up">
-        {/* Warning Icon */}
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+      {/* Modal — cream sheet, yellow warning marker */}
+      <div className="pn-noise relative w-full max-w-md animate-fade-up rounded-none border border-ink bg-cream p-8 shadow-paper">
+        {/* Warning marker */}
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-none border border-ink bg-yellow">
           <svg
-            className="h-8 w-8 text-amber-600"
+            className="h-7 w-7 text-ink"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -77,15 +78,18 @@ export const InactivityWarningModal = ({
         </div>
 
         <header className="mb-6 text-center">
+          <p className="pn-eyebrow inline-block bg-yellow px-2 py-0.5 text-ink">
+            ! Session timeout
+          </p>
           <h2
             id="inactivity-modal-title"
-            className="font-heading text-2xl tracking-tight text-ink"
+            className="pn-display-m mt-3 text-ink"
           >
-            Session Timeout Warning
+            Still there?
           </h2>
           <p
             id="inactivity-modal-description"
-            className="text-sm text-ink-light mt-2"
+            className="mt-3 text-sm text-muted-ink"
           >
             You&apos;ve been inactive for a while. For your security, you&apos;ll
             be logged out soon.
@@ -94,40 +98,41 @@ export const InactivityWarningModal = ({
 
         {/* Countdown Timer */}
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center rounded-lg bg-stone px-6 py-4">
-            <span className="font-heading text-4xl font-semibold tabular-nums text-ink">
+          <div className="inline-flex items-center justify-center border border-ink bg-yellow/50 px-6 py-4">
+            <span className="font-mono text-4xl tabular-nums text-ink">
               {formatTime(timeRemaining)}
             </span>
           </div>
-          <p className="mt-2 text-xs text-ink-light">
+          <p className="pn-annotation mt-2 text-muted-ink">
             Time remaining before automatic logout
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={onLogout}
-            className="flex-1 rounded-lg border border-ink/10 px-4 py-3 text-sm font-medium text-ink transition-colors hover:bg-stone/50 focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2"
+            className="flex-1"
             tabIndex={0}
             aria-label="Log out now"
           >
             Log Out
-          </button>
-          <button
+          </Button>
+          <Button
             ref={stayButtonRef}
             type="button"
+            variant="primary"
             onClick={onStayLoggedIn}
-            className="flex-1 rounded-lg bg-terracotta px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-terracotta/90 focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2"
+            className="flex-1"
             tabIndex={0}
             aria-label="Stay logged in and continue session"
           >
             Stay Logged In
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   );
 };
-

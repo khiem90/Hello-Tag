@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit3, Calendar } from "lucide-react";
+import { Trash2, Edit3 } from "lucide-react";
 import { DocumentType } from "@/types/document";
 import { type SavedDesign } from "@/lib/tag-storage";
 
@@ -9,6 +9,7 @@ type DesignCardProps = {
   design: SavedDesign;
   onLoadDesign: (design: SavedDesign) => void;
   onDeleteDesign: (designId: string) => void;
+  index?: number;
 };
 
 const documentTypeLabels: Record<DocumentType, string> = {
@@ -16,6 +17,13 @@ const documentTypeLabels: Record<DocumentType, string> = {
   certificate: "Certificate",
   label: "Label",
   envelope: "Envelope",
+};
+
+const documentTypeAccents: Record<DocumentType, string> = {
+  letter: "bg-green",
+  certificate: "bg-pink",
+  label: "bg-yellow",
+  envelope: "bg-green",
 };
 
 const formatDate = (timestamp: Date | { toDate: () => Date }) => {
@@ -32,71 +40,87 @@ export function DesignCard({
   design,
   onLoadDesign,
   onDeleteDesign,
+  index,
 }: DesignCardProps) {
   const docType = design.data.documentType || "label";
+  const tilted = index !== undefined && index % 2 === 1;
 
   return (
-    <div className="flex flex-col bg-white rounded-xl border border-ink/5 overflow-hidden transition-shadow hover:shadow-soft group">
-      <div
-        className="aspect-4/3 w-full relative overflow-hidden border-b border-ink/5"
-        style={{
-          backgroundColor:
-            design.data.background === "custom"
-              ? design.data.customBackground
-              : "#fafaf8",
-          backgroundImage:
-            design.data.background !== "custom"
-              ? "linear-gradient(135deg, #f5f5f3 0%, #f0ede8 100%)"
-              : undefined,
-        }}
-      >
-        {/* Simplified Mini Preview */}
-        {design.data.fields
-          .filter((field) => field.visible)
-          .slice(0, 4)
-          .map((field, i) => (
-            <div
-              key={i}
-              className="absolute px-1 truncate"
-              style={{
-                top: `${field.y}%`,
-                left: `${field.x}%`,
-                transform: "translate(-50%, -50%)",
-                fontSize: `${Math.max(8, field.fontSize / 3)}px`,
-                color: field.color === "#FFFFFF" ? "#2d2d2d" : field.color,
-                fontWeight: "500",
-                opacity: 0.7,
-                maxWidth: "90%",
-              }}
-            >
-              {field.text}
-            </div>
-          ))}
+    <div
+      className={`group flex flex-col rounded-none border border-ink bg-cream transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:shadow-paper ${
+        tilted ? "rotate-[-0.4deg]" : ""
+      }`}
+    >
+      {/* Specimen header: index number + document type tag */}
+      <div className="flex items-center justify-between border-b border-ink px-4 py-2">
+        <span className="pn-eyebrow text-ink">
+          {index !== undefined
+            ? `No. ${String(index + 1).padStart(2, "0")}`
+            : "No. —"}
+        </span>
+        <span className="pn-annotation inline-flex items-center gap-1.5 text-ink">
+          <span
+            className={`h-2 w-2 border border-ink ${documentTypeAccents[docType]}`}
+            aria-hidden="true"
+          />
+          {documentTypeLabels[docType]}
+        </span>
+      </div>
 
-        {/* Document Type Badge */}
-        <div className="absolute top-3 left-3">
-          <span className="px-2 py-0.5 rounded bg-ink/70 text-[0.65rem] font-medium uppercase tracking-wider text-white">
-            {documentTypeLabels[docType]}
-          </span>
+      {/* Preview framed like a document proof */}
+      <div className="border-b border-ink p-3">
+        <div
+          className="aspect-4/3 relative w-full overflow-hidden border border-ink"
+          style={{
+            backgroundColor:
+              design.data.background === "custom"
+                ? design.data.customBackground
+                : "#fafaf8",
+            backgroundImage:
+              design.data.background !== "custom"
+                ? "linear-gradient(135deg, #f5f5f3 0%, #f0ede8 100%)"
+                : undefined,
+          }}
+        >
+          {/* Simplified Mini Preview */}
+          {design.data.fields
+            .filter((field) => field.visible)
+            .slice(0, 4)
+            .map((field, i) => (
+              <div
+                key={i}
+                className="absolute truncate px-1"
+                style={{
+                  top: `${field.y}%`,
+                  left: `${field.x}%`,
+                  transform: "translate(-50%, -50%)",
+                  fontSize: `${Math.max(8, field.fontSize / 3)}px`,
+                  color: field.color === "#FFFFFF" ? "#2d2d2d" : field.color,
+                  fontWeight: "500",
+                  opacity: 0.7,
+                  maxWidth: "90%",
+                }}
+              >
+                {field.text}
+              </div>
+            ))}
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 p-5">
+      <div className="flex flex-1 flex-col p-5">
         <div className="mb-4">
           <h3
-            className="font-heading text-lg tracking-tight text-ink line-clamp-1"
+            className="line-clamp-1 font-body text-lg font-semibold tracking-[-0.02em] text-ink"
             title={design.name}
           >
             {design.name}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-ink-light mt-1">
-            <Calendar className="h-3 w-3" />
-            <span>{formatDate(design.updatedAt)}</span>
-            <span className="text-ink/20">•</span>
-            <span>{design.data.fields.length} fields</span>
-          </div>
+          <p className="pn-annotation mt-1 text-muted-ink">
+            {formatDate(design.updatedAt)} · {design.data.fields.length} field
+            {design.data.fields.length === 1 ? "" : "s"}
+          </p>
           {design.description && (
-            <p className="text-xs text-ink-light mt-2 line-clamp-2">
+            <p className="pn-serif mt-2 line-clamp-2 text-[13px] leading-snug text-muted-ink">
               {design.description}
             </p>
           )}
@@ -109,7 +133,7 @@ export function DesignCard({
             className="flex-1"
             onClick={() => onLoadDesign(design)}
           >
-            <Edit3 className="h-3 w-3 mr-1" /> Edit
+            <Edit3 className="mr-1 h-3 w-3" /> Edit
           </Button>
           <Button
             variant="danger"
@@ -125,4 +149,3 @@ export function DesignCard({
     </div>
   );
 }
-

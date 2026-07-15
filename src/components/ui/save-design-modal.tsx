@@ -6,6 +6,8 @@ import {
   useCallback,
   useState,
 } from "react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type SaveDesignModalProps = {
   isOpen: boolean;
@@ -13,6 +15,9 @@ type SaveDesignModalProps = {
   onSave: (name: string, description?: string) => Promise<void>;
   initialName?: string;
 };
+
+const underlineInput =
+  "mt-2 w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink placeholder:text-muted-ink/60 transition-colors duration-[160ms] focus:border-pink focus:outline-none disabled:opacity-60";
 
 export function SaveDesignModal({
   isOpen,
@@ -80,55 +85,63 @@ export function SaveDesignModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 animate-fade-in bg-ink/60"
         onClick={handleClose}
         aria-hidden
       />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-md rounded-xl border border-ink/5 bg-white p-8 shadow-soft-lg animate-fade-up">
-        <header className="mb-8">
-          <p className="text-sm font-medium text-terracotta mb-2">
-            Save design
-          </p>
-          <h2 className="font-heading text-2xl tracking-tight text-ink">
+      {/* Modal — cream sheet on ink overlay */}
+      <div className="pn-noise relative w-full max-w-md animate-fade-up rounded-none border border-ink bg-cream p-8 shadow-paper">
+        <button
+          type="button"
+          onClick={handleClose}
+          disabled={isSaving}
+          className="absolute right-4 top-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-none border border-ink text-ink transition-colors duration-[160ms] hover:bg-sage/40 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label="Close save dialog"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+
+        <header className="mb-8 pr-12">
+          <p className="pn-eyebrow text-muted-ink">Save design</p>
+          <h2 className="pn-display-m mt-2 text-ink">
             Name your creation
           </h2>
-          <p className="text-sm text-ink-light mt-2">
+          <p className="mt-3 text-sm text-muted-ink">
             Give your design a memorable name and optional description.
           </p>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <label className="block text-left text-sm font-medium text-ink">
+          <label className="pn-eyebrow block text-left text-ink">
             Design name
             <input
               type="text"
               value={name}
               onChange={handleNameChange}
               placeholder="Conference Badge 2024"
-              className="mt-2 w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+              className={underlineInput}
               disabled={isSaving}
               autoFocus
               required
             />
           </label>
 
-          <label className="block text-left text-sm font-medium text-ink">
+          <label className="pn-eyebrow block text-left text-ink">
             Description (optional)
             <textarea
               value={description}
               onChange={handleDescriptionChange}
               placeholder="Blue theme with large name field for annual tech conference"
               rows={3}
-              className="mt-2 w-full resize-none rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+              className={`${underlineInput} resize-none`}
               disabled={isSaving}
             />
           </label>
 
           {error && (
             <p
-              className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+              className="rounded-none border border-ink bg-yellow/50 px-4 py-3 text-sm font-medium text-ink"
               role="alert"
             >
               {error}
@@ -136,21 +149,23 @@ export function SaveDesignModal({
           )}
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={handleClose}
               disabled={isSaving}
-              className="flex-1 rounded-lg border border-ink/10 px-4 py-3 text-sm font-medium text-ink transition-colors hover:bg-stone/50 focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isSaving}
-              className="flex-1 rounded-lg bg-terracotta px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-terracotta/90 focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex-1"
             >
               {isSaving ? "Saving…" : "Save"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
