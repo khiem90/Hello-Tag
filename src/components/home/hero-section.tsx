@@ -70,7 +70,7 @@ export function HeroSection() {
 
 function HeroVisual() {
   return (
-    <div className="animate-fade-up delay-3 relative mx-auto w-full max-w-sm lg:col-span-5 lg:mx-0">
+    <div className="animate-fade-up delay-3 relative mx-auto w-full max-w-md pl-20 lg:col-span-5 lg:mx-0 lg:pl-24">
       {/* Cream document sheet with a tiny fake merge preview */}
       <div className="pn-noise relative rotate-1 border border-ink bg-cream p-7 shadow-paper sm:p-8">
         <p className="pn-eyebrow text-muted-ink">
@@ -112,14 +112,14 @@ function HeroVisual() {
         </div>
       </div>
 
-      {/* Mascot overlapping the sheet */}
+      {/* Mascot running in from the sheet's left margin */}
       <Image
-        src="/press-notes/mascot-printmaker.svg"
-        alt="Press Notes printmaker mascot holding a freshly printed label"
-        width={180}
-        height={180}
+        src="/press-notes/mascot-production-runner.png"
+        alt="Mail Buddy mascot running with a stack of freshly printed labels"
+        width={140}
+        height={210}
         priority
-        className="absolute -bottom-12 -left-6 w-[160px] lg:-left-10 lg:w-[180px]"
+        className="absolute -bottom-12 left-0 h-auto w-[120px] lg:w-[140px]"
       />
     </div>
   );

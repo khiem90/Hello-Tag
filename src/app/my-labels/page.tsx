@@ -134,10 +134,10 @@ export default function MyLabelsPage() {
         ) : designs.length === 0 ? (
           <div className="flex flex-col items-center border border-dashed border-ink px-6 py-16 text-center">
             <Image
-              src="/press-notes/mascot-printmaker.svg"
-              alt="Press Notes printmaker mascot holding a freshly printed label"
-              width={140}
-              height={140}
+              src="/press-notes/mascot-production-runner.png"
+              alt="Mail Buddy mascot running with a stack of freshly printed labels"
+              width={130}
+              height={195}
               className="mb-6"
             />
             <p className="pn-hand mb-3 -rotate-2 text-ink">

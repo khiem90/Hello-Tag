@@ -228,10 +228,10 @@ export function DocumentCanvas({
               {visibleFields.length === 0 && (
                 <div className="flex h-full flex-col items-center justify-center gap-3 border border-dashed border-ink bg-cream p-6 text-center">
                   <Image
-                    src="/press-notes/mascot-printmaker.svg"
-                    alt="Press Notes printmaker mascot holding a freshly printed label"
-                    width={140}
-                    height={140}
+                    src="/press-notes/mascot-production-runner.png"
+                    alt="Mail Buddy mascot running with a stack of freshly printed labels"
+                    width={110}
+                    height={165}
                   />
                   <p className="pn-hand -rotate-2 text-ink">
                     nothing on the press yet!
