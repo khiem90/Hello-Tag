@@ -17,27 +17,25 @@ export function FormToolbar({
   onSaveDesign,
 }: FormToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/5 bg-white p-4 shadow-soft-sm">
+    <section className="flex flex-wrap items-center justify-between gap-3 p-5">
       <div className="flex flex-col">
-        <p className="text-xs font-medium text-ink-light tracking-wide">
-          Toolkit
-        </p>
-        <h2 className="font-heading text-lg tracking-tight text-ink">
-          Merge Controls
+        <p className="pn-eyebrow text-muted-ink">Properties</p>
+        <h2 className="font-display text-xl tracking-[-0.02em] text-ink">
+          Merge controls
         </h2>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={onAddField}
           size="sm"
-          variant="secondary"
+          variant="accent"
           className="gap-1"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Add Field
         </Button>
         <Button onClick={onReset} size="sm" variant="outline" className="gap-1">
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="h-4 w-4" aria-hidden="true" />
           Reset
         </Button>
         {isAuthenticated && onSaveDesign && (
@@ -47,12 +45,11 @@ export function FormToolbar({
             variant="primary"
             className="gap-1"
           >
-            <Save className="h-4 w-4" />
+            <Save className="h-4 w-4" aria-hidden="true" />
             Save
           </Button>
         )}
       </div>
-    </div>
+    </section>
   );
 }
-

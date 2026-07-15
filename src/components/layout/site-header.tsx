@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/layout/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -13,41 +14,59 @@ export function SiteHeader() {
   const isActive = (path: string) => pathname === path;
 
   const navItems = [
-    { href: "/create", label: "Merge" },
-    { href: "/templates", label: "Templates" },
+    { href: "/create", label: "Merge", index: "01" },
+    { href: "/templates", label: "Templates", index: "02" },
   ];
 
   if (isAuthenticated) {
-    navItems.push({ href: "/my-labels", label: "My Documents" });
+    navItems.push({ href: "/my-labels", label: "My Documents", index: "03" });
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-ink/5 bg-paper/80 backdrop-blur-lg">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 transition-opacity hover:opacity-70"
+    <header className="sticky top-0 z-50 w-full border-b border-ink bg-sage">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 transition-transform duration-[160ms] hover:-translate-y-px"
           aria-label="Mail Buddy Home"
         >
-          <span className="font-heading text-xl tracking-tight text-ink">
-            Mail <span className="text-terracotta">Buddy</span>
+          <Image
+            src="/press-notes/loop-mark.svg"
+            alt=""
+            width={24}
+            height={24}
+            className="h-6 w-6"
+          />
+          <span className="whitespace-nowrap font-display text-lg tracking-[-0.02em] text-ink">
+            MAIL BUDDY
+          </span>
+          <span className="pn-annotation mt-1 hidden text-muted-ink lg:inline">
+            Issue No. 01
           </span>
         </Link>
 
-        <nav className="hidden gap-1 md:flex" aria-label="Main navigation">
+        <nav className="hidden items-stretch self-stretch md:flex" aria-label="Main navigation">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`relative px-4 py-2 text-sm transition-colors ${
+              className={`pn-eyebrow relative flex items-center gap-1.5 border-l border-ink/20 px-5 transition-colors duration-[160ms] last:border-r ${
                 isActive(item.href)
                   ? "text-ink"
-                  : "text-ink-light hover:text-ink"
+                  : "text-muted-ink hover:text-ink"
               }`}
+              aria-current={isActive(item.href) ? "page" : undefined}
             >
+              <span
+                className={`pn-annotation ${
+                  isActive(item.href) ? "text-pink" : "text-muted-ink/60"
+                }`}
+              >
+                {item.index}
+              </span>
               {item.label}
               {isActive(item.href) && (
-                <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-terracotta rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-ink" />
               )}
             </Link>
           ))}
@@ -62,7 +81,7 @@ export function SiteHeader() {
               className="hidden sm:flex"
               aria-label="Log out"
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="mr-2 h-3.5 w-3.5" />
               Log Out
             </Button>
           ) : (

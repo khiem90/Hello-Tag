@@ -2,19 +2,10 @@
 
 import { documentTypeList } from "@/lib/document-types";
 import { DocumentType } from "@/types/document";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Award, Tag, Mail } from "lucide-react";
 
 type DocumentTypeSelectorProps = {
   selectedType: DocumentType;
   onTypeChange: (type: DocumentType) => void;
-};
-
-const documentTypeIcons: Record<DocumentType, React.ReactNode> = {
-  letter: <FileText className="h-4 w-4" />,
-  certificate: <Award className="h-4 w-4" />,
-  label: <Tag className="h-4 w-4" />,
-  envelope: <Mail className="h-4 w-4" />,
 };
 
 export function DocumentTypeSelector({
@@ -22,47 +13,36 @@ export function DocumentTypeSelector({
   onTypeChange,
 }: DocumentTypeSelectorProps) {
   return (
-    <Card variant="elevated" className="bg-white">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-terracotta/10 text-terracotta">
-            <FileText className="h-4 w-4" />
-          </div>
-          <CardTitle>Document Type</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-2">
-          {documentTypeList.map((docType) => {
-            const isActive = selectedType === docType.id;
-            return (
-              <button
-                key={docType.id}
-                type="button"
-                onClick={() => onTypeChange(docType.id)}
-                className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left transition-all cursor-pointer ${
-                  isActive
-                    ? "border-terracotta bg-terracotta/10 text-ink"
-                    : "border-ink/10 bg-white text-ink-light hover:border-ink/20 hover:text-ink"
-                }`}
+    <section className="p-5">
+      <p className="pn-eyebrow mb-3 text-ink">01 — Document type</p>
+      <div className="flex flex-col">
+        {documentTypeList.map((docType, index) => {
+          const isActive = selectedType === docType.id;
+          return (
+            <button
+              key={docType.id}
+              type="button"
+              onClick={() => onTypeChange(docType.id)}
+              aria-pressed={isActive}
+              className={`flex cursor-pointer items-baseline gap-3 rounded-none border-b px-1 py-2.5 text-left transition-colors duration-[160ms] ${
+                isActive
+                  ? "border-b-2 border-ink text-ink"
+                  : "border-ink/20 text-muted-ink hover:border-ink hover:text-ink"
+              }`}
+            >
+              <span
+                className={`pn-eyebrow ${isActive ? "text-pink" : "text-muted-ink"}`}
               >
-                <span className={isActive ? "text-terracotta" : "text-ink-light"}>
-                  {documentTypeIcons[docType.id]}
-                </span>
-                <div>
-                  <p className="font-medium text-sm">{docType.label}</p>
-                  <p
-                    className={`text-xs ${isActive ? "text-ink-light" : "text-ink-light/70"}`}
-                  >
-                    {docType.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="pn-eyebrow">{docType.label}</span>
+              <span className="pn-annotation ml-auto hidden text-right text-muted-ink sm:block">
+                {docType.description}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
-

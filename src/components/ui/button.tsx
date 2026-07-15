@@ -7,39 +7,41 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "accent";
   size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { 
-      className, 
-      variant = "primary", 
-      size = "md", 
-      isLoading = false, 
-      children, 
-      disabled, 
-      ...props 
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      children,
+      disabled,
+      ...props
     },
     ref
   ) => {
-    const baseStyles = "inline-flex items-center justify-center font-medium tracking-tight transition-all duration-200 ease-out cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed";
-    
+    const baseStyles =
+      "inline-flex items-center justify-center whitespace-nowrap rounded-none font-mono text-[11px] uppercase tracking-[0.06em] leading-[14px] transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] cursor-pointer hover:-translate-y-px hover:shadow-[inset_0_-2px_0_0_currentColor] active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed";
+
     const variants = {
-      primary: "bg-terracotta text-white shadow-soft hover:shadow-hover hover:-translate-y-0.5 active:translate-y-0 active:shadow-soft",
-      secondary: "bg-stone text-ink shadow-soft-sm hover:bg-sage-light hover:shadow-soft active:shadow-soft-sm",
-      outline: "bg-transparent text-ink border border-ink/20 hover:border-ink/40 hover:bg-stone/50",
-      ghost: "bg-transparent text-ink-light hover:text-ink hover:bg-stone/50",
-      danger: "bg-red-500/90 text-white shadow-soft hover:bg-red-600 hover:shadow-hover hover:-translate-y-0.5 active:translate-y-0",
+      primary: "bg-ink text-white-ink border border-ink",
+      secondary: "bg-cream text-ink border border-ink",
+      outline: "bg-transparent text-ink border border-ink",
+      ghost: "bg-transparent text-ink border border-transparent hover:border-ink",
+      danger: "bg-yellow text-ink border border-ink",
+      accent: "bg-pink text-ink border border-ink",
     };
 
     const sizes = {
-      sm: "h-9 px-4 text-sm rounded-lg",
-      md: "h-11 px-6 text-sm rounded-lg",
-      lg: "h-12 px-8 text-base rounded-lg",
-      icon: "h-10 w-10 p-0 rounded-lg",
+      sm: "h-9 px-4",
+      md: "h-11 px-6",
+      lg: "h-11 px-8",
+      icon: "h-10 w-10 p-0",
     };
 
     return (
@@ -50,7 +52,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <svg
+            viewBox="0 0 64 64"
+            aria-hidden="true"
+            className="mr-2 h-4 w-4 animate-spin"
+          >
+            <path
+              d="M50 18c-10-13-31-7-32 8-2 18 22 25 31 11 8-12-10-22-18-12-7 9 5 17 13 11"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="7"
+              strokeLinecap="round"
+            />
+          </svg>
         ) : null}
         {children}
       </button>

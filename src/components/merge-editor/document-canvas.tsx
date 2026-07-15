@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { backgroundThemes } from "@/lib/name-tag";
 import { getAspectRatio } from "@/lib/document-types";
 import { DocumentData, MergeField } from "@/types/document";
@@ -131,7 +132,7 @@ export function DocumentCanvas({
       : undefined;
 
   const containerClasses = [
-    "rounded-xl border border-ink/5 bg-white p-6 shadow-soft transition-all duration-300",
+    "pn-noise relative rounded-none border border-ink bg-cream p-6 shadow-paper transition-all duration-300",
     isFloating ? "z-30" : "sticky top-24 self-start",
   ].join(" ");
 
@@ -164,36 +165,34 @@ export function DocumentCanvas({
         className={containerClasses}
         style={floatingStyles}
       >
-        <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-3 border-b border-ink pb-4">
           <div>
-            <p className="text-sm font-medium text-terracotta tracking-wide">
-              {previewMode ? "Preview Mode" : "Template Editor"}
+            <p className={previewMode ? "pn-annotation text-pink" : "pn-eyebrow text-muted-ink"}>
+              {previewMode ? "Preview mode" : "The working file"}
             </p>
-            <h2 className="font-heading text-2xl tracking-tight text-ink">
-              {documentTypeLabel} Preview
+            <h2 className="pn-display-m mt-1 text-ink">
+              {documentTypeLabel} sheet
             </h2>
-            <p className="text-sm text-ink-light">
-              {previewMode
-                ? "Viewing merged data"
-                : "Drag fields to reposition"}
+            <p className="pn-eyebrow mt-2 text-muted-ink">
+              {previewMode ? "Viewing merged data" : "Drag fields to reposition"}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {previewMode && (
-              <span className="inline-flex items-center rounded-md border border-sage/30 bg-sage-light px-2.5 py-1 text-xs font-medium text-ink">
-                Live Data
+              <span className="pn-annotation inline-flex items-center gap-1 border border-green px-2.5 py-1 text-green">
+                ● Live data
               </span>
             )}
-            <span className="inline-flex items-center rounded-md border border-ink/10 bg-stone px-3 py-1 text-sm font-medium text-ink">
+            <span className="pn-eyebrow inline-flex items-center border border-ink bg-cream px-3 py-1 text-ink">
               {visibleFields.length} field{visibleFields.length === 1 ? "" : "s"}
             </span>
           </div>
         </header>
 
-        <div className="flex items-center justify-center bg-stone/50 rounded-xl p-4 border border-ink/5">
+        <div className="flex items-center justify-center border border-ink bg-sage p-5 sm:p-8">
           <div
             ref={cardRef}
-            className="relative w-full max-w-md overflow-hidden rounded-lg border border-ink/10 shadow-soft"
+            className="relative w-full max-w-md overflow-hidden rounded-none border border-ink shadow-paper-sm"
             style={{
               ...cardBackgroundStyle,
               aspectRatio: aspectRatio,
@@ -227,8 +226,19 @@ export function DocumentCanvas({
 
               {/* Empty state */}
               {visibleFields.length === 0 && (
-                <div className="flex h-full items-center justify-center text-ink-light">
-                  <p className="text-sm">No visible fields</p>
+                <div className="flex h-full flex-col items-center justify-center gap-3 border border-dashed border-ink bg-cream p-6 text-center">
+                  <Image
+                    src="/press-notes/mascot-printmaker.svg"
+                    alt="Press Notes printmaker mascot holding a freshly printed label"
+                    width={140}
+                    height={140}
+                  />
+                  <p className="pn-hand -rotate-2 text-ink">
+                    nothing on the press yet!
+                  </p>
+                  <p className="pn-eyebrow text-muted-ink">
+                    Add a field to start setting type
+                  </p>
                 </div>
               )}
             </div>
@@ -236,9 +246,9 @@ export function DocumentCanvas({
         </div>
 
         {/* Info about the preview */}
-        <p className="mt-4 text-center text-xs text-ink-light">
+        <p className="pn-annotation mt-4 text-center text-muted-ink">
           {previewMode
-            ? "Showing how merged document will appear"
+            ? "Showing how the merged document will appear"
             : "Preview matches Word document export format"}
         </p>
       </section>

@@ -1,10 +1,17 @@
+import Image from "next/image";
+
 type UseCase = {
   title: string;
   desc: string;
+  showRosette?: boolean;
 };
 
 const useCases: UseCase[] = [
-  { title: "Education", desc: "Certificates, report cards, parent letters" },
+  {
+    title: "Education",
+    desc: "Certificates, report cards, parent letters",
+    showRosette: true,
+  },
   { title: "Business", desc: "Client letters, invoices, thank you notes" },
   { title: "Events", desc: "Name badges, place cards, invitations" },
   { title: "Personal", desc: "Holiday cards, wedding stationery, labels" },
@@ -12,39 +19,63 @@ const useCases: UseCase[] = [
 
 export function UseCasesSection() {
   return (
-    <section className="py-24 sm:py-32">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="font-heading text-3xl sm:text-4xl tracking-tight text-ink mb-4">
+    <section className="border-t border-ink">
+      {/* Section header band */}
+      <div className="bg-cream">
+        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+          <p className="pn-eyebrow text-muted-ink">
+            Specimens &mdash; who prints with us
+          </p>
+          <h2 className="pn-display-l mt-4 font-display text-ink">
             Made for everyone
           </h2>
-          <p className="text-lg text-ink-light">
+          <p className="mt-5 max-w-[62ch] font-body text-base leading-relaxed text-muted-ink">
             From classrooms to boardrooms, personal to professional.
           </p>
         </div>
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {useCases.map((item) => (
-            <UseCaseCard key={item.title} useCase={item} />
-          ))}
-        </div>
       </div>
+
+      {/* Editorial specimen list: alternating sage / cream bands */}
+      {useCases.map((item, index) => (
+        <SpecimenRow key={item.title} useCase={item} index={index} />
+      ))}
     </section>
   );
 }
 
-type UseCaseCardProps = {
+type SpecimenRowProps = {
   useCase: UseCase;
+  index: number;
 };
 
-function UseCaseCard({ useCase }: UseCaseCardProps) {
+function SpecimenRow({ useCase, index }: SpecimenRowProps) {
+  const band = index % 2 === 0 ? "bg-sage" : "bg-cream";
+  const folio = String(index + 1).padStart(2, "0");
+
   return (
-    <div className="group rounded-xl border border-ink/5 bg-white p-6 transition-shadow hover:shadow-soft">
-      <h3 className="font-heading text-lg tracking-tight text-ink mb-2 group-hover:text-terracotta transition-colors">
-        {useCase.title}
-      </h3>
-      <p className="text-sm text-ink-light">{useCase.desc}</p>
+    <div className={`border-t border-ink ${band}`}>
+      <div className="mx-auto grid max-w-6xl gap-2 px-6 py-8 md:grid-cols-12 md:items-baseline md:gap-6">
+        <span className="pn-eyebrow text-muted-ink md:col-span-2">
+          Spec {folio}
+        </span>
+        <h3 className="pn-display-m font-display text-ink md:col-span-4">
+          {useCase.title}
+        </h3>
+        <p className="font-body text-sm leading-relaxed text-muted-ink md:col-span-5">
+          {useCase.desc}
+        </p>
+        <div className="md:col-span-1 md:justify-self-end md:self-center">
+          {useCase.showRosette ? (
+            <Image
+              src="/press-notes/rosette.svg"
+              alt=""
+              width={44}
+              height={44}
+              aria-hidden="true"
+            />
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
-

@@ -61,17 +61,17 @@ export function DocumentForm({
   const canRemove = document.fields.length > 1 && activeField !== null;
 
   return (
-    <aside className="flex flex-col gap-6">
-      <DocumentTypeSelector
-        selectedType={document.documentType}
-        onTypeChange={onDocumentTypeChange}
-      />
-
+    <aside className="flex flex-col divide-y divide-ink rounded-none border border-ink bg-cream shadow-paper">
       <FormToolbar
         onAddField={onAddField}
         onReset={onReset}
         isAuthenticated={isAuthenticated}
         onSaveDesign={onSaveDesign}
+      />
+
+      <DocumentTypeSelector
+        selectedType={document.documentType}
+        onTypeChange={onDocumentTypeChange}
       />
 
       <DataSourceCard

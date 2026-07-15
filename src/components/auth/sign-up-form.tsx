@@ -20,7 +20,6 @@ import {
 import { getFirebaseAuth, getFirebaseFirestore } from "@/lib/firebase-client";
 import type { SignUpFormProps } from "@/types/auth";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function SignUpForm({
   redirectPath = "/",
@@ -113,18 +112,16 @@ export function SignUpForm({
   );
 
   return (
-    <div className="w-full rounded-xl border border-ink/5 bg-white p-8 shadow-soft">
-      <div className="mb-8">
-        <p className="text-sm font-medium text-terracotta mb-2">Get started</p>
-        <h2 className="font-heading text-2xl tracking-tight text-ink">
-          Create account
-        </h2>
+    <div className="pn-noise relative w-full rounded-none border border-ink bg-cream p-6 shadow-paper sm:p-8">
+      <div className="mb-8 border-b border-ink pb-4">
+        <p className="pn-eyebrow text-muted-ink">Form 02 — Create account</p>
+        <h2 className="pn-display-m mt-2 text-ink">Create account</h2>
       </div>
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-4 sm:grid-cols-2">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-ink">
+            <label className="pn-eyebrow mb-2 block text-ink">
               First name
             </label>
             <input
@@ -132,7 +129,7 @@ export function SignUpForm({
               name="firstName"
               value={firstName}
               onChange={handleChange(setFirstName)}
-              className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+              className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
               placeholder="Alex"
               required
               aria-label="First name"
@@ -141,7 +138,7 @@ export function SignUpForm({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-ink">
+            <label className="pn-eyebrow mb-2 block text-ink">
               Last name
             </label>
             <input
@@ -149,7 +146,7 @@ export function SignUpForm({
               name="lastName"
               value={lastName}
               onChange={handleChange(setLastName)}
-              className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+              className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
               placeholder="Morgan"
               required
               aria-label="Last name"
@@ -159,7 +156,7 @@ export function SignUpForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-ink">
+          <label className="pn-eyebrow mb-2 block text-ink">
             Phone number
           </label>
           <input
@@ -167,7 +164,7 @@ export function SignUpForm({
             name="phone"
             value={phone}
             onChange={handleChange(setPhone)}
-            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
             placeholder="(555) 123-4567"
             required
             aria-label="Phone number"
@@ -176,7 +173,7 @@ export function SignUpForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-ink">
+          <label className="pn-eyebrow mb-2 block text-ink">
             Email address
           </label>
           <input
@@ -185,7 +182,7 @@ export function SignUpForm({
             value={email}
             onChange={handleChange(setEmail)}
             autoComplete="email"
-            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
             placeholder="you@example.com"
             required
             aria-label="Email address"
@@ -194,7 +191,7 @@ export function SignUpForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-ink">
+          <label className="pn-eyebrow mb-2 block text-ink">
             Password
           </label>
           <input
@@ -203,7 +200,7 @@ export function SignUpForm({
             value={password}
             onChange={handleChange(setPassword)}
             autoComplete="new-password"
-            className="w-full rounded-lg border border-ink/10 bg-paper px-4 py-3 text-base text-ink placeholder:text-ink-light/60 focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
             placeholder="Create a password"
             required
             aria-label="Password"
@@ -215,7 +212,7 @@ export function SignUpForm({
           type="submit"
           variant="primary"
           size="lg"
-          className="w-full mt-2"
+          className="mt-2 w-full"
           disabled={isSubmitting}
           isLoading={isSubmitting}
         >
@@ -226,25 +223,40 @@ export function SignUpForm({
       <div className="mt-6 space-y-3 text-sm">
         {error ? (
           <div
-            className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700"
+            className="flex items-start gap-2 border-l-2 border-yellow pl-3 text-ink"
             role="alert"
             aria-live="assertive"
           >
-            <AlertCircle className="h-5 w-5 shrink-0" />
+            <span
+              className="mt-[7px] block h-1.5 w-1.5 shrink-0 bg-yellow"
+              aria-hidden
+            />
             <p>{error}</p>
           </div>
         ) : null}
         {statusMessage ? (
           <div
-            className="flex items-start gap-3 rounded-lg border border-sage/30 bg-sage-light p-3 text-ink"
+            className="flex items-start gap-2 border-l-2 border-green pl-3 text-ink"
             role="status"
             aria-live="polite"
           >
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-sage" />
+            <span
+              className="mt-[7px] block h-1.5 w-1.5 shrink-0 bg-green"
+              aria-hidden
+            />
             <p>{statusMessage}</p>
           </div>
         ) : null}
       </div>
+
+      <p className="pn-hand mt-6 inline-block -rotate-2 text-ink">
+        fresh sheet, fresh start
+      </p>
+
+      <p className="pn-annotation mt-6 flex items-center justify-between border-t border-ink pt-3 text-muted-ink">
+        <span>Press Notes · Form A-2</span>
+        <span>Mail Buddy</span>
+      </p>
     </div>
   );
 }

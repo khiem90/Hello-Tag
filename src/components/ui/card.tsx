@@ -12,11 +12,11 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", children, ...props }, ref) => {
-    const baseStyles = "overflow-hidden bg-white";
-    
+    const baseStyles = "overflow-hidden rounded-none bg-cream";
+
     const variants = {
-      default: "rounded-xl border border-ink/5",
-      elevated: "rounded-xl shadow-soft",
+      default: "border border-ink",
+      elevated: "border border-ink shadow-paper",
     };
 
     return (
@@ -48,7 +48,7 @@ export const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttrib
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("font-heading text-xl font-medium leading-snug tracking-tight text-ink", className)}
+      className={cn("font-display text-xl leading-6 tracking-[-0.02em] text-ink", className)}
       {...props}
     />
   )

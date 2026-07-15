@@ -1,73 +1,144 @@
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const values = [
+  {
+    number: "01",
+    title: "Simple first",
+    description:
+      "Why use a complicated tool when you can use something intuitive?",
+  },
+  {
+    number: "02",
+    title: "For everyone",
+    description: "Simple enough for beginners, powerful enough for pros.",
+  },
+  {
+    number: "03",
+    title: "Made with care",
+    description: "Crafted by designers who love personalization.",
+  },
+];
+
+const documentTypes = ["Letters", "Certificates", "Labels", "Envelopes"];
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <p className="text-sm font-medium text-terracotta mb-3 tracking-wide">
-            Our story
+        {/* Colophon header */}
+        <div className="max-w-3xl">
+          <p className="pn-eyebrow text-muted-ink">
+            Colophon &mdash; our story
           </p>
-          <h1 className="font-heading text-4xl sm:text-5xl tracking-tight text-ink mb-6">
+          <h1 className="pn-display-xl mt-6 font-display text-ink">
             About Mail Buddy
           </h1>
-          
-          <p className="text-lg text-ink-light leading-relaxed mb-6">
-            We believe mail merge shouldn&apos;t be complicated. That&apos;s why we built Mail Buddy.
-          </p>
-          <p className="text-ink-light leading-relaxed">
-            Whether you&apos;re a teacher sending personalized letters to parents, an HR manager creating employee certificates, or a small business owner mailing thank-you cards, we&apos;re here to make the process as simple as possible.
-          </p>
+
+          <div className="relative mt-10">
+            <p className="max-w-[62ch] font-body text-lg leading-relaxed text-ink">
+              We believe mail merge shouldn&apos;t be complicated. That&apos;s
+              why we built Mail Buddy.
+            </p>
+            <p className="mt-5 max-w-[62ch] font-body text-base leading-relaxed text-muted-ink">
+              Whether you&apos;re a teacher sending personalized letters to
+              parents, an HR manager creating employee certificates, or a small
+              business owner mailing thank-you cards, we&apos;re here to make
+              the process as simple as possible.
+            </p>
+            <p className="pn-hand mt-6 inline-block -rotate-2 text-ink">
+              still set one letter at a time, just faster
+            </p>
+          </div>
         </div>
 
-        {/* Document Types */}
-        <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-16 py-8 border-y border-ink/5">
-          {["Letters", "Certificates", "Labels", "Envelopes"].map((type) => (
-            <span 
-              key={type}
-              className="text-sm text-ink-light font-medium tracking-wide"
-            >
+        {/* Document types strip */}
+        <div className="mt-16 flex flex-wrap items-center gap-x-8 gap-y-4 border-y border-ink py-6">
+          <span className="pn-annotation text-pink">Printed formats</span>
+          {documentTypes.map((type) => (
+            <span key={type} className="pn-eyebrow text-ink">
               {type}
             </span>
           ))}
         </div>
 
-        <div className="grid gap-12 sm:grid-cols-3 mb-20">
-          <div className="flex flex-col items-center text-center">
-            <div className="h-12 w-12 rounded-lg bg-terracotta/10 flex items-center justify-center text-terracotta mb-5">
-              <Star className="h-5 w-5" />
-            </div>
-            <h3 className="font-heading text-xl tracking-tight text-ink mb-2">Simple first</h3>
-            <p className="text-sm text-ink-light">Why use a complicated tool when you can use something intuitive?</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="h-12 w-12 rounded-lg bg-sage/10 flex items-center justify-center text-sage mb-5">
-              <Users className="h-5 w-5" />
-            </div>
-            <h3 className="font-heading text-xl tracking-tight text-ink mb-2">For everyone</h3>
-            <p className="text-sm text-ink-light">Simple enough for beginners, powerful enough for pros.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="h-12 w-12 rounded-lg bg-ink/5 flex items-center justify-center text-ink mb-5">
-              <Heart className="h-5 w-5" />
-            </div>
-            <h3 className="font-heading text-xl tracking-tight text-ink mb-2">Made with care</h3>
-            <p className="text-sm text-ink-light">Crafted by designers who love personalization.</p>
+        {/* Manifesto: numbered index rows instead of icon cards */}
+        <div className="mt-16">
+          <p className="pn-eyebrow text-muted-ink">
+            The manifesto &mdash; three rules we print by
+          </p>
+          <div className="mt-8 border-t border-ink">
+            {values.map((value) => (
+              <div
+                key={value.number}
+                className="grid gap-3 border-b border-ink py-8 md:grid-cols-12 md:items-baseline md:gap-6"
+              >
+                <span className="pn-eyebrow text-ink md:col-span-2">
+                  {value.number} &mdash;
+                </span>
+                <h3 className="pn-display-m font-display text-ink md:col-span-4">
+                  {value.title}
+                </h3>
+                <p className="max-w-[62ch] font-body text-sm leading-relaxed text-muted-ink md:col-span-6">
+                  {value.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="rounded-xl bg-ink text-white p-10 sm:p-14 text-center">
-          <h2 className="font-heading text-2xl sm:text-3xl tracking-tight mb-4">Ready to start?</h2>
-          <p className="text-white/70 mb-8 max-w-md mx-auto">
-            Jump into the editor and create personalized documents today.
+        {/* Print imprint: mono metadata block */}
+        <div className="mt-16 max-w-md border border-ink bg-cream p-6">
+          <p className="pn-eyebrow border-b border-ink pb-3 text-ink">
+            Imprint
           </p>
-          <Link href="/create">
-            <Button size="lg" className="bg-terracotta hover:bg-terracotta/90">
-              Start Merging
-            </Button>
-          </Link>
+          <dl className="mt-4 space-y-2 font-mono text-[11px] uppercase leading-[16px] tracking-[0.06em] text-muted-ink">
+            <div className="flex justify-between gap-6">
+              <dt>Publication</dt>
+              <dd className="text-ink">Mail Buddy &middot; Press Notes</dd>
+            </div>
+            <div className="flex justify-between gap-6">
+              <dt>Issue</dt>
+              <dd className="text-ink">01</dd>
+            </div>
+            <div className="flex justify-between gap-6">
+              <dt>Set in</dt>
+              <dd className="text-ink">Archivo / Inter / DM Mono / Caveat</dd>
+            </div>
+            <div className="flex justify-between gap-6">
+              <dt>Printed on</dt>
+              <dd className="text-ink">Sage &amp; cream stock</dd>
+            </div>
+          </dl>
+        </div>
+
+        {/* Closing CTA band */}
+        <div className="pn-noise relative mt-20 border border-ink bg-ink p-10 text-white-ink sm:p-14">
+          <div className="grid items-center gap-10 lg:grid-cols-12">
+            <div className="lg:col-span-9">
+              <h2 className="pn-display-m font-display text-white-ink">
+                Ready to start?
+              </h2>
+              <p className="mt-4 max-w-[62ch] font-body text-base leading-relaxed text-white-ink/80">
+                Jump into the editor and create personalized documents today.
+              </p>
+              <Link href="/create" className="mt-8 inline-block">
+                <Button variant="secondary" size="lg">
+                  Start Merging
+                </Button>
+              </Link>
+            </div>
+            <div className="flex justify-center lg:col-span-3">
+              <Image
+                src="/press-notes/oval-stamp.svg"
+                alt="Approved for print stamp"
+                width={110}
+                height={68}
+                className="animate-stamp-in -rotate-6"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

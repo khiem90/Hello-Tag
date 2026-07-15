@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
-import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sign in | Mail Buddy",
@@ -21,32 +20,28 @@ export default async function LoginPage({ searchParams }: Props) {
       : "/";
 
   return (
-    <main className="min-h-screen px-6 py-16 flex items-center justify-center">
-      <div className="mx-auto flex w-full max-w-5xl flex-col-reverse items-center gap-16 lg:flex-row lg:items-center">
-        <div className="w-full max-w-lg space-y-6 text-center lg:text-left">
-          <p className="text-sm font-medium text-terracotta tracking-wide">
-            Welcome back
+    <main className="flex min-h-screen items-center justify-center px-4 py-16 sm:px-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col-reverse items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
+        <div className="w-full max-w-lg space-y-5 text-center lg:text-left">
+          <p className="pn-eyebrow text-muted-ink">01 — Welcome back</p>
+
+          <h1 className="pn-display-l text-ink">Sign in to your account</h1>
+
+          <p className="mx-auto max-w-[52ch] text-base leading-relaxed text-muted-ink lg:mx-0">
+            Access your saved designs, create personalized documents, and
+            export them with ease.
           </p>
-          
-          <h1 className="font-heading text-4xl sm:text-5xl tracking-tight text-ink">
-            Sign in to your account
-          </h1>
-          
-          <p className="text-lg text-ink-light leading-relaxed">
-            Access your saved designs, create personalized documents, and export them with ease.
-          </p>
-          
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-start pt-2">
+
+          <div className="flex flex-col items-center gap-4 pt-2 sm:flex-row sm:justify-center lg:justify-start">
             <Link
               href="/"
-              className="group flex items-center justify-center rounded-lg border border-ink/10 bg-white px-5 py-2.5 text-sm font-medium text-ink-light transition-colors hover:border-ink/20 hover:text-ink"
+              className="pn-eyebrow text-ink underline decoration-1 underline-offset-4 transition-all duration-[160ms] hover:decoration-2"
             >
-              <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-              Back to home
+              ← Back to home
             </Link>
             <Link
               href={redirectPath && redirectPath !== "/" ? `/signup?redirect=${encodeURIComponent(redirectPath)}` : "/signup"}
-              className="text-sm font-medium text-terracotta transition hover:text-terracotta/80"
+              className="pn-eyebrow text-ink underline decoration-1 underline-offset-4 transition-all duration-[160ms] hover:decoration-2"
             >
               New here? Create an account
             </Link>

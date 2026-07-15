@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" role="img" aria-labelledby="title desc">
+  <title id="title">Press Notes printmaker mascot</title><desc id="desc">A playful printmaker holding a freshly printed label.</desc>
+  <g stroke="#151515" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#43A471" d="M62 51c8-34 108-43 128 1l-10 31H67z"/><path fill="#D879A8" d="M82 48c24-12 58-13 85 0l-11 15H93z"/>
+    <path fill="#EFA9AE" d="M69 78c-12 53 7 104 55 108 48 4 74-37 65-96-4-25-28-35-59-33-31 1-55 4-61 21z"/>
+    <path fill="none" d="M91 99l7 4m48-5 8-3M107 126c14 8 29 6 39-3"/><circle fill="#151515" cx="101" cy="108" r="4"/><circle fill="#151515" cx="151" cy="106" r="4"/>
+    <path fill="#EFA9AE" d="M72 168c-33 13-43 72-27 111h46l9-52h48l10 52h45c11-40-3-98-42-111z"/>
+    <path fill="#EACB58" d="M87 166h76l8 75H79z"/><path fill="#43A471" d="M110 188c10-15 27-15 34 1-7 7-24 10-34-1z"/>
+    <path fill="#F4ECDC" d="M44 197c25 0 49 7 68 21l-19 40c-21-14-38-23-60-25z"/><path fill="none" d="M53 213l38 13m-42 3 34 12"/>
+    <path fill="#EFA9AE" d="M40 191c-16-2-22 18-8 28m141-31c23-3 31 24 12 34"/>
+    <path fill="#43A471" d="M45 279h54l-2 15H43zm106 0h53l2 15h-55z"/>
+  </g>
+</svg>

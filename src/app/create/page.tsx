@@ -85,8 +85,8 @@ export default function CreatePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone border-t-terracotta" />
+      <div className="flex min-h-screen items-center justify-center bg-sage">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/20 border-t-ink" />
       </div>
     );
   }
@@ -96,8 +96,19 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-sage px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        {/* Editorial title block */}
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="pn-eyebrow text-muted-ink">Mail Buddy — Merge editor</p>
+            <h1 className="pn-display-l mt-1 text-ink">The working file</h1>
+          </div>
+          <p className="pn-hand -rotate-2 text-muted-ink">
+            every note left in on purpose
+          </p>
+        </header>
+
         {/* Preview Navigation Bar */}
         <PreviewNavigation
           isPreviewMode={isPreviewMode}
@@ -161,7 +172,7 @@ export default function CreatePage() {
 
       {/* Save Status Toast */}
       {savingStatus && (
-        <div className="fixed bottom-6 right-6 z-50 animate-fade-up rounded-lg border border-sage/30 bg-sage-light px-5 py-3 text-sm font-medium text-ink shadow-soft">
+        <div className="pn-eyebrow fixed bottom-6 right-6 z-50 animate-fade-up rounded-none border border-ink bg-cream px-5 py-3 text-ink shadow-paper">
           {savingStatus}
         </div>
       )}

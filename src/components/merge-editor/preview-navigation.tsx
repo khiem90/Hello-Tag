@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Eye, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
   FileEdit,
   ChevronsLeft,
   ChevronsRight
@@ -19,6 +19,8 @@ type PreviewNavigationProps = {
   onRecordChange: (index: number) => void;
   hasData: boolean;
 };
+
+const padRecord = (value: number) => String(value).padStart(3, "0");
 
 export function PreviewNavigation({
   isPreviewMode,
@@ -84,110 +86,102 @@ export function PreviewNavigation({
   }, [isPreviewMode, hasData, handlePrev, handleNext, handleFirst, handleLast]);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ink/5 bg-white p-4 shadow-soft-sm">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-none border border-ink bg-cream px-4 py-3 shadow-paper-sm">
       {/* Toggle Preview Mode */}
       <div className="flex items-center gap-3">
-        <button
+        <Button
           type="button"
           onClick={onTogglePreview}
           disabled={!hasData}
-          className={`relative flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
-            isPreviewMode
-              ? "border-sage bg-sage-light text-ink"
-              : "border-ink/10 bg-stone text-ink-light hover:border-ink/20 hover:text-ink"
-          } ${!hasData ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+          variant={isPreviewMode ? "accent" : "secondary"}
+          size="sm"
+          className="gap-2"
+          aria-pressed={isPreviewMode}
         >
           {isPreviewMode ? (
             <>
-              <Eye className="h-4 w-4" />
-              Preview Mode
+              <Eye className="h-4 w-4" aria-hidden="true" />
+              Preview mode
             </>
           ) : (
             <>
-              <FileEdit className="h-4 w-4" />
-              Template Mode
+              <FileEdit className="h-4 w-4" aria-hidden="true" />
+              Template mode
             </>
           )}
-        </button>
-        
+        </Button>
+
         {!hasData && (
-          <p className="text-xs text-ink-light">
+          <p className="pn-annotation text-muted-ink">
             Import data to preview
           </p>
         )}
       </div>
 
-      {/* Record Navigation */}
+      {/* Record Navigation — connected-sheet rail */}
       {isPreviewMode && hasData && totalRecords > 0 && (
         <div className="flex items-center gap-2">
           {/* First */}
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
+            size="icon"
             onClick={handleFirst}
             disabled={!canGoPrev}
-            className="h-8 w-8 p-0"
             aria-label="First record"
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
 
           {/* Previous */}
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
+            size="icon"
             onClick={handlePrev}
             disabled={!canGoPrev}
-            className="h-8 w-8 p-0"
             aria-label="Previous record"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
 
           {/* Record Counter */}
-          <div className="flex items-center gap-1 rounded-lg border border-ink/10 bg-stone px-3 py-1">
-            <span className="text-sm font-medium text-terracotta">
-              {currentRecord + 1}
-            </span>
-            <span className="text-sm text-ink-light">/</span>
-            <span className="text-sm font-medium text-ink">
-              {totalRecords}
-            </span>
+          <div className="pn-eyebrow flex items-center gap-1 border border-ink bg-cream px-3 py-[11px] text-ink">
+            <span>Record</span>
+            <span className="bg-pink/20 px-1 text-ink">{padRecord(currentRecord + 1)}</span>
+            <span className="text-muted-ink">/</span>
+            <span>{padRecord(totalRecords)}</span>
           </div>
 
           {/* Next */}
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
+            size="icon"
             onClick={handleNext}
             disabled={!canGoNext}
-            className="h-8 w-8 p-0"
             aria-label="Next record"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
 
           {/* Last */}
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
+            size="icon"
             onClick={handleLast}
             disabled={!canGoNext}
-            className="h-8 w-8 p-0"
             aria-label="Last record"
           >
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       )}
 
       {/* Keyboard shortcuts hint */}
       {isPreviewMode && hasData && (
-        <p className="hidden text-xs text-ink-light lg:block">
-          <kbd className="rounded border border-ink/10 bg-stone px-1 font-mono text-[0.65rem]">Alt</kbd>
+        <p className="pn-annotation hidden text-muted-ink lg:block">
+          <kbd className="border border-ink bg-cream px-1 font-mono text-[0.65rem]">Alt</kbd>
           {" + "}
-          <kbd className="rounded border border-ink/10 bg-stone px-1 font-mono text-[0.65rem]">←</kbd>
-          <kbd className="rounded border border-ink/10 bg-stone px-1 font-mono text-[0.65rem]">→</kbd>
+          <kbd className="border border-ink bg-cream px-1 font-mono text-[0.65rem]">←</kbd>
+          <kbd className="border border-ink bg-cream px-1 font-mono text-[0.65rem]">→</kbd>
           {" to navigate"}
         </p>
       )}

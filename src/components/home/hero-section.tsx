@@ -1,41 +1,66 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative py-24 sm:py-32 lg:py-40">
+    <section className="relative overflow-hidden py-20 sm:py-28 lg:py-32">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
-          <div className="max-w-xl">
-            <p className="text-sm font-medium text-terracotta mb-4 tracking-wide">
-              Mail merge, refined
+        <div className="grid gap-20 lg:grid-cols-12 lg:items-center lg:gap-12">
+          {/* Editorial title block */}
+          <div className="lg:col-span-7">
+            <p className="pn-eyebrow animate-fade-up text-muted-ink">
+              Press Notes &middot; Issue 01 &mdash; Mail merge, refined
             </p>
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl tracking-tight text-ink leading-[1.1] mb-6">
-              Personalize with{" "}
-              <span className="text-terracotta">intention</span>
+
+            <h1 className="pn-display-xl animate-fade-up delay-1 mt-6 font-display text-ink">
+              <span className="block">Design once.</span>
+              <span className="block">Make many.</span>
             </h1>
-            <p className="text-lg text-ink-light leading-relaxed mb-10">
-              Create beautifully personalized letters, certificates, labels, and
-              envelopes. Import your data once, design with care, export with
-              confidence.
+
+            {/* Pink annotation leader pointing back up at the headline */}
+            <div className="animate-fade-up delay-2 relative mt-2 pl-20">
+              <span
+                aria-hidden="true"
+                className="absolute left-6 -top-2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-pink"
+              />
+              <span
+                aria-hidden="true"
+                className="absolute left-6 top-0 h-4 w-px bg-pink"
+              />
+              <span
+                aria-hidden="true"
+                className="absolute left-6 top-4 h-px w-12 bg-pink"
+              />
+              <span className="pn-annotation relative top-2 text-pink">
+                Your template, n copies
+              </span>
+            </div>
+
+            <p className="animate-fade-up delay-3 mt-10 max-w-[62ch] font-body text-base leading-relaxed text-ink">
+              Mail Buddy runs one careful design against your whole list.
+              Letters, certificates, labels, and envelopes &mdash; import your
+              data once, place your fields with intention, and export a stack
+              of documents that each read like they were made by hand.
             </p>
-            <div className="flex flex-wrap gap-4">
+
+            <p className="pn-hand animate-fade-up delay-4 mt-5 inline-block -rotate-2 text-ink">
+              no mail-merge wizardry required &mdash; promise!
+            </p>
+
+            <div className="animate-fade-up delay-5 mt-10 flex flex-wrap gap-4">
               <Link href="/create">
-                <Button size="lg" className="gap-2">
-                  Start creating
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+                <Button size="lg">Start merging &rarr;</Button>
               </Link>
               <Link href="/templates">
-                <Button variant="outline" size="lg">
-                  View templates
+                <Button variant="secondary" size="lg">
+                  Browse templates
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Hero Visual */}
+          {/* Document sheet + mascot */}
           <HeroVisual />
         </div>
       </div>
@@ -45,43 +70,57 @@ export function HeroSection() {
 
 function HeroVisual() {
   return (
-    <div className="relative lg:pl-8">
-      <div className="relative aspect-4/3 w-full max-w-lg mx-auto lg:mx-0 lg:ml-auto">
-        {/* Document preview cards */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-full max-w-sm">
-            {/* Back card */}
-            <div
-              className="absolute top-4 left-4 w-full h-48 rounded-xl bg-stone shadow-soft-sm"
-              style={{ transform: "rotate(-3deg)" }}
-            />
-            {/* Front card */}
-            <div className="relative w-full bg-white rounded-xl shadow-soft p-8 border border-ink/5">
-              <p className="text-sm text-ink-light mb-2">
-                Dear {"{{FirstName}}"},
-              </p>
-              <p className="font-heading text-2xl text-ink mb-3">
-                Welcome aboard
-              </p>
-              <p className="text-sm text-ink-light leading-relaxed">
-                We&apos;re thrilled to have you join us. Your personalized
-                journey begins here...
-              </p>
-              <div className="mt-6 pt-4 border-t border-ink/5">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block px-2 py-0.5 rounded bg-terracotta-light/50 text-terracotta text-xs font-medium">
-                    {"{{Company}}"}
-                  </span>
-                  <span className="inline-block px-2 py-0.5 rounded bg-sage-light/50 text-sage text-xs font-medium">
-                    {"{{Date}}"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="animate-fade-up delay-3 relative mx-auto w-full max-w-sm lg:col-span-5 lg:mx-0">
+      {/* Cream document sheet with a tiny fake merge preview */}
+      <div className="pn-noise relative rotate-1 border border-ink bg-cream p-7 shadow-paper sm:p-8">
+        <p className="pn-eyebrow text-muted-ink">
+          Merge preview &mdash; record 001 / 214
+        </p>
+
+        <div className="mt-5 border-t border-ink pt-5 font-body text-sm leading-relaxed text-ink">
+          <p>
+            Dear{" "}
+            <span className="pn-field-outline px-1 font-mono">
+              {"{{ Full Name }}"}
+            </span>
+            ,
+          </p>
+          <p className="mt-3">
+            Your seat at{" "}
+            <span className="pn-field-outline px-1 font-mono">
+              {"{{ Company }}"}
+            </span>{" "}
+            is confirmed for{" "}
+            <span className="pn-field-outline px-1 font-mono">
+              {"{{ Date }}"}
+            </span>
+            . We look forward to seeing you.
+          </p>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between gap-4 border-t border-ink pt-3">
+          <span className="pn-annotation text-muted-ink">
+            Fields update per record
+          </span>
+          <Image
+            src="/press-notes/barcode-decorative.svg"
+            alt=""
+            width={25}
+            height={40}
+            aria-hidden="true"
+          />
         </div>
       </div>
+
+      {/* Mascot overlapping the sheet */}
+      <Image
+        src="/press-notes/mascot-printmaker.svg"
+        alt="Press Notes printmaker mascot holding a freshly printed label"
+        width={180}
+        height={180}
+        priority
+        className="absolute -bottom-12 -left-6 w-[160px] lg:-left-10 lg:w-[180px]"
+      />
     </div>
   );
 }
-

@@ -2,8 +2,6 @@
 
 import { accentPalette, backgroundThemes } from "@/lib/name-tag";
 import { DocumentData, BackgroundOption } from "@/types/document";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Palette } from "lucide-react";
 
 type ThemeControlsProps = {
   accent: string;
@@ -27,20 +25,13 @@ export function ThemeControls({
   onThemeChange,
 }: ThemeControlsProps) {
   return (
-    <Card variant="elevated" className="bg-white">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-terracotta/10 text-terracotta">
-            <Palette className="h-4 w-4" />
-          </div>
-          <CardTitle>Theme</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-5">
+    <section className="p-5">
+      <p className="pn-eyebrow mb-4 text-ink">04 — Theme</p>
+      <div className="space-y-5">
         {/* Accent Color */}
         <div>
-          <p className="mb-2 text-sm font-medium text-ink">Accent Color</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="pn-eyebrow mb-2 text-muted-ink">Accent color</p>
+          <div className="flex flex-wrap items-center gap-2">
             {accentPalette.map((color) => {
               const isActive = accent === color;
               return (
@@ -48,10 +39,8 @@ export function ThemeControls({
                   key={color}
                   type="button"
                   onClick={() => onThemeChange({ accent: color })}
-                  className={`h-8 w-8 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 ${
-                    isActive
-                      ? "border-ink ring-2 ring-ink/10 scale-110"
-                      : "border-transparent"
+                  className={`h-8 w-8 cursor-pointer rounded-none border border-ink transition-transform duration-[160ms] hover:-translate-y-px ${
+                    isActive ? "outline-2 outline-offset-2 outline-ink" : ""
                   }`}
                   style={{ backgroundColor: color }}
                   aria-pressed={isActive}
@@ -59,8 +48,8 @@ export function ThemeControls({
                 />
               );
             })}
-            <label className="relative h-8 w-8 cursor-pointer overflow-hidden rounded-full border border-ink/10 bg-white hover:border-ink/30">
-              <span className="absolute inset-0 flex items-center justify-center text-ink-light">
+            <label className="relative h-8 w-8 cursor-pointer overflow-hidden rounded-none border border-dashed border-ink bg-cream hover:bg-sage/40">
+              <span className="pn-eyebrow absolute inset-0 flex items-center justify-center text-ink">
                 +
               </span>
               <input
@@ -72,11 +61,14 @@ export function ThemeControls({
               />
             </label>
           </div>
+          <p className="pn-annotation mt-2 text-muted-ink">
+            Selected {accent}
+          </p>
         </div>
 
         {/* Background Theme */}
         <div>
-          <p className="mb-2 text-sm font-medium text-ink">Background</p>
+          <p className="pn-eyebrow mb-2 text-muted-ink">Background</p>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(backgroundThemes).map(([key, theme]) => {
               const typedKey = key as keyof typeof backgroundThemes;
@@ -86,10 +78,11 @@ export function ThemeControls({
                   key={key}
                   type="button"
                   onClick={() => onThemeChange({ background: typedKey })}
-                  className={`rounded-lg border px-3 py-2 text-sm transition-all cursor-pointer ${
+                  aria-pressed={isActive}
+                  className={`pn-eyebrow cursor-pointer rounded-none border border-ink px-3 py-2 transition-colors duration-[160ms] ${
                     isActive
-                      ? "border-ink bg-ink text-white"
-                      : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
+                      ? "bg-ink text-white-ink"
+                      : "bg-transparent text-ink hover:bg-sage/40"
                   }`}
                 >
                   {theme.label}
@@ -104,35 +97,38 @@ export function ThemeControls({
                   customBackground: customBackground || "#ffffff",
                 })
               }
-              className={`rounded-lg border px-3 py-2 text-sm transition-all cursor-pointer ${
+              aria-pressed={background === "custom"}
+              className={`pn-eyebrow cursor-pointer rounded-none border border-ink px-3 py-2 transition-colors duration-[160ms] ${
                 background === "custom"
-                  ? "border-ink bg-ink text-white"
-                  : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
+                  ? "bg-ink text-white-ink"
+                  : "bg-transparent text-ink hover:bg-sage/40"
               }`}
             >
               Custom
             </button>
           </div>
           {background === "custom" && (
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-ink/5 bg-stone/30 p-2">
+            <div className="mt-2 flex items-center gap-2 border border-ink/20 p-2">
               <input
                 type="color"
                 value={customBackground || "#ffffff"}
                 onChange={(e) =>
                   onThemeChange({ background: "custom", customBackground: e.target.value })
                 }
-                className="h-8 w-8 rounded-lg border border-ink/10 p-0.5 cursor-pointer"
+                className="h-8 w-8 cursor-pointer rounded-none border border-ink p-0.5"
                 aria-label="Custom background color"
               />
-              <span className="text-xs text-ink-light">Pick a solid color</span>
+              <span className="pn-annotation text-muted-ink">
+                Pick a solid color
+              </span>
             </div>
           )}
         </div>
 
         {/* Text Alignment */}
         <div>
-          <p className="mb-2 text-sm font-medium text-ink">Alignment</p>
-          <div className="flex rounded-lg border border-ink/10 p-1">
+          <p className="pn-eyebrow mb-2 text-muted-ink">Alignment</p>
+          <div className="flex border border-ink">
             {alignOptions.map((align) => {
               const isActive = textAlign === align;
               return (
@@ -140,10 +136,10 @@ export function ThemeControls({
                   key={align}
                   type="button"
                   onClick={() => onThemeChange({ textAlign: align })}
-                  className={`flex-1 rounded-md py-1.5 text-sm capitalize transition-all cursor-pointer ${
+                  className={`pn-eyebrow flex-1 cursor-pointer rounded-none py-2 transition-colors duration-[160ms] ${
                     isActive
-                      ? "bg-ink text-white"
-                      : "text-ink-light hover:bg-stone/50 hover:text-ink"
+                      ? "bg-ink text-white-ink"
+                      : "text-muted-ink hover:bg-sage/40 hover:text-ink"
                   }`}
                   aria-pressed={isActive}
                 >
@@ -153,8 +149,7 @@ export function ThemeControls({
             })}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
-

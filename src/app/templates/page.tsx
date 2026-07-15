@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { templates, TemplateCategory } from "@/lib/templates";
 import { persistDocument } from "@/lib/tag-storage";
 import { Button } from "@/components/ui/button";
@@ -33,82 +34,93 @@ export default function TemplatesPage() {
   return (
     <div className="min-h-screen py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="max-w-2xl mb-16">
-          <p className="text-sm font-medium text-terracotta mb-3 tracking-wide">
-            Template gallery
+        {/* Editorial title block */}
+        <header className="mb-12">
+          <p className="pn-eyebrow mb-4 text-muted-ink">Catalog — Templates</p>
+          <h1 className="pn-display-l mb-4 text-ink">Start with a template</h1>
+          <p className="max-w-[62ch] text-base text-ink">
+            Pick a pre-set sheet, then merge in your own data — every specimen
+            ships with live merge fields.
           </p>
-          <h1 className="font-heading text-4xl sm:text-5xl tracking-tight text-ink mb-6">
-            Start with a template
-          </h1>
-          <p className="text-lg text-ink-light leading-relaxed">
-            Choose a pre-designed template and customize it with your data. All
-            templates support mail merge fields.
-          </p>
-        </div>
+          <div className="mt-8 h-px w-full bg-ink" aria-hidden="true" />
+        </header>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-12">
+        <div className="mb-14 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setActiveCategory("all")}
             aria-pressed={activeCategory === "all"}
-            className={`px-4 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
+            className={`pn-eyebrow h-9 cursor-pointer rounded-none border border-ink px-4 transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
               activeCategory === "all"
-                ? "bg-ink text-white"
-                : "bg-stone text-ink-light hover:text-ink hover:bg-stone/80"
+                ? "bg-ink text-white-ink"
+                : "bg-cream text-ink hover:-translate-y-px hover:shadow-paper-sm"
             }`}
           >
             All
           </button>
-          {categories.map((cat) => (
+          {categories.map((cat, i) => (
             <button
               key={cat.id}
               type="button"
               onClick={() => setActiveCategory(cat.id)}
               aria-pressed={activeCategory === cat.id}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
+              className={`pn-eyebrow h-9 cursor-pointer rounded-none border border-ink px-4 transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
                 activeCategory === cat.id
-                  ? "bg-ink text-white"
-                  : "bg-stone text-ink-light hover:text-ink hover:bg-stone/80"
+                  ? "bg-ink text-white-ink"
+                  : "bg-cream text-ink hover:-translate-y-px hover:shadow-paper-sm"
               }`}
             >
-              {cat.label}
+              {String(i + 1).padStart(2, "0")} — {cat.label}
             </button>
           ))}
         </div>
 
         {/* Templates Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredTemplates.map((template) => (
+        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredTemplates.map((template, i) => (
             <TemplateCard
               key={template.id}
               template={template}
               onUseTemplate={handleUseTemplate}
+              index={i}
             />
           ))}
         </div>
 
         {/* Empty state */}
         {filteredTemplates.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-lg text-ink-light">
-              No templates found in this category.
+          <div className="flex flex-col items-center py-20 text-center">
+            <Image
+              src="/press-notes/ink-burst.svg"
+              alt=""
+              width={64}
+              height={64}
+              className="mb-5"
+            />
+            <p className="pn-hand -rotate-2 text-ink">
+              nothing set in this category yet…
+            </p>
+            <p className="pn-annotation mt-3 text-muted-ink">
+              No templates found in this category
             </p>
           </div>
         )}
 
         {/* CTA */}
-        <div className="text-center mt-20 pt-12 border-t border-ink/5">
-          <p className="text-ink-light mb-4">
-            Want to start from scratch instead?
+        <div className="mt-20 border-t border-ink pt-12 text-center">
+          <p className="pn-hand mb-6 inline-block -rotate-2 text-ink">
+            or start from a blank sheet…
           </p>
-          <Button
-            onClick={() => router.push("/create")}
-            variant="outline"
-            size="lg"
-          >
-            Create blank document
-          </Button>
+          <div>
+            <Button
+              onClick={() => router.push("/create")}
+              variant="outline"
+              size="lg"
+            >
+              Create blank document
+            </Button>
+          </div>
         </div>
       </div>
     </div>

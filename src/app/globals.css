@@ -1,56 +1,72 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
-  /* Japanese Minimal Palette */
-  --paper: #fafaf8;
-  --stone: #f0ede8;
-  --ink: #2d2d2d;
-  --ink-light: #6b6b6b;
-  --terracotta: #e07a5f;
-  --terracotta-light: #f3c4b5;
-  --sage: #8b9a8b;
-  --sage-light: #c5cec5;
+  /* Press Notes palette */
+  --pn-paper-sage: #dce1d2;
+  --pn-paper-cream: #f4ecdc;
+  --pn-ink-black: #151515;
+  --pn-press-pink: #d879a8;
+  --pn-soft-pink: #efa9ae;
+  --pn-print-green: #43a471;
+  --pn-signal-yellow: #eacb58;
+  --pn-muted-ink: #5f655d;
+  --pn-white-ink: #fff9ed;
 
   /* Semantic mapping */
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --muted: var(--stone);
-  --muted-foreground: var(--ink-light);
-  --accent: var(--terracotta);
-  --accent-light: var(--terracotta-light);
-  --secondary: var(--sage);
-  --secondary-light: var(--sage-light);
+  --background: var(--pn-paper-sage);
+  --foreground: var(--pn-ink-black);
+
+  /* Font stacks (next/font variables are set on <html>) */
+  --pn-font-display: var(--font-archivo-black), "Arial Black", sans-serif;
+  --pn-font-body: var(--font-inter), Arial, sans-serif;
+  --pn-font-mono: var(--font-dm-mono), "Courier New", monospace;
+  --pn-font-hand: var(--font-caveat), "Comic Sans MS", cursive;
+
+  /* Rules, focus, shadow, motion */
+  --pn-paper-shadow: 4px 5px 0 rgba(21, 21, 21, 0.18);
+  --pn-paper-shadow-sm: 2px 3px 0 rgba(21, 21, 21, 0.16);
+  --pn-motion-standard: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @theme inline {
   /* Colors */
-  --color-paper: var(--paper);
-  --color-stone: var(--stone);
-  --color-ink: var(--ink);
-  --color-ink-light: var(--ink-light);
-  --color-terracotta: var(--terracotta);
-  --color-terracotta-light: var(--terracotta-light);
-  --color-sage: var(--sage);
-  --color-sage-light: var(--sage-light);
+  --color-sage: var(--pn-paper-sage);
+  --color-cream: var(--pn-paper-cream);
+  --color-ink: var(--pn-ink-black);
+  --color-muted-ink: var(--pn-muted-ink);
+  --color-pink: var(--pn-press-pink);
+  --color-soft-pink: var(--pn-soft-pink);
+  --color-green: var(--pn-print-green);
+  --color-yellow: var(--pn-signal-yellow);
+  --color-white-ink: var(--pn-white-ink);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-light: var(--accent-light);
-  --color-secondary: var(--secondary);
-  --color-secondary-light: var(--secondary-light);
+
+  /* Legacy aliases (transitional) */
+  --color-paper: var(--pn-paper-cream);
+  --color-stone: var(--pn-paper-sage);
+  --color-ink-light: var(--pn-muted-ink);
+  --color-terracotta: var(--pn-press-pink);
+  --color-terracotta-light: var(--pn-soft-pink);
+  --color-sage-light: var(--pn-paper-sage);
+  --color-accent: var(--pn-press-pink);
+  --color-secondary: var(--pn-print-green);
 
   /* Typography */
-  --font-heading: var(--font-fraunces);
-  --font-body: var(--font-dm-sans);
+  --font-display: var(--pn-font-display);
+  --font-body: var(--pn-font-body);
+  --font-mono: var(--pn-font-mono);
+  --font-hand: var(--pn-font-hand);
+  --font-heading: var(--pn-font-display);
 
-  /* Shadows - soft and diffused */
-  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.06);
-  --shadow-soft-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --shadow-soft-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.1);
+  /* Paper shadows: flat offset ink, never blurred glow */
+  --shadow-paper: var(--pn-paper-shadow);
+  --shadow-paper-sm: var(--pn-paper-shadow-sm);
+  --shadow-soft: var(--pn-paper-shadow-sm);
+  --shadow-soft-lg: var(--pn-paper-shadow);
+  --shadow-soft-sm: var(--pn-paper-shadow-sm);
+  --shadow-hover: var(--pn-paper-shadow);
 }
 
 body {
@@ -58,7 +74,10 @@ body {
   margin: 0;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--pn-font-body);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.01em;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,40 +89,126 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading), Georgia, serif;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-family: var(--pn-font-display);
+  font-weight: 400;
+  letter-spacing: -0.035em;
 }
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
 ::selection {
-  background-color: var(--terracotta-light);
-  color: var(--ink);
+  background-color: var(--pn-press-pink);
+  color: var(--pn-ink-black);
 }
 
-/* Soft shadows utility classes */
-.shadow-soft {
-  box-shadow: var(--shadow-soft);
+/* Visible ink focus ring with cream offset */
+:focus-visible {
+  outline: 2px solid var(--pn-ink-black);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--pn-paper-cream);
 }
 
-.shadow-soft-lg {
-  box-shadow: var(--shadow-soft-lg);
+/* ---------------------------------------------------------------- */
+/* Press Notes voices                                                */
+/* ---------------------------------------------------------------- */
+
+/* Mono eyebrow: UI label 11/14, uppercase */
+.pn-eyebrow {
+  font-family: var(--pn-font-mono);
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.shadow-soft-sm {
-  box-shadow: var(--shadow-soft-sm);
+/* Annotation label: 10/14, uppercase */
+.pn-annotation {
+  font-family: var(--pn-font-mono);
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.shadow-hover {
-  box-shadow: var(--shadow-hover);
+/* Handwritten aside: Caveat 22/22 */
+.pn-hand {
+  font-family: var(--pn-font-hand);
+  font-size: 22px;
+  line-height: 22px;
+  letter-spacing: 0;
+  font-weight: 500;
 }
 
-/* Subtle animation utilities */
+/* Display sizes (tracking per Press Notes type scale) */
+.pn-display-xl {
+  font-family: var(--pn-font-display);
+  font-size: 64px;
+  line-height: 56px;
+  letter-spacing: -0.055em;
+}
+
+.pn-display-l {
+  font-family: var(--pn-font-display);
+  font-size: 48px;
+  line-height: 44px;
+  letter-spacing: -0.045em;
+}
+
+.pn-display-m {
+  font-family: var(--pn-font-display);
+  font-size: 32px;
+  line-height: 30px;
+  letter-spacing: -0.035em;
+}
+
+@media (max-width: 760px) {
+  .pn-display-xl {
+    font-size: 44px;
+    line-height: 40px;
+  }
+
+  .pn-display-l {
+    font-size: 36px;
+    line-height: 34px;
+  }
+}
+
+/* Subtle monochrome print noise over large paper surfaces (2-4%) */
+.pn-noise {
+  position: relative;
+}
+
+.pn-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* Dashed outline for data-bound fields on the canvas */
+.pn-field-outline {
+  outline: 1px dashed var(--pn-ink-black);
+  outline-offset: 2px;
+}
+
+.pn-field-selected {
+  background-color: color-mix(in srgb, var(--pn-press-pink) 18%, transparent);
+  outline: 1px solid var(--pn-press-pink);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Motion                                                            */
+/* ---------------------------------------------------------------- */
+
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -124,15 +229,39 @@ textarea {
   }
 }
 
+/* Annotation leader draws in, then the label fades (220ms total) */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: var(--pn-line-length, 200);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes stamp-in {
+  0% {
+    opacity: 0;
+    transform: rotate(-6deg) scale(1.4);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-6deg) scale(1);
+  }
+}
+
 .animate-fade-up {
-  animation: fade-up 0.5s ease-out forwards;
+  animation: fade-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.4s ease-out forwards;
+  animation: fade-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* Stagger delays for entrance animations */
+.animate-stamp-in {
+  animation: stamp-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 .delay-1 {
   animation-delay: 0.1s;
 }
@@ -147,6 +276,23 @@ textarea {
 }
 .delay-5 {
   animation-delay: 0.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-stamp-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Print styles */

@@ -7,20 +7,16 @@ import {
 import type { ImportSummary } from "@/types/import";
 import { NameTagData, NameTagField } from "@/types/name-tag";
 import { ChangeEvent, useMemo, useRef } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Plus, 
-  RotateCcw, 
-  Save, 
-  Upload, 
-  Download, 
-  Type, 
-  Palette, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  FileText 
+import {
+  Plus,
+  RotateCcw,
+  Save,
+  Download,
+  Eye,
+  EyeOff,
+  Trash2,
 } from "lucide-react";
 
 type NameTagFormProps = {
@@ -57,6 +53,10 @@ const alignOptions: Array<NameTagData["textAlign"]> = [
   "right",
 ];
 
+const underlineInputBase =
+  "rounded-none border-0 border-b border-ink bg-transparent px-0 py-1.5 text-sm text-ink placeholder:text-muted-ink/60 transition-colors duration-[160ms] focus:border-pink focus:outline-none";
+const underlineInput = `w-full ${underlineInputBase}`;
+
 const importStatusTokens: Record<
   ImportSummary["status"],
   {
@@ -66,19 +66,19 @@ const importStatusTokens: Record<
   }
 > = {
   match: {
-    label: "Perfect Match",
-    pill: "border border-sage/30 bg-sage-light text-ink",
+    label: "✓ Perfect Match",
+    pill: "border border-green bg-green text-white-ink",
     text: "text-ink",
   },
   "needs-layers": {
-    label: "Needs Layers",
-    pill: "border border-amber-200 bg-amber-50 text-amber-700",
-    text: "text-amber-700",
+    label: "! Needs Layers",
+    pill: "border border-ink bg-yellow text-ink",
+    text: "text-ink",
   },
   "unused-layers": {
-    label: "Extra Layers",
-    pill: "border border-sky-200 bg-sky-50 text-sky-700",
-    text: "text-sky-700",
+    label: "＋ Extra Layers",
+    pill: "border border-ink bg-cream text-ink",
+    text: "text-ink",
   },
 };
 
@@ -228,139 +228,142 @@ export function NameTagForm({
   };
 
   return (
-    <aside className="flex flex-col gap-6">
+    <aside className="flex flex-col divide-y divide-ink rounded-none border border-ink bg-cream shadow-paper">
       {/* Actions Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/5 bg-white p-4 shadow-soft-sm">
+      <section className="flex flex-wrap items-center justify-between gap-3 p-5">
         <div className="flex flex-col">
-          <p className="text-xs font-medium text-ink-light tracking-wide">
-            Toolkit
-          </p>
-          <h2 className="font-heading text-lg tracking-tight text-ink">
-            Design Controls
+          <p className="pn-eyebrow text-muted-ink">Properties</p>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">
+            Design controls
           </h2>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onAddField} size="sm" variant="secondary" className="gap-1">
-            <Plus className="h-4 w-4" />
+          <Button onClick={onAddField} size="sm" variant="accent" className="gap-1">
+            <Plus className="h-4 w-4" aria-hidden="true" />
             Add Layer
           </Button>
           <Button onClick={onReset} size="sm" variant="outline" className="gap-1">
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
             Reset
           </Button>
           {isAuthenticated && onSaveDesign && (
             <Button onClick={onSaveDesign} size="sm" variant="primary" className="gap-1">
-              <Save className="h-4 w-4" />
+              <Save className="h-4 w-4" aria-hidden="true" />
               Save
             </Button>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* Roster Import Card */}
-      <Card variant="elevated" className="bg-white">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sage/10 text-sage">
-                <FileText className="h-4 w-4" />
+      {/* Roster Import */}
+      <section className="p-5">
+        <div className="mb-3 flex items-baseline justify-between gap-2">
+          <p className="pn-eyebrow text-ink">01 — Data source</p>
+          <p className="pn-hand -rotate-2 text-muted-ink">design once, print many</p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className="hidden"
+            onChange={handleDatasetChange}
+          />
+
+          {/* Drop-zone style import trigger */}
+          <button
+            type="button"
+            onClick={handleDatasetButton}
+            disabled={isImportingDataset}
+            className="flex cursor-pointer flex-col items-center gap-2 rounded-none border border-dashed border-ink bg-cream px-4 py-5 text-center transition-colors duration-[160ms] hover:bg-sage/40 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Image
+              src="/press-notes/running-forms.svg"
+              alt=""
+              width={120}
+              height={40}
+            />
+            <span className="pn-eyebrow text-ink">
+              {isImportingDataset ? "Reading file…" : "Upload CSV / XLSX"}
+            </span>
+            <span className="pn-annotation text-muted-ink">
+              Roster rows become printed labels
+            </span>
+          </button>
+
+          <Button
+            onClick={onExportLabels}
+            disabled={exportDisabled}
+            variant="primary"
+            size="sm"
+            className="gap-2 self-start"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            {exportButtonLabel}
+          </Button>
+
+          {importError && (
+            <div className="rounded-none border border-ink bg-yellow/50 p-3" role="alert">
+              <p className="pn-annotation text-ink">Import error</p>
+              <p className="mt-1 text-sm text-ink">{importError}</p>
+            </div>
+          )}
+          {exportError && (
+            <div className="rounded-none border border-ink bg-yellow/50 p-3" role="alert">
+              <p className="pn-annotation text-ink">Export error</p>
+              <p className="mt-1 text-sm text-ink">{exportError}</p>
+            </div>
+          )}
+
+          {importSummary && (
+            <div className="mt-1 border border-ink bg-cream">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink px-4 py-3">
+                <div>
+                  <p className="pn-eyebrow text-ink">{importSummary.fileName}</p>
+                  {importTimestamp && (
+                    <p className="pn-annotation mt-1 text-muted-ink">
+                      Imported {importTimestamp}
+                    </p>
+                  )}
+                </div>
+                {importStatus && (
+                  <span className={`pn-annotation px-2.5 py-1 ${importStatus.pill}`}>
+                    {importStatus.label}
+                  </span>
+                )}
               </div>
-              <CardTitle>Roster Import</CardTitle>
-             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-           <p className="mb-4 text-sm text-ink-light">
-            Upload CSV or Excel files to create labels in bulk.
-           </p>
-           
-           <div className="flex flex-col gap-3">
-             <div className="flex flex-wrap items-center gap-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  className="hidden"
-                  onChange={handleDatasetChange}
-                />
-                <Button 
-                  onClick={handleDatasetButton} 
-                  disabled={isImportingDataset}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  {isImportingDataset ? "Reading..." : "Upload File"}
-                </Button>
 
-                <Button
-                  onClick={onExportLabels}
-                  disabled={exportDisabled}
-                  variant="primary"
-                  size="sm"
-                  className="gap-2 ml-auto sm:ml-0"
-                >
-                  <Download className="h-4 w-4" />
-                  {exportButtonLabel}
-                </Button>
-             </div>
+              {importDescription && (
+                <p className="border-b border-ink px-4 py-3 text-sm text-muted-ink">
+                  {importDescription}
+                </p>
+              )}
 
-             {importError && (
-               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                 {importError}
-               </div>
-             )}
-             {exportError && (
-               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                 {exportError}
-               </div>
-             )}
-
-             {importSummary && (
-               <div className="mt-2 space-y-3 rounded-xl border border-ink/5 bg-stone/30 p-4">
-                 <div className="flex items-center justify-between border-b border-ink/5 pb-2">
-                   <div>
-                     <p className="font-medium text-sm text-ink">{importSummary.fileName}</p>
-                     {importTimestamp && <p className="text-xs text-ink-light">{importTimestamp}</p>}
-                   </div>
-                   {importStatus && (
-                     <span className={`rounded-md px-2.5 py-1 text-xs font-medium ${importStatus.pill}`}>
-                       {importStatus.label}
-                     </span>
-                   )}
-                 </div>
-                 
-                 {importDescription && (
-                   <p className="text-sm text-ink-light">{importDescription}</p>
-                 )}
-                 
-                 <div className="grid grid-cols-3 gap-2 text-center">
-                   <div className="rounded-lg bg-white p-2">
-                     <div className="text-xs text-ink-light">Headers</div>
-                     <div className="font-heading text-lg text-ink">{importSummary.headerCount}</div>
-                   </div>
-                   <div className="rounded-lg bg-white p-2">
-                     <div className="text-xs text-ink-light">Layers</div>
-                     <div className="font-heading text-lg text-ink">{importSummary.layerCount}</div>
-                   </div>
-                   <div className="rounded-lg bg-white p-2">
-                     <div className="text-xs text-ink-light">Rows</div>
-                     <div className="font-heading text-lg text-ink">{importSummary.rowCount}</div>
-                   </div>
-                 </div>
-               </div>
-             )}
-           </div>
-        </CardContent>
-      </Card>
+              {/* Connected-sheet stats */}
+              <div className="grid grid-cols-3 divide-x divide-ink text-center">
+                <div className="px-2 py-3">
+                  <div className="pn-annotation text-muted-ink">Headers</div>
+                  <div className="font-display text-lg text-ink">{importSummary.headerCount}</div>
+                </div>
+                <div className="px-2 py-3">
+                  <div className="pn-annotation text-muted-ink">Layers</div>
+                  <div className="font-display text-lg text-ink">{importSummary.layerCount}</div>
+                </div>
+                <div className="px-2 py-3">
+                  <div className="pn-annotation text-muted-ink">Rows</div>
+                  <div className="font-display text-lg text-ink">{importSummary.rowCount}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Layers List */}
-      <div className="space-y-2">
-        <p className="px-1 text-xs font-medium text-ink-light tracking-wide">
-          Layers
-        </p>
-        <div className="flex flex-col gap-2">
+      <section className="p-5">
+        <p className="pn-eyebrow mb-3 text-ink">02 — Layers</p>
+        <div className="flex flex-col border-t border-ink/20">
           {tag.fields.map((field, index) => {
             const isActive = field.id === activeFieldId;
             return (
@@ -368,302 +371,319 @@ export function NameTagForm({
                 key={field.id}
                 type="button"
                 onClick={() => onSelectField(field.id)}
-                className={`group relative w-full overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-200 cursor-pointer ${
+                aria-pressed={isActive}
+                className={`group relative w-full cursor-pointer rounded-none border-b border-ink/20 px-2 py-3 text-left transition-colors duration-[160ms] ${
                   isActive
-                    ? "border-terracotta bg-terracotta/10 text-ink"
-                    : "border-ink/10 bg-white text-ink-light hover:border-ink/20 hover:text-ink"
+                    ? "border-l-2 border-l-pink bg-pink/15 text-ink"
+                    : "border-l-2 border-l-transparent text-muted-ink hover:bg-sage/40 hover:text-ink"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-medium">
-                    {field.name || `Layer ${index + 1}`}
-                  </p>
+                  <span className="flex items-baseline gap-2">
+                    <span
+                      className={`pn-eyebrow ${isActive ? "text-ink" : "text-muted-ink"}`}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-sm font-medium text-ink">
+                      {field.name || `Layer ${index + 1}`}
+                    </span>
+                  </span>
                   {field.visible ? (
-                     <Eye className={`h-4 w-4 ${isActive ? "text-terracotta" : "text-ink-light/50 group-hover:text-ink-light"}`} />
+                    <Eye
+                      className={`h-4 w-4 ${isActive ? "text-ink" : "text-muted-ink"}`}
+                      aria-hidden="true"
+                    />
                   ) : (
-                     <EyeOff className={`h-4 w-4 ${isActive ? "text-ink-light" : "text-ink-light/30"}`} />
+                    <EyeOff className="h-4 w-4 text-muted-ink/50" aria-hidden="true" />
                   )}
                 </div>
-                <p className={`mt-1 truncate text-xs ${isActive ? "text-ink-light" : "text-ink-light/70"}`}>
+                <p className="mt-1 truncate font-mono text-xs text-muted-ink">
                   {field.text.trim() || "Empty text"}
                 </p>
               </button>
             );
           })}
         </div>
-      </div>
+      </section>
 
       {/* Active Layer Properties */}
       {activeLayer ? (
-        <Card variant="elevated" className="overflow-visible bg-white">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-ink">
-                <Type className="h-4 w-4" />
-              </div>
-              <CardTitle>Edit Layer</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
+        <section className="p-5">
+          <div className="mb-4 flex items-baseline justify-between gap-2">
+            <p className="pn-eyebrow text-ink">Edit layer</p>
+            <p className="pn-annotation text-pink">
+              {`{{ ${activeLayer.name || "Layer"} }}`}
+            </p>
+          </div>
+          <div className="space-y-5">
             {/* Name & Visibility */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="mb-2 block text-sm font-medium text-ink">Layer Name</label>
+                <label className="pn-eyebrow mb-1 block text-muted-ink">Layer name</label>
                 <input
-                  className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm text-ink focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
+                  className={underlineInput}
                   value={activeLayer.name}
                   onChange={handleLayerNameChange}
                 />
               </div>
-              <div className="flex flex-col items-center pt-6">
-                 <button
-                    type="button"
-                    onClick={() => onFieldChange(activeLayer.id, { visible: !activeLayer.visible })}
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-all cursor-pointer ${
-                      activeLayer.visible 
-                        ? "border-sage bg-sage-light text-sage" 
-                        : "border-ink/10 bg-stone text-ink-light/50"
-                    }`}
-                 >
-                   {activeLayer.visible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
-                 </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => onFieldChange(activeLayer.id, { visible: !activeLayer.visible })}
+                className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-none border border-ink transition-colors duration-[160ms] ${
+                  activeLayer.visible
+                    ? "bg-cream text-ink"
+                    : "bg-transparent text-muted-ink/60"
+                }`}
+                aria-label={activeLayer.visible ? "Hide layer" : "Show layer"}
+                aria-pressed={activeLayer.visible}
+              >
+                {activeLayer.visible ? (
+                  <Eye className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <EyeOff className="h-5 w-5" aria-hidden="true" />
+                )}
+              </button>
             </div>
 
             {/* Text Input */}
             <div>
-               <label className="mb-2 block text-sm font-medium text-ink">Text Content</label>
-               {activeLayer.name.toLowerCase().includes("tagline") || activeLayer.text.length > 50 ? (
-                 <textarea
-                   rows={3}
-                   className="w-full resize-none rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm text-ink focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
-                   value={activeLayer.text}
-                   onChange={handleTextChange}
-                   placeholder="Type something..."
-                 />
-               ) : (
-                 <input
-                   className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm text-ink focus:border-terracotta/50 focus:outline-none focus:ring-2 focus:ring-terracotta/20 transition-colors"
-                   value={activeLayer.text}
-                   onChange={handleTextChange}
-                   placeholder="Type something..."
-                 />
-               )}
+              <label className="pn-eyebrow mb-1 block text-muted-ink">Text content</label>
+              {activeLayer.name.toLowerCase().includes("tagline") || activeLayer.text.length > 50 ? (
+                <textarea
+                  rows={3}
+                  className={`${underlineInput} resize-none font-mono`}
+                  value={activeLayer.text}
+                  onChange={handleTextChange}
+                  placeholder="Type something..."
+                />
+              ) : (
+                <input
+                  className={`${underlineInput} font-mono`}
+                  value={activeLayer.text}
+                  onChange={handleTextChange}
+                  placeholder="Type something..."
+                />
+              )}
             </div>
 
             {/* Styles: Font Size & Color */}
             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <label className="mb-2 flex items-center justify-between text-sm font-medium text-ink">
-                   <span>Size</span>
-                   <span className="text-ink-light">{activeLayer.fontSize}px</span>
-                 </label>
-                 <input
-                   type="range"
-                   min={14}
-                   max={96}
-                   value={activeLayer.fontSize}
-                   onChange={handleFontSizeChange}
-                   className="h-2 w-full cursor-pointer appearance-none rounded-full bg-stone accent-terracotta"
-                 />
-               </div>
-               <div>
-                 <label className="mb-2 block text-sm font-medium text-ink">Color</label>
-                 <div className="flex items-center gap-2">
-                   <input
-                     type="color"
-                     value={activeLayer.color}
-                     onChange={handleColorChange}
-                     className="h-9 w-9 cursor-pointer overflow-hidden rounded-lg border border-ink/10 p-0.5"
-                   />
-                   <span className="text-xs font-mono text-ink-light">{activeLayer.color}</span>
-                 </div>
-               </div>
+              <div>
+                <label className="mb-1 flex items-baseline justify-between gap-2">
+                  <span className="pn-eyebrow text-muted-ink">Size</span>
+                  <span className="pn-annotation text-muted-ink">{activeLayer.fontSize}px</span>
+                </label>
+                <input
+                  type="range"
+                  min={14}
+                  max={96}
+                  value={activeLayer.fontSize}
+                  onChange={handleFontSizeChange}
+                  className="h-2 w-full cursor-pointer appearance-none rounded-none bg-sage accent-pink"
+                />
+              </div>
+              <div>
+                <label className="pn-eyebrow mb-1 block text-muted-ink">Color</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={activeLayer.color}
+                    onChange={handleColorChange}
+                    className="h-9 w-9 cursor-pointer overflow-hidden rounded-none border border-ink p-0.5"
+                  />
+                  <span className="pn-annotation text-muted-ink">{activeLayer.color}</span>
+                </div>
+              </div>
             </div>
 
             {/* Position */}
-            <div className="rounded-lg bg-stone/50 p-3">
-               <p className="mb-3 text-sm font-medium text-ink">Position (%)</p>
-               <div className="space-y-3">
-                 {/* X Position */}
-                 <div className="flex items-center gap-3">
-                   <span className="w-6 text-xs font-medium text-ink-light">X</span>
-                   <input
-                     type="range"
-                     min={0}
-                     max={100}
-                     value={activeCoordinateValue("x")}
-                     onChange={(e) => handleCoordinateChange("x", e)}
-                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-white accent-terracotta"
-                   />
-                   <input
-                     type="number"
-                     value={activeCoordinateValue("x")}
-                     onChange={(e) => handleCoordinateChange("x", e)}
-                     min={0}
-                     max={100}
-                     className="w-14 rounded-lg border border-ink/10 bg-white py-1.5 px-2 text-center text-sm text-ink focus:border-terracotta/50 focus:outline-none"
-                   />
-                 </div>
-                 {/* Y Position */}
-                 <div className="flex items-center gap-3">
-                   <span className="w-6 text-xs font-medium text-ink-light">Y</span>
-                   <input
-                     type="range"
-                     min={0}
-                     max={100}
-                     value={activeCoordinateValue("y")}
-                     onChange={(e) => handleCoordinateChange("y", e)}
-                     className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-white accent-terracotta"
-                   />
-                   <input
-                     type="number"
-                     value={activeCoordinateValue("y")}
-                     onChange={(e) => handleCoordinateChange("y", e)}
-                     min={0}
-                     max={100}
-                     className="w-14 rounded-lg border border-ink/10 bg-white py-1.5 px-2 text-center text-sm text-ink focus:border-terracotta/50 focus:outline-none"
-                   />
-                 </div>
-               </div>
-               <p className="mt-2 text-xs text-ink-light">
-                 Use arrow keys for fine control (Shift for smaller steps)
-               </p>
+            <div className="border border-ink/20 p-3">
+              <p className="pn-eyebrow mb-3 text-muted-ink">Position (%)</p>
+              <div className="space-y-3">
+                {/* X Position */}
+                <div className="flex items-center gap-3">
+                  <span className="pn-eyebrow w-6 text-ink">X</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={activeCoordinateValue("x")}
+                    onChange={(e) => handleCoordinateChange("x", e)}
+                    className="h-2 flex-1 cursor-pointer appearance-none rounded-none bg-sage accent-pink"
+                  />
+                  <input
+                    type="number"
+                    value={activeCoordinateValue("x")}
+                    onChange={(e) => handleCoordinateChange("x", e)}
+                    min={0}
+                    max={100}
+                    className={`${underlineInputBase} w-14 text-center font-mono`}
+                  />
+                </div>
+                {/* Y Position */}
+                <div className="flex items-center gap-3">
+                  <span className="pn-eyebrow w-6 text-ink">Y</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={activeCoordinateValue("y")}
+                    onChange={(e) => handleCoordinateChange("y", e)}
+                    className="h-2 flex-1 cursor-pointer appearance-none rounded-none bg-sage accent-pink"
+                  />
+                  <input
+                    type="number"
+                    value={activeCoordinateValue("y")}
+                    onChange={(e) => handleCoordinateChange("y", e)}
+                    min={0}
+                    max={100}
+                    className={`${underlineInputBase} w-14 text-center font-mono`}
+                  />
+                </div>
+              </div>
+              <p className="pn-annotation mt-2 text-muted-ink">
+                Arrow keys nudge — hold Shift for fine steps
+              </p>
             </div>
 
-            <Button 
-              variant="danger" 
+            <Button
+              variant="danger"
               onClick={() => onRemoveField(activeLayer.id)}
               disabled={!canRemove}
               className="w-full gap-2"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
               Delete Layer
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       ) : (
-        <div className="flex h-40 flex-col items-center justify-center rounded-xl border border-dashed border-ink/10 bg-stone/30 p-6 text-center">
-          <p className="text-sm text-ink-light">
-            No layer selected. Click a layer above to edit.
-          </p>
-        </div>
+        <section className="p-5">
+          <div className="flex h-32 flex-col items-center justify-center border border-dashed border-ink p-6 text-center">
+            <p className="pn-eyebrow text-muted-ink">
+              No layer selected — click a layer above to edit
+            </p>
+          </div>
+        </section>
       )}
 
       {/* Global Theme Controls */}
-      <Card variant="elevated" className="bg-white">
-         <CardHeader className="pb-3">
-           <div className="flex items-center gap-2">
-             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-terracotta/10 text-terracotta">
-               <Palette className="h-4 w-4" />
-             </div>
-             <CardTitle>Theme</CardTitle>
-           </div>
-         </CardHeader>
-         <CardContent className="space-y-5">
-           {/* Accent Color */}
-           <div>
-             <p className="mb-2 text-sm font-medium text-ink">Accent Color</p>
-             <div className="flex flex-wrap gap-2">
-               {accentPalette.map((color) => {
-                 const isActive = tag.accent === color;
-                 return (
-                   <button
-                     key={color}
-                     type="button"
-                     onClick={() => onThemeChange({ accent: color })}
-                     className={`h-8 w-8 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 ${
-                       isActive ? "border-ink ring-2 ring-ink/10 scale-110" : "border-transparent"
-                     }`}
-                     style={{ backgroundColor: color }}
-                     aria-pressed={isActive}
-                   />
-                 );
-               })}
-               <label className="relative h-8 w-8 cursor-pointer overflow-hidden rounded-full border border-ink/10 bg-white hover:border-ink/30">
-                 <span className="absolute inset-0 flex items-center justify-center text-ink-light">+</span>
-                 <input
-                   type="color"
-                   value={tag.accent}
-                   onChange={(event) => onThemeChange({ accent: event.target.value })}
-                   className="absolute -inset-full h-[200%] w-[200%] cursor-pointer opacity-0"
-                 />
-               </label>
-             </div>
-           </div>
+      <section className="p-5">
+        <p className="pn-eyebrow mb-4 text-ink">03 — Theme</p>
+        <div className="space-y-5">
+          {/* Accent Color */}
+          <div>
+            <p className="pn-eyebrow mb-2 text-muted-ink">Accent color</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {accentPalette.map((color) => {
+                const isActive = tag.accent === color;
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => onThemeChange({ accent: color })}
+                    className={`h-8 w-8 cursor-pointer rounded-none border border-ink transition-transform duration-[160ms] hover:-translate-y-px ${
+                      isActive ? "outline-2 outline-offset-2 outline-ink" : ""
+                    }`}
+                    style={{ backgroundColor: color }}
+                    aria-pressed={isActive}
+                    aria-label={`Select accent color ${color}`}
+                  />
+                );
+              })}
+              <label className="relative h-8 w-8 cursor-pointer overflow-hidden rounded-none border border-dashed border-ink bg-cream hover:bg-sage/40">
+                <span className="pn-eyebrow absolute inset-0 flex items-center justify-center text-ink">+</span>
+                <input
+                  type="color"
+                  value={tag.accent}
+                  onChange={(event) => onThemeChange({ accent: event.target.value })}
+                  className="absolute -inset-full h-[200%] w-[200%] cursor-pointer opacity-0"
+                  aria-label="Custom accent color"
+                />
+              </label>
+            </div>
+            <p className="pn-annotation mt-2 text-muted-ink">
+              Selected {tag.accent}
+            </p>
+          </div>
 
-           {/* Background Theme */}
-           <div>
-              <p className="mb-2 text-sm font-medium text-ink">Background</p>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.entries(backgroundThemes).map(([key, theme]) => {
-                   const typedKey = key as keyof typeof backgroundThemes;
-                   const isActive = tag.background === typedKey;
-                   return (
-                     <button
-                       key={key}
-                       type="button"
-                       onClick={() => onThemeChange({ background: typedKey })}
-                       className={`rounded-lg border px-3 py-2 text-sm transition-all cursor-pointer ${
-                         isActive
-                           ? "border-ink bg-ink text-white"
-                           : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
-                       }`}
-                     >
-                       {theme.label}
-                     </button>
-                   );
-                })}
-                <button
-                   type="button"
-                   onClick={() => onThemeChange({ background: "custom", customBackground: tag.customBackground || "#ffffff" })}
-                   className={`rounded-lg border px-3 py-2 text-sm transition-all cursor-pointer ${
-                     tag.background === "custom"
-                       ? "border-ink bg-ink text-white"
-                       : "border-ink/10 text-ink-light hover:border-ink/20 hover:text-ink"
-                   }`}
-                >
-                  Custom
-                </button>
+          {/* Background Theme */}
+          <div>
+            <p className="pn-eyebrow mb-2 text-muted-ink">Background</p>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(backgroundThemes).map(([key, theme]) => {
+                const typedKey = key as keyof typeof backgroundThemes;
+                const isActive = tag.background === typedKey;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => onThemeChange({ background: typedKey })}
+                    aria-pressed={isActive}
+                    className={`pn-eyebrow cursor-pointer rounded-none border border-ink px-3 py-2 transition-colors duration-[160ms] ${
+                      isActive
+                        ? "bg-ink text-white-ink"
+                        : "bg-transparent text-ink hover:bg-sage/40"
+                    }`}
+                  >
+                    {theme.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => onThemeChange({ background: "custom", customBackground: tag.customBackground || "#ffffff" })}
+                aria-pressed={tag.background === "custom"}
+                className={`pn-eyebrow cursor-pointer rounded-none border border-ink px-3 py-2 transition-colors duration-[160ms] ${
+                  tag.background === "custom"
+                    ? "bg-ink text-white-ink"
+                    : "bg-transparent text-ink hover:bg-sage/40"
+                }`}
+              >
+                Custom
+              </button>
+            </div>
+            {tag.background === "custom" && (
+              <div className="mt-2 flex items-center gap-2 border border-ink/20 p-2">
+                <input
+                  type="color"
+                  value={tag.customBackground || "#ffffff"}
+                  onChange={(e) => onThemeChange({ background: "custom", customBackground: e.target.value })}
+                  className="h-8 w-8 cursor-pointer rounded-none border border-ink p-0.5"
+                  aria-label="Custom background color"
+                />
+                <span className="pn-annotation text-muted-ink">Pick a solid color</span>
               </div>
-              {tag.background === "custom" && (
-                <div className="mt-2 flex items-center gap-2 rounded-lg border border-ink/5 bg-stone/30 p-2">
-                   <input
-                     type="color"
-                     value={tag.customBackground || "#ffffff"}
-                     onChange={(e) => onThemeChange({ background: "custom", customBackground: e.target.value })}
-                     className="h-8 w-8 rounded-lg border border-ink/10 p-0.5 cursor-pointer"
-                   />
-                   <span className="text-xs text-ink-light">Pick a solid color</span>
-                </div>
-              )}
-           </div>
+            )}
+          </div>
 
-           {/* Text Alignment */}
-           <div>
-             <p className="mb-2 text-sm font-medium text-ink">Alignment</p>
-             <div className="flex rounded-lg border border-ink/10 p-1">
-               {alignOptions.map((align) => {
-                 const isActive = tag.textAlign === align;
-                 return (
-                   <button
-                     key={align}
-                     type="button"
-                     onClick={() => onThemeChange({ textAlign: align })}
-                     className={`flex-1 rounded-md py-1.5 text-sm capitalize transition-all cursor-pointer ${
-                       isActive
-                         ? "bg-ink text-white"
-                         : "text-ink-light hover:bg-stone/50 hover:text-ink"
-                     }`}
-                   >
-                     {align}
-                   </button>
-                 );
-               })}
-             </div>
-           </div>
-         </CardContent>
-      </Card>
+          {/* Text Alignment */}
+          <div>
+            <p className="pn-eyebrow mb-2 text-muted-ink">Alignment</p>
+            <div className="flex border border-ink">
+              {alignOptions.map((align) => {
+                const isActive = tag.textAlign === align;
+                return (
+                  <button
+                    key={align}
+                    type="button"
+                    onClick={() => onThemeChange({ textAlign: align })}
+                    className={`pn-eyebrow flex-1 cursor-pointer rounded-none py-2 transition-colors duration-[160ms] ${
+                      isActive
+                        ? "bg-ink text-white-ink"
+                        : "text-muted-ink hover:bg-sage/40 hover:text-ink"
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    {align}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
     </aside>
   );
 }
