@@ -11,11 +11,11 @@ export default function AboutPage() {
             Our story
           </p>
           <h1 className="font-heading text-4xl sm:text-5xl tracking-tight text-ink mb-6">
-            About MailBuddy
+            About Mail Buddy
           </h1>
           
           <p className="text-lg text-ink-light leading-relaxed mb-6">
-            We believe mail merge shouldn&apos;t be complicated. That&apos;s why we built MailBuddy.
+            We believe mail merge shouldn&apos;t be complicated. That&apos;s why we built Mail Buddy.
           </p>
           <p className="text-ink-light leading-relaxed">
             Whether you&apos;re a teacher sending personalized letters to parents, an HR manager creating employee certificates, or a small business owner mailing thank-you cards, we&apos;re here to make the process as simple as possible.

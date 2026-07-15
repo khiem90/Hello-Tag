@@ -27,10 +27,10 @@ export function SiteHeader() {
         <Link 
           href="/" 
           className="flex items-center gap-2 transition-opacity hover:opacity-70"
-          aria-label="MailBuddy Home"
+          aria-label="Mail Buddy Home"
         >
           <span className="font-heading text-xl tracking-tight text-ink">
-            Mail<span className="text-terracotta">Buddy</span>
+            Mail <span className="text-terracotta">Buddy</span>
           </span>
         </Link>
 

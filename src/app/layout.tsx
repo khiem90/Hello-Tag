@@ -20,7 +20,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "MailBuddy - Elegant Mail Merge",
+  title: "Mail Buddy - Elegant Mail Merge",
   description: "Create beautifully personalized letters, certificates, labels, and envelopes with ease.",
 };
 
