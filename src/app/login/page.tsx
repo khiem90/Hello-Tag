@@ -4,7 +4,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sign in | MailBuddy",
+  title: "Sign in | Mail Buddy",
   description:
     "Access your saved mail merge designs or start a new project after signing in.",
 };

@@ -7,7 +7,7 @@ export function SiteFooter() {
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <div className="flex flex-col items-center md:items-start">
             <p className="font-heading text-lg tracking-tight text-ink">
-              Mail<span className="text-terracotta">Buddy</span>
+              Mail <span className="text-terracotta">Buddy</span>
             </p>
             <p className="text-sm text-ink-light mt-1">
               Elegant mail merge, simplified.
@@ -38,7 +38,7 @@ export function SiteFooter() {
 
         <div className="mt-12 pt-6 border-t border-ink/5 text-center">
           <p className="text-xs text-ink-light/60">
-            © {new Date().getFullYear()} MailBuddy. Crafted with care.
+            © {new Date().getFullYear()} Mail Buddy. Crafted with care.
           </p>
         </div>
       </div>

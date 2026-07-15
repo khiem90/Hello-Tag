@@ -1,15 +1,16 @@
-# Custom Name Tag Maker
+# Mail Buddy
 
-This project is a drag-and-drop studio for crafting polished name tag labels. Type in your details, tweak each layer’s color, font size, and position, and watch the tag update instantly in the live preview.
+Mail Buddy is an elegant mail merge studio. Create beautifully personalized letters, certificates, labels, and envelopes — import your data once, design with care, and export polished documents in minutes.
 
 https://github.com/user-attachments/assets/placeholder
 
 ## Features
 
-- Dedicated fields for greeting, name, pronouns, role, and tagline.
-- Drag any field inside the preview; arrow keys nudge selections for pixel-level placement.
+- Drag-and-drop merge editor with a live preview; arrow keys nudge selections for pixel-level placement.
 - Customize visibility, font size, color, background theme, and text alignment for every block.
-- Accent color palette plus custom picker to match event branding.
+- Accent color palette plus custom picker to match your branding.
+- Ready-made templates for common use cases like certificates, client letters, and event labels.
+- Sign in to save your designs and export documents faster.
 
 ## Getting Started
 

@@ -3,9 +3,9 @@ import Link from "next/link";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 
 export const metadata: Metadata = {
-  title: "Create account | MailBuddy",
+  title: "Create account | Mail Buddy",
   description:
-    "Create a MailBuddy account to save your designs and export documents faster.",
+    "Create a Mail Buddy account to save your designs and export documents faster.",
 };
 
 type Props = {
