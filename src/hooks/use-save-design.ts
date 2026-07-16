@@ -1,50 +1,30 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { saveDesignToFirebase } from "@/lib/tag-storage";
+import { saveDesignToFirebase } from "@/lib/storage";
 import { DocumentData } from "@/types/document";
 
-type UseSaveDesignOptions = {
-  document: DocumentData;
-};
-
-type UseSaveDesignReturn = {
-  showSaveModal: boolean;
-  savingStatus: string | null;
-  handleOpenSaveModal: () => void;
-  handleCloseSaveModal: () => void;
-  handleSaveSubmit: (name: string, description?: string) => Promise<void>;
-};
-
-export const useSaveDesign = (
-  options: UseSaveDesignOptions
-): UseSaveDesignReturn => {
-  const { document } = options;
-
+export const useSaveDesign = ({ document }: { document: DocumentData }) => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [savingStatus, setSavingStatus] = useState<string | null>(null);
 
-  const handleOpenSaveModal = useCallback(() => {
-    setShowSaveModal(true);
-  }, []);
-
-  const handleCloseSaveModal = useCallback(() => {
-    setShowSaveModal(false);
-  }, []);
+  const handleOpenSaveModal = useCallback(() => setShowSaveModal(true), []);
+  const handleCloseSaveModal = useCallback(() => setShowSaveModal(false), []);
 
   const handleSaveSubmit = useCallback(
     async (name: string, description?: string) => {
+      setSavingStatus("Saving your design...");
       try {
-        setSavingStatus("Saving your design...");
         await saveDesignToFirebase(name, document, description);
         setSavingStatus("Design saved successfully!");
         setTimeout(() => setSavingStatus(null), 3000);
       } catch (error) {
+        setSavingStatus(null);
         console.error("Failed to save design", error);
         throw error;
       }
     },
-    [document]
+    [document],
   );
 
   return {
@@ -55,4 +35,3 @@ export const useSaveDesign = (
     handleSaveSubmit,
   };
 };
-

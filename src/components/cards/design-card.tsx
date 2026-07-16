@@ -2,28 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit3 } from "lucide-react";
-import { DocumentType } from "@/types/document";
-import { type SavedDesign } from "@/lib/tag-storage";
+import { type SavedDesign } from "@/lib/storage";
+import { SpecimenFrame } from "./specimen-frame";
 
 type DesignCardProps = {
   design: SavedDesign;
   onLoadDesign: (design: SavedDesign) => void;
   onDeleteDesign: (designId: string) => void;
   index?: number;
-};
-
-const documentTypeLabels: Record<DocumentType, string> = {
-  letter: "Letter",
-  certificate: "Certificate",
-  label: "Label",
-  envelope: "Envelope",
-};
-
-const documentTypeAccents: Record<DocumentType, string> = {
-  letter: "bg-green",
-  certificate: "bg-pink",
-  label: "bg-yellow",
-  envelope: "bg-green",
 };
 
 const formatDate = (timestamp: Date | { toDate: () => Date }) => {
@@ -42,31 +28,8 @@ export function DesignCard({
   onDeleteDesign,
   index,
 }: DesignCardProps) {
-  const docType = design.data.documentType || "label";
-  const tilted = index !== undefined && index % 2 === 1;
-
   return (
-    <div
-      className={`group flex flex-col rounded-none border border-ink bg-cream transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:shadow-paper ${
-        tilted ? "rotate-[-0.4deg]" : ""
-      }`}
-    >
-      {/* Specimen header: index number + document type tag */}
-      <div className="flex items-center justify-between border-b border-ink px-4 py-2">
-        <span className="pn-eyebrow text-ink">
-          {index !== undefined
-            ? `No. ${String(index + 1).padStart(2, "0")}`
-            : "No. —"}
-        </span>
-        <span className="pn-annotation inline-flex items-center gap-1.5 text-ink">
-          <span
-            className={`h-2 w-2 border border-ink ${documentTypeAccents[docType]}`}
-            aria-hidden="true"
-          />
-          {documentTypeLabels[docType]}
-        </span>
-      </div>
-
+    <SpecimenFrame docType={design.data.documentType || "label"} index={index}>
       {/* Preview framed like a document proof */}
       <div className="border-b border-ink p-3">
         <div
@@ -86,9 +49,9 @@ export function DesignCard({
           {design.data.fields
             .filter((field) => field.visible)
             .slice(0, 4)
-            .map((field, i) => (
+            .map((field) => (
               <div
-                key={i}
+                key={field.id}
                 className="absolute truncate px-1"
                 style={{
                   top: `${field.y}%`,
@@ -146,6 +109,6 @@ export function DesignCard({
           </Button>
         </div>
       </div>
-    </div>
+    </SpecimenFrame>
   );
 }

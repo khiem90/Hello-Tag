@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { type Template, type TemplateCategory } from "@/lib/templates";
+import { type Template } from "@/lib/templates";
+import { SpecimenFrame } from "./specimen-frame";
 
 type TemplateCardProps = {
   template: Template;
@@ -10,44 +11,12 @@ type TemplateCardProps = {
   index?: number;
 };
 
-const categoryAccents: Record<TemplateCategory, string> = {
-  Letter: "bg-green",
-  Certificate: "bg-pink",
-  Label: "bg-yellow",
-  Envelope: "bg-green",
-};
-
-export function TemplateCard({
-  template,
-  onUseTemplate,
-  index,
-}: TemplateCardProps) {
+export function TemplateCard({ template, onUseTemplate, index }: TemplateCardProps) {
   const isDark = template.data.background === "charcoal";
   const visibleFields = template.data.fields.filter((f) => f.visible);
-  const tilted = index !== undefined && index % 2 === 1;
 
   return (
-    <div
-      className={`group flex flex-col rounded-none border border-ink bg-cream transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:shadow-paper ${
-        tilted ? "rotate-[-0.4deg]" : ""
-      }`}
-    >
-      {/* Specimen header: index number + category tag */}
-      <div className="flex items-center justify-between border-b border-ink px-4 py-2">
-        <span className="pn-eyebrow text-ink">
-          {index !== undefined
-            ? `No. ${String(index + 1).padStart(2, "0")}`
-            : "No. —"}
-        </span>
-        <span className="pn-annotation inline-flex items-center gap-1.5 text-ink">
-          <span
-            className={`h-2 w-2 border border-ink ${categoryAccents[template.category]}`}
-            aria-hidden="true"
-          />
-          {template.category}
-        </span>
-      </div>
-
+    <SpecimenFrame docType={template.documentType} index={index}>
       {/* Preview framed like a document proof */}
       <div className="border-b border-ink p-3">
         <div
@@ -59,7 +28,7 @@ export function TemplateCard({
                 : "#fafaf8",
           }}
         >
-          {/* Background gradient preview */}
+          {/* Muted gradient stand-in for the background theme */}
           {template.data.background !== "custom" && (
             <div
               className="absolute inset-0"
@@ -76,9 +45,9 @@ export function TemplateCard({
 
           {/* Simplified representation of fields */}
           <div className="absolute inset-4 transition-transform duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-[1.01]">
-            {visibleFields.slice(0, 5).map((field, i) => (
+            {visibleFields.slice(0, 5).map((field) => (
               <div
-                key={i}
+                key={field.id}
                 className="absolute px-1"
                 style={{
                   top: `${field.y}%`,
@@ -86,9 +55,7 @@ export function TemplateCard({
                   transform: "translate(-50%, -50%)",
                   fontSize: `${Math.max(8, Math.min(field.fontSize / 2.5, 18))}px`,
                   color:
-                    field.color === "#FFFFFF" && !isDark
-                      ? "#2d2d2d"
-                      : field.color,
+                    field.color === "#FFFFFF" && !isDark ? "#2d2d2d" : field.color,
                   fontWeight: "500",
                   maxWidth: "90%",
                   textAlign: template.data.textAlign,
@@ -117,14 +84,12 @@ export function TemplateCard({
 
         {/* Merge-field specimen tags, shown as literal data syntax */}
         <div className="mb-5 flex flex-wrap gap-1.5">
-          {visibleFields.slice(0, 4).map((field, i) => (
+          {visibleFields.slice(0, 4).map((field) => (
             <span
-              key={i}
+              key={field.id}
               className="border border-dashed border-ink px-1.5 py-0.5 font-mono text-[10px] leading-[14px] text-ink"
             >
-              {"{{"}
-              {field.name}
-              {"}}"}
+              {`{{${field.name}}}`}
             </span>
           ))}
           {visibleFields.length > 4 && (
@@ -144,6 +109,6 @@ export function TemplateCard({
           </Button>
         </div>
       </div>
-    </div>
+    </SpecimenFrame>
   );
 }

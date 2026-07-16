@@ -17,11 +17,8 @@ export function SiteHeader() {
   const navItems = [
     { href: "/templates", label: "Templates" },
     { href: "/about", label: "About" },
+    ...(isAuthenticated ? [{ href: "/my-labels", label: "My Documents" }] : []),
   ];
-
-  if (isAuthenticated) {
-    navItems.push({ href: "/my-labels", label: "My Documents" });
-  }
 
   return (
     <header className="sticky top-0 z-50 grid h-[68px] w-full grid-cols-[auto_1fr_auto] items-center gap-4 border-b border-ink bg-cream/95 px-4 backdrop-blur-sm sm:px-9 md:grid-cols-[280px_1fr_auto]">

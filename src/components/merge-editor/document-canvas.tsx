@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
-import { backgroundThemes } from "@/lib/name-tag";
+import { alignToClass, getBackgroundStyle, resolveFieldText } from "@/lib/document";
 import { getAspectRatio, getDocumentTypeConfig } from "@/lib/document-types";
 import { DocumentData, MergeField } from "@/types/document";
 import { FloatingField } from "./floating-field";
@@ -21,27 +21,6 @@ type DocumentCanvasProps = {
   ) => void;
 };
 
-const alignToClass = {
-  left: "text-left",
-  center: "text-center",
-  right: "text-right",
-} as const;
-
-// Replace {{FieldName}} placeholders with actual values
-// Use [^}]+ to match any characters including spaces inside the braces
-const resolveFieldText = (
-  text: string,
-  previewData?: Record<string, string>
-): string => {
-  if (!previewData) return text;
-
-  return text.replace(/\{\{([^}]+)\}\}/g, (match, fieldName) => {
-    const trimmedName = fieldName.trim();
-    const value = previewData[trimmedName];
-    return value !== undefined ? value : match;
-  });
-};
-
 export function DocumentCanvas({
   document,
   activeField,
@@ -54,13 +33,7 @@ export function DocumentCanvas({
   const cardRef = useRef<HTMLDivElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
-  const theme =
-    document.background === "custom"
-      ? null
-      : backgroundThemes[document.background];
-
   const visibleFields = document.fields.filter((field) => field.visible);
-  const aspectRatio = getAspectRatio(document.documentType);
   const config = getDocumentTypeConfig(document.documentType);
 
   // The sheet sits alone on the sage board; size it by orientation so tall
@@ -72,32 +45,16 @@ export function DocumentCanvas({
         ? 460
         : 620;
 
-  const cardBackgroundStyle =
-    document.background === "custom"
-      ? {
-          backgroundColor: document.customBackground,
-          backgroundImage: "none",
-        }
-      : {
-          backgroundColor: "transparent",
-          backgroundImage: theme?.gradient ?? "none",
-        };
-
-  const handleDragStart = useCallback((id: string) => {
-    setDraggingId(id);
-  }, []);
-
-  const handleDragEnd = useCallback(() => {
-    setDraggingId(null);
-  }, []);
+  const handleDragStart = useCallback((id: string) => setDraggingId(id), []);
+  const handleDragEnd = useCallback(() => setDraggingId(null), []);
 
   return (
     <div
       ref={cardRef}
       className="relative w-full overflow-visible border border-ink shadow-paper"
       style={{
-        ...cardBackgroundStyle,
-        aspectRatio: aspectRatio,
+        ...getBackgroundStyle(document),
+        aspectRatio: getAspectRatio(document.documentType),
         maxWidth: `${maxWidth}px`,
       }}
     >
@@ -108,9 +65,7 @@ export function DocumentCanvas({
             key={field.id}
             field={field}
             displayText={
-              previewMode
-                ? resolveFieldText(field.text, previewData)
-                : field.text
+              previewMode ? resolveFieldText(field.text, previewData) : field.text
             }
             alignClass={alignToClass[document.textAlign]}
             isActive={activeField === field.id}

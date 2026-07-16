@@ -2,75 +2,44 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { readDataset, type DatasetRow } from "@/lib/dataset";
-import type { ImportSummary } from "@/types/import";
+import type { ImportSummary, ImportSummaryStatus } from "@/types/import";
 
 type UseDatasetImportOptions = {
   fieldCount: number;
   onHeadersImported?: (headers: string[]) => void;
 };
 
-type UseDatasetImportReturn = {
-  datasetRows: DatasetRow[];
-  importSummary: ImportSummary | null;
-  importError: string | null;
-  isImportingDataset: boolean;
-  handleDatasetImport: (file: File) => Promise<void>;
-  clearDataset: () => void;
-};
-
 const resolveImportStatus = (
   headerCount: number,
-  fieldCount: number
-): ImportSummary["status"] => {
+  fieldCount: number,
+): ImportSummaryStatus => {
   if (headerCount === fieldCount) {
     return "match";
   }
   return headerCount > fieldCount ? "needs-layers" : "unused-layers";
 };
 
-export const useDatasetImport = (
-  options: UseDatasetImportOptions
-): UseDatasetImportReturn => {
-  const { fieldCount, onHeadersImported } = options;
-
+export const useDatasetImport = ({
+  fieldCount,
+  onHeadersImported,
+}: UseDatasetImportOptions) => {
   const [datasetRows, setDatasetRows] = useState<DatasetRow[]>([]);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [isImportingDataset, setIsImportingDataset] = useState(false);
 
-  // Update import summary when field count changes
+  // Keep the summary in sync when fields are added or removed after an import
   useEffect(() => {
-    setImportSummary((previous) => {
-      if (!previous) {
-        return previous;
-      }
-      if (previous.layerCount === fieldCount) {
-        return previous;
-      }
-      return {
-        ...previous,
-        layerCount: fieldCount,
-        status: resolveImportStatus(previous.headerCount, fieldCount),
-      };
-    });
+    setImportSummary((previous) =>
+      previous && previous.layerCount !== fieldCount
+        ? {
+            ...previous,
+            layerCount: fieldCount,
+            status: resolveImportStatus(previous.headerCount, fieldCount),
+          }
+        : previous,
+    );
   }, [fieldCount]);
-
-  // Update import summary when row count changes
-  const datasetRowCount = datasetRows.length;
-  useEffect(() => {
-    setImportSummary((previous) => {
-      if (!previous) {
-        return previous;
-      }
-      if (previous.rowCount === datasetRowCount) {
-        return previous;
-      }
-      return {
-        ...previous,
-        rowCount: datasetRowCount,
-      };
-    });
-  }, [datasetRowCount]);
 
   const handleDatasetImport = useCallback(
     async (file: File) => {
@@ -80,12 +49,11 @@ export const useDatasetImport = (
       try {
         const dataset = await readDataset(file);
         const headerCount = dataset.headers.length;
-        const rowCount = dataset.rows.length;
 
         setDatasetRows(dataset.rows);
 
-        if (headerCount > 0 && onHeadersImported) {
-          onHeadersImported(dataset.headers);
+        if (headerCount > 0) {
+          onHeadersImported?.(dataset.headers);
         }
 
         const resultingFieldCount = headerCount > 0 ? headerCount : fieldCount;
@@ -95,7 +63,7 @@ export const useDatasetImport = (
           headers: dataset.headers,
           headerCount,
           layerCount: resultingFieldCount,
-          rowCount,
+          rowCount: dataset.rows.length,
           status: resolveImportStatus(headerCount, resultingFieldCount),
           importedAt: new Date().toISOString(),
         });
@@ -105,20 +73,14 @@ export const useDatasetImport = (
         setImportError(
           error instanceof Error
             ? error.message
-            : "Sorry, we couldn't read that file."
+            : "Sorry, we couldn't read that file.",
         );
       } finally {
         setIsImportingDataset(false);
       }
     },
-    [fieldCount, onHeadersImported]
+    [fieldCount, onHeadersImported],
   );
-
-  const clearDataset = useCallback(() => {
-    setDatasetRows([]);
-    setImportSummary(null);
-    setImportError(null);
-  }, []);
 
   return {
     datasetRows,
@@ -126,7 +88,5 @@ export const useDatasetImport = (
     importError,
     isImportingDataset,
     handleDatasetImport,
-    clearDataset,
   };
 };
-

@@ -3,33 +3,35 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { templates, TemplateCategory } from "@/lib/templates";
-import { persistDocument } from "@/lib/tag-storage";
+import { templates, type Template } from "@/lib/templates";
+import { persistDocument } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
-import { TemplateCard } from "@/components/cards";
+import { TemplateCard } from "@/components/cards/template-card";
+import type { DocumentType } from "@/types/document";
 
-const categories: { id: TemplateCategory; label: string }[] = [
-  { id: "Letter", label: "Letters" },
-  { id: "Certificate", label: "Certificates" },
-  { id: "Label", label: "Labels" },
-  { id: "Envelope", label: "Envelopes" },
+type Filter = DocumentType | "all";
+
+const filters: { id: Filter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "letter", label: "Letters" },
+  { id: "certificate", label: "Certificates" },
+  { id: "label", label: "Labels" },
+  { id: "envelope", label: "Envelopes" },
 ];
 
 export default function TemplatesPage() {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState<
-    TemplateCategory | "all"
-  >("all");
+  const [activeFilter, setActiveFilter] = useState<Filter>("all");
 
-  const handleUseTemplate = (template: (typeof templates)[0]) => {
+  const handleUseTemplate = (template: Template) => {
     persistDocument(template.data);
     router.push("/create");
   };
 
   const filteredTemplates =
-    activeCategory === "all"
+    activeFilter === "all"
       ? templates
-      : templates.filter((t) => t.category === activeCategory);
+      : templates.filter((t) => t.documentType === activeFilter);
 
   return (
     <div className="min-h-screen py-16 sm:py-24">
@@ -49,31 +51,21 @@ export default function TemplatesPage() {
 
         {/* Category Filter */}
         <div className="mb-14 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveCategory("all")}
-            aria-pressed={activeCategory === "all"}
-            className={`pn-eyebrow h-9 cursor-pointer rounded-none border border-ink px-4 transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
-              activeCategory === "all"
-                ? "bg-ink text-white-ink"
-                : "bg-cream text-ink hover:-translate-y-px hover:shadow-paper-sm"
-            }`}
-          >
-            All
-          </button>
-          {categories.map((cat, i) => (
+          {filters.map((filter, i) => (
             <button
-              key={cat.id}
+              key={filter.id}
               type="button"
-              onClick={() => setActiveCategory(cat.id)}
-              aria-pressed={activeCategory === cat.id}
+              onClick={() => setActiveFilter(filter.id)}
+              aria-pressed={activeFilter === filter.id}
               className={`pn-eyebrow h-9 cursor-pointer rounded-none border border-ink px-4 transition-all duration-[160ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
-                activeCategory === cat.id
+                activeFilter === filter.id
                   ? "bg-ink text-white-ink"
                   : "bg-cream text-ink hover:-translate-y-px hover:shadow-paper-sm"
               }`}
             >
-              {String(i + 1).padStart(2, "0")} — {cat.label}
+              {filter.id === "all"
+                ? filter.label
+                : `${String(i).padStart(2, "0")} — ${filter.label}`}
             </button>
           ))}
         </div>

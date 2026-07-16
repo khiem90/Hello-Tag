@@ -6,7 +6,7 @@ import {
   type DraggableData,
   type DraggableEvent,
 } from "react-draggable";
-import { clampPercent } from "@/lib/name-tag";
+import { clampPercent } from "@/lib/document";
 import { MergeField } from "@/types/document";
 import { Move } from "lucide-react";
 

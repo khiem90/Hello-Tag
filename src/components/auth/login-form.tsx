@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   GoogleAuthProvider,
@@ -14,12 +8,10 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase-client";
-import type { LoginFormProps } from "@/types/auth";
 import { Button } from "@/components/ui/button";
+import { FormStatus, UnderlineField } from "@/components/ui/form";
 
-export function LoginForm({
-  redirectPath = "/",
-}: LoginFormProps) {
+export function LoginForm({ redirectPath = "/" }: { redirectPath?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,64 +19,42 @@ export function LoginForm({
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const googleProvider = useMemo(() => {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-    return provider;
-  }, []);
 
-  const handleEmailChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setEmail(event.target.value);
-    },
-    [],
-  );
+  const isSubmitting = isEmailSubmitting || isGoogleSubmitting;
 
-  const handlePasswordChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setPassword(event.target.value);
-    },
-    [],
-  );
+  const handleEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setStatusMessage(null);
+    if (!email.trim() || !password.trim()) {
+      setError("Enter both your email and password to continue.");
+      return;
+    }
+    try {
+      setIsEmailSubmitting(true);
+      await signInWithEmailAndPassword(getFirebaseAuth(), email.trim(), password);
+      setStatusMessage("Signed in. Redirecting you now…");
+      router.refresh();
+      router.push(redirectPath);
+    } catch (authIssue) {
+      setError(
+        authIssue instanceof Error
+          ? authIssue.message
+          : "We couldn't sign you in. Please try again.",
+      );
+    } finally {
+      setIsEmailSubmitting(false);
+    }
+  };
 
-  const handleEmailSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      setError(null);
-      setStatusMessage(null);
-      if (!email.trim() || !password.trim()) {
-        setError("Enter both your email and password to continue.");
-        return;
-      }
-      try {
-        setIsEmailSubmitting(true);
-        await signInWithEmailAndPassword(
-          getFirebaseAuth(),
-          email.trim(),
-          password,
-        );
-        setStatusMessage("Signed in. Redirecting you now…");
-        router.refresh();
-        router.push(redirectPath);
-      } catch (authIssue) {
-        setError(
-          authIssue instanceof Error
-            ? authIssue.message
-            : "We couldn't sign you in. Please try again.",
-        );
-      } finally {
-        setIsEmailSubmitting(false);
-      }
-    },
-    [email, password, redirectPath, router],
-  );
-
-  const handleGoogleLogin = useCallback(async () => {
+  const handleGoogleLogin = async () => {
     setError(null);
     setStatusMessage(null);
     try {
       setIsGoogleSubmitting(true);
-      await signInWithPopup(getFirebaseAuth(), googleProvider);
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      await signInWithPopup(getFirebaseAuth(), provider);
       setStatusMessage("Signed in with Google. Redirecting you now…");
       router.refresh();
       router.push(redirectPath);
@@ -97,7 +67,7 @@ export function LoginForm({
     } finally {
       setIsGoogleSubmitting(false);
     }
-  }, [googleProvider, redirectPath, router]);
+  };
 
   return (
     <div className="pn-noise relative w-full rounded-none border border-ink bg-cream p-6 shadow-paper sm:p-8">
@@ -107,48 +77,36 @@ export function LoginForm({
       </div>
 
       <form className="space-y-6" onSubmit={handleEmailSubmit}>
-        <div>
-          <label className="pn-eyebrow mb-2 block text-ink">
-            Email address
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={email}
-            onChange={handleEmailChange}
-            autoComplete="email"
-            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
-            placeholder="you@example.com"
-            required
-            aria-label="Email address"
-            disabled={isEmailSubmitting || isGoogleSubmitting}
-          />
-        </div>
+        <UnderlineField
+          label="Email address"
+          type="email"
+          name="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          autoComplete="email"
+          placeholder="you@example.com"
+          required
+          disabled={isSubmitting}
+        />
 
-        <div>
-          <label className="pn-eyebrow mb-2 block text-ink">
-            Password
-          </label>
-          <input
-            type="password"
-            name="password"
-            value={password}
-            onChange={handlePasswordChange}
-            autoComplete="current-password"
-            className="w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink transition-colors duration-[160ms] placeholder:text-muted-ink/60 focus:border-pink disabled:opacity-50"
-            placeholder="••••••••"
-            required
-            aria-label="Password"
-            disabled={isEmailSubmitting || isGoogleSubmitting}
-          />
-        </div>
+        <UnderlineField
+          label="Password"
+          type="password"
+          name="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="current-password"
+          placeholder="••••••••"
+          required
+          disabled={isSubmitting}
+        />
 
         <Button
           type="submit"
           variant="primary"
           size="lg"
           className="w-full"
-          disabled={isEmailSubmitting || isGoogleSubmitting}
+          disabled={isSubmitting}
           isLoading={isEmailSubmitting}
         >
           Sign in
@@ -167,18 +125,13 @@ export function LoginForm({
         size="lg"
         onClick={handleGoogleLogin}
         className="w-full gap-3"
-        disabled={isGoogleSubmitting || isEmailSubmitting}
+        disabled={isSubmitting}
       >
         {isGoogleSubmitting ? (
           "Connecting..."
         ) : (
           <>
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              aria-hidden
-              focusable="false"
-            >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden focusable="false">
               <path
                 fill="#4285F4"
                 d="M23.5 12.3c0-.8-.1-1.5-.2-2.3h-11v4.4h6.3c-.3 1.6-1.3 3-2.8 3.8v3.1h4.5c2.6-2.3 4.2-5.8 4.2-9z"
@@ -201,34 +154,7 @@ export function LoginForm({
         )}
       </Button>
 
-      <div className="mt-6 space-y-3 text-sm">
-        {error ? (
-          <div
-            className="flex items-start gap-2 border-l-2 border-yellow pl-3 text-ink"
-            role="alert"
-            aria-live="assertive"
-          >
-            <span
-              className="mt-[7px] block h-1.5 w-1.5 shrink-0 bg-yellow"
-              aria-hidden
-            />
-            <p>{error}</p>
-          </div>
-        ) : null}
-        {statusMessage ? (
-          <div
-            className="flex items-start gap-2 border-l-2 border-green pl-3 text-ink"
-            role="status"
-            aria-live="polite"
-          >
-            <span
-              className="mt-[7px] block h-1.5 w-1.5 shrink-0 bg-green"
-              aria-hidden
-            />
-            <p>{statusMessage}</p>
-          </div>
-        ) : null}
-      </div>
+      <FormStatus error={error} status={statusMessage} />
 
       <p className="pn-hand mt-6 inline-block -rotate-2 text-ink">
         we&rsquo;ll keep your seat warm
