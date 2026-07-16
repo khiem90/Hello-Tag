@@ -22,13 +22,3 @@ export type DocumentData = {
   customBackground: string;
   textAlign: "left" | "center" | "right";
 };
-
-export type MergeFieldUpdate = Partial<Omit<MergeField, "id">>;
-
-// Legacy type aliases for backward compatibility during migration
-export type NameTagField = MergeField;
-export type NameTagData = DocumentData;
-export type NameTagBackgroundKey = BackgroundKey;
-export type NameTagBackgroundOption = BackgroundOption;
-export type NameTagFieldUpdate = MergeFieldUpdate;
-

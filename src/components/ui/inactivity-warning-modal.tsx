@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type InactivityWarningModalProps = {
@@ -24,22 +25,19 @@ export const InactivityWarningModal = ({
 }: InactivityWarningModalProps) => {
   const stayButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    stayButtonRef.current?.focus();
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onStayLoggedIn();
       }
-    },
-    [onStayLoggedIn]
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      stayButtonRef.current?.focus();
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    }
-  }, [isOpen, handleKeyDown]);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onStayLoggedIn]);
 
   if (!isOpen) return null;
 
@@ -61,20 +59,7 @@ export const InactivityWarningModal = ({
       <div className="pn-noise relative w-full max-w-md animate-fade-up rounded-none border border-ink bg-cream p-8 shadow-paper">
         {/* Warning marker */}
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-none border border-ink bg-yellow">
-          <svg
-            className="h-7 w-7 text-ink"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
+          <TriangleAlert className="h-7 w-7 text-ink" aria-hidden="true" />
         </div>
 
         <header className="mb-6 text-center">

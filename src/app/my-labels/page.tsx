@@ -9,10 +9,10 @@ import {
   deleteDesignFromFirebase,
   persistDocument,
   type SavedDesign,
-} from "@/lib/tag-storage";
+} from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { DesignCard } from "@/components/cards";
+import { DesignCard } from "@/components/cards/design-card";
 
 export default function MyLabelsPage() {
   const { isAuthenticated } = useAuth();

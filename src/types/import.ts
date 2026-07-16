@@ -1,7 +1,4 @@
-export type ImportSummaryStatus =
-  | "match"
-  | "needs-layers"
-  | "unused-layers";
+export type ImportSummaryStatus = "match" | "needs-layers" | "unused-layers";
 
 export type ImportSummary = {
   fileName: string;
@@ -12,5 +9,3 @@ export type ImportSummary = {
   status: ImportSummaryStatus;
   importedAt: string;
 };
-
-export type ExportFormat = "doc" | "docx";

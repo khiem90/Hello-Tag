@@ -1,13 +1,9 @@
 "use client";
 
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useCallback,
-  useState,
-} from "react";
+import { type FormEvent, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { underlineInputClass } from "@/components/ui/form";
 
 type SaveDesignModalProps = {
   isOpen: boolean;
@@ -15,9 +11,6 @@ type SaveDesignModalProps = {
   onSave: (name: string, description?: string) => Promise<void>;
   initialName?: string;
 };
-
-const underlineInput =
-  "mt-2 w-full rounded-none border-0 border-b border-ink bg-transparent px-0 py-2 text-base text-ink placeholder:text-muted-ink/60 transition-colors duration-[160ms] focus:border-pink focus:outline-none disabled:opacity-60";
 
 export function SaveDesignModal({
   isOpen,
@@ -30,54 +23,39 @@ export function SaveDesignModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
-    setError(null);
-  }, []);
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError("Please enter a name for your design");
+      return;
+    }
 
-  const handleDescriptionChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setDescription(e.target.value);
-    },
-    [],
-  );
+    try {
+      setIsSaving(true);
+      setError(null);
+      await onSave(name.trim(), description.trim());
+      setName("");
+      setDescription("");
+      onClose();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save design. Please try again.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-  const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (!name.trim()) {
-        setError("Please enter a name for your design");
-        return;
-      }
-
-      try {
-        setIsSaving(true);
-        setError(null);
-        await onSave(name.trim(), description.trim());
-        setName("");
-        setDescription("");
-        onClose();
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to save design. Please try again.",
-        );
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [name, description, onSave, onClose],
-  );
-
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     if (!isSaving) {
       setName(initialName);
       setDescription("");
       setError(null);
       onClose();
     }
-  }, [isSaving, initialName, onClose]);
+  };
 
   if (!isOpen) return null;
 
@@ -118,9 +96,12 @@ export function SaveDesignModal({
             <input
               type="text"
               value={name}
-              onChange={handleNameChange}
+              onChange={(e) => {
+                setName(e.target.value);
+                setError(null);
+              }}
               placeholder="Conference Badge 2024"
-              className={underlineInput}
+              className={`${underlineInputClass} mt-2`}
               disabled={isSaving}
               autoFocus
               required
@@ -131,10 +112,10 @@ export function SaveDesignModal({
             Description (optional)
             <textarea
               value={description}
-              onChange={handleDescriptionChange}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Blue theme with large name field for annual tech conference"
               rows={3}
-              className={`${underlineInput} resize-none`}
+              className={`${underlineInputClass} mt-2 resize-none`}
               disabled={isSaving}
             />
           </label>

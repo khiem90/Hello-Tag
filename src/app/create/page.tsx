@@ -3,20 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DocumentCanvas } from "@/components/merge-editor";
+import { DocumentCanvas } from "@/components/merge-editor/document-canvas";
 import { SaveDesignModal } from "@/components/ui/save-design-modal";
 import { PrintPreviewModal } from "@/components/ui/print-preview-modal";
 import { useAuth } from "@/components/layout/auth-provider";
 import { documentTypeList, getDocumentTypeConfig } from "@/lib/document-types";
-import { accentPalette, backgroundThemes } from "@/lib/name-tag";
-import type { DocumentData } from "@/types/document";
-import {
-  useDocumentEditor,
-  useDatasetImport,
-  usePreviewMode,
-  useSaveDesign,
-  usePrintPreview,
-} from "@/hooks";
+import { accentPalette, backgroundGradients } from "@/lib/document";
+import type { BackgroundKey } from "@/types/document";
+import { useDocumentEditor } from "@/hooks/use-document-editor";
+import { useDatasetImport } from "@/hooks/use-dataset-import";
+import { usePreviewMode } from "@/hooks/use-preview-mode";
+import { useSaveDesign } from "@/hooks/use-save-design";
 import "./press-notes-editor.css";
 
 const MAX_RAIL_RECORDS = 150;
@@ -52,13 +49,7 @@ export default function CreatePage() {
     onHeadersImported: syncFieldsToHeaders,
   });
 
-  // Print preview handling
-  const {
-    isOpen: isPrintPreviewOpen,
-    handleOpenPrintPreview,
-    handleClosePrintPreview,
-  } = usePrintPreview();
-
+  const [isPrintPreviewOpen, setPrintPreviewOpen] = useState(false);
   const canPrint = datasetRows.length > 0;
 
   // Preview mode handling
@@ -158,9 +149,7 @@ export default function CreatePage() {
   );
   const headers = importSummary?.headers ?? [];
   const railRecords = datasetRows.slice(0, MAX_RAIL_RECORDS);
-  const backgroundKeys = Object.keys(backgroundThemes) as Array<
-    Exclude<DocumentData["background"], "custom">
-  >;
+  const backgroundKeys = Object.keys(backgroundGradients) as BackgroundKey[];
 
   return (
     <div className="pn-app">
@@ -193,7 +182,7 @@ export default function CreatePage() {
           <button
             type="button"
             className="pn-ed-dark"
-            onClick={handleOpenPrintPreview}
+            onClick={() => setPrintPreviewOpen(true)}
             disabled={!canPrint}
           >
             Preview &amp; print
@@ -543,7 +532,7 @@ export default function CreatePage() {
         <button
           type="button"
           className="pn-ed-generate"
-          onClick={handleOpenPrintPreview}
+          onClick={() => setPrintPreviewOpen(true)}
           disabled={!canPrint}
         >
           Generate issue -&gt;
@@ -560,7 +549,7 @@ export default function CreatePage() {
       {/* Print Preview Modal */}
       <PrintPreviewModal
         isOpen={isPrintPreviewOpen}
-        onClose={handleClosePrintPreview}
+        onClose={() => setPrintPreviewOpen(false)}
         documentData={document}
         datasetRows={datasetRows}
       />

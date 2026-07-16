@@ -1,501 +1,146 @@
-import { DocumentData, DocumentType } from "@/types/document";
-import { createDefaultDocument } from "./name-tag";
-
-export type TemplateCategory = "Letter" | "Certificate" | "Label" | "Envelope";
+import { DocumentData, DocumentType, MergeField } from "@/types/document";
+import { accentPalette } from "./document";
 
 export type Template = {
   id: string;
   name: string;
-  category: TemplateCategory;
   documentType: DocumentType;
   data: DocumentData;
 };
 
+// Compact field literal: id, name, text, position, size, color.
+const field = (
+  id: string,
+  name: string,
+  text: string,
+  x: number,
+  y: number,
+  fontSize: number,
+  color: string,
+): MergeField => ({ id, name, text, x, y, fontSize, color, visible: true });
+
+const template = (
+  id: string,
+  name: string,
+  documentType: DocumentType,
+  data: Partial<Omit<DocumentData, "documentType" | "fields">> &
+    Pick<DocumentData, "fields">,
+): Template => ({
+  id,
+  name,
+  documentType,
+  data: {
+    documentType,
+    accent: accentPalette[0],
+    background: "sky",
+    customBackground: "#f8fafc",
+    textAlign: "center",
+    ...data,
+  },
+});
+
 export const templates: Template[] = [
-  // Letter Templates
-  {
-    id: "welcome-letter",
-    name: "Welcome Letter",
-    category: "Letter",
-    documentType: "letter",
-    data: {
-      ...createDefaultDocument("letter"),
-      accent: "#5BC8FF",
-      background: "custom",
-      customBackground: "#FFFFFF",
-      textAlign: "left",
-      fields: [
-        {
-          id: "l1",
-          name: "Date",
-          text: "{{Date}}",
-          x: 85,
-          y: 5,
-          fontSize: 14,
-          color: "#64748b",
-          visible: true,
-        },
-        {
-          id: "l2",
-          name: "Recipient",
-          text: "Dear {{FirstName}},",
-          x: 10,
-          y: 15,
-          fontSize: 18,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "l3",
-          name: "Welcome",
-          text: "Welcome to {{Company}}!",
-          x: 10,
-          y: 25,
-          fontSize: 24,
-          color: "#0ea5e9",
-          visible: true,
-        },
-        {
-          id: "l4",
-          name: "Body",
-          text: "We're thrilled to have you join our team...",
-          x: 50,
-          y: 45,
-          fontSize: 14,
-          color: "#475569",
-          visible: true,
-        },
-        {
-          id: "l5",
-          name: "Closing",
-          text: "Best regards,\nThe {{Company}} Team",
-          x: 10,
-          y: 85,
-          fontSize: 14,
-          color: "#0f172a",
-          visible: true,
-        },
-      ],
-    },
-  },
-  {
-    id: "thank-you-letter",
-    name: "Thank You Letter",
-    category: "Letter",
-    documentType: "letter",
-    data: {
-      ...createDefaultDocument("letter"),
-      accent: "#f97316",
-      background: "custom",
-      customBackground: "#fffbeb",
-      textAlign: "left",
-      fields: [
-        {
-          id: "ty1",
-          name: "Greeting",
-          text: "Dear {{Name}},",
-          x: 10,
-          y: 15,
-          fontSize: 18,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "ty2",
-          name: "Title",
-          text: "Thank You!",
-          x: 50,
-          y: 30,
-          fontSize: 36,
-          color: "#f97316",
-          visible: true,
-        },
-        {
-          id: "ty3",
-          name: "Message",
-          text: "Your support means everything to us...",
-          x: 50,
-          y: 50,
-          fontSize: 16,
-          color: "#475569",
-          visible: true,
-        },
-      ],
-    },
-  },
-  
-  // Certificate Templates
-  {
-    id: "achievement-cert",
-    name: "Achievement Award",
-    category: "Certificate",
-    documentType: "certificate",
-    data: {
-      ...createDefaultDocument("certificate"),
-      accent: "#a855f7",
-      background: "sky",
-      textAlign: "center",
-      fields: [
-        {
-          id: "c1",
-          name: "Title",
-          text: "Certificate of Achievement",
-          x: 50,
-          y: 15,
-          fontSize: 32,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "c2",
-          name: "Subtitle",
-          text: "This is to certify that",
-          x: 50,
-          y: 30,
-          fontSize: 16,
-          color: "#64748b",
-          visible: true,
-        },
-        {
-          id: "c3",
-          name: "Recipient",
-          text: "{{FullName}}",
-          x: 50,
-          y: 45,
-          fontSize: 42,
-          color: "#a855f7",
-          visible: true,
-        },
-        {
-          id: "c4",
-          name: "Description",
-          text: "has successfully completed {{Course}}",
-          x: 50,
-          y: 60,
-          fontSize: 18,
-          color: "#475569",
-          visible: true,
-        },
-        {
-          id: "c5",
-          name: "Date",
-          text: "Awarded on {{Date}}",
-          x: 50,
-          y: 80,
-          fontSize: 14,
-          color: "#64748b",
-          visible: true,
-        },
-      ],
-    },
-  },
-  {
-    id: "completion-cert",
-    name: "Course Completion",
-    category: "Certificate",
-    documentType: "certificate",
-    data: {
-      ...createDefaultDocument("certificate"),
-      accent: "#14b8a6",
-      background: "charcoal",
-      textAlign: "center",
-      fields: [
-        {
-          id: "cc1",
-          name: "Header",
-          text: "CERTIFICATE",
-          x: 50,
-          y: 10,
-          fontSize: 24,
-          color: "#14b8a6",
-          visible: true,
-        },
-        {
-          id: "cc2",
-          name: "Of",
-          text: "OF COMPLETION",
-          x: 50,
-          y: 20,
-          fontSize: 16,
-          color: "#94a3b8",
-          visible: true,
-        },
-        {
-          id: "cc3",
-          name: "Name",
-          text: "{{Name}}",
-          x: 50,
-          y: 45,
-          fontSize: 48,
-          color: "#FFFFFF",
-          visible: true,
-        },
-        {
-          id: "cc4",
-          name: "Course",
-          text: "{{CourseName}}",
-          x: 50,
-          y: 65,
-          fontSize: 20,
-          color: "#14b8a6",
-          visible: true,
-        },
-      ],
-    },
-  },
+  // Letters
+  template("welcome-letter", "Welcome Letter", "letter", {
+    accent: "#5BC8FF",
+    background: "custom",
+    customBackground: "#FFFFFF",
+    textAlign: "left",
+    fields: [
+      field("l1", "Date", "{{Date}}", 85, 5, 14, "#64748b"),
+      field("l2", "Recipient", "Dear {{FirstName}},", 10, 15, 18, "#0f172a"),
+      field("l3", "Welcome", "Welcome to {{Company}}!", 10, 25, 24, "#0ea5e9"),
+      field("l4", "Body", "We're thrilled to have you join our team...", 50, 45, 14, "#475569"),
+      field("l5", "Closing", "Best regards,\nThe {{Company}} Team", 10, 85, 14, "#0f172a"),
+    ],
+  }),
+  template("thank-you-letter", "Thank You Letter", "letter", {
+    accent: "#f97316",
+    background: "custom",
+    customBackground: "#fffbeb",
+    textAlign: "left",
+    fields: [
+      field("ty1", "Greeting", "Dear {{Name}},", 10, 15, 18, "#0f172a"),
+      field("ty2", "Title", "Thank You!", 50, 30, 36, "#f97316"),
+      field("ty3", "Message", "Your support means everything to us...", 50, 50, 16, "#475569"),
+    ],
+  }),
 
-  // Label Templates
-  {
-    id: "hello-badge",
-    name: "Hello Badge",
-    category: "Label",
-    documentType: "label",
-    data: {
-      ...createDefaultDocument("label"),
-      accent: "#FF7865",
-      background: "sunset",
-      textAlign: "center",
-      fields: [
-        {
-          id: "h1",
-          name: "Header",
-          text: "HELLO",
-          x: 50,
-          y: 20,
-          fontSize: 28,
-          color: "#FFFFFF",
-          visible: true,
-        },
-        {
-          id: "h2",
-          name: "Subheader",
-          text: "my name is",
-          x: 50,
-          y: 35,
-          fontSize: 14,
-          color: "#FFFFFF",
-          visible: true,
-        },
-        {
-          id: "h3",
-          name: "Name",
-          text: "{{Name}}",
-          x: 50,
-          y: 55,
-          fontSize: 36,
-          color: "#FFFFFF",
-          visible: true,
-        },
-        {
-          id: "h4",
-          name: "Title",
-          text: "{{Title}}",
-          x: 50,
-          y: 75,
-          fontSize: 16,
-          color: "#FED7AA",
-          visible: true,
-        },
-      ],
-    },
-  },
-  {
-    id: "conference-badge",
-    name: "Conference Badge",
-    category: "Label",
-    documentType: "label",
-    data: {
-      ...createDefaultDocument("label"),
-      accent: "#5BC8FF",
-      background: "sky",
-      textAlign: "left",
-      fields: [
-        {
-          id: "cb1",
-          name: "Name",
-          text: "{{Name}}",
-          x: 15,
-          y: 35,
-          fontSize: 32,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "cb2",
-          name: "Title",
-          text: "{{Title}}",
-          x: 15,
-          y: 55,
-          fontSize: 18,
-          color: "#475569",
-          visible: true,
-        },
-        {
-          id: "cb3",
-          name: "Company",
-          text: "{{Company}}",
-          x: 15,
-          y: 70,
-          fontSize: 16,
-          color: "#0ea5e9",
-          visible: true,
-        },
-      ],
-    },
-  },
-  {
-    id: "minimal-label",
-    name: "Minimal Label",
-    category: "Label",
-    documentType: "label",
-    data: {
-      ...createDefaultDocument("label"),
-      accent: "#4A4A4A",
-      background: "custom",
-      customBackground: "#FFFFFF",
-      textAlign: "center",
-      fields: [
-        {
-          id: "ml1",
-          name: "Name",
-          text: "{{Name}}",
-          x: 50,
-          y: 45,
-          fontSize: 28,
-          color: "#000000",
-          visible: true,
-        },
-        {
-          id: "ml2",
-          name: "Detail",
-          text: "{{Detail}}",
-          x: 50,
-          y: 65,
-          fontSize: 14,
-          color: "#64748b",
-          visible: true,
-        },
-      ],
-    },
-  },
+  // Certificates
+  template("achievement-cert", "Achievement Award", "certificate", {
+    accent: "#a855f7",
+    fields: [
+      field("c1", "Title", "Certificate of Achievement", 50, 15, 32, "#0f172a"),
+      field("c2", "Subtitle", "This is to certify that", 50, 30, 16, "#64748b"),
+      field("c3", "Recipient", "{{FullName}}", 50, 45, 42, "#a855f7"),
+      field("c4", "Description", "has successfully completed {{Course}}", 50, 60, 18, "#475569"),
+      field("c5", "Date", "Awarded on {{Date}}", 50, 80, 14, "#64748b"),
+    ],
+  }),
+  template("completion-cert", "Course Completion", "certificate", {
+    accent: "#14b8a6",
+    background: "charcoal",
+    fields: [
+      field("cc1", "Header", "CERTIFICATE", 50, 10, 24, "#14b8a6"),
+      field("cc2", "Of", "OF COMPLETION", 50, 20, 16, "#94a3b8"),
+      field("cc3", "Name", "{{Name}}", 50, 45, 48, "#FFFFFF"),
+      field("cc4", "Course", "{{CourseName}}", 50, 65, 20, "#14b8a6"),
+    ],
+  }),
 
-  // Envelope Templates
-  {
-    id: "business-envelope",
-    name: "Business Envelope",
-    category: "Envelope",
-    documentType: "envelope",
-    data: {
-      ...createDefaultDocument("envelope"),
-      accent: "#0ea5e9",
-      background: "custom",
-      customBackground: "#FFFFFF",
-      textAlign: "left",
-      fields: [
-        {
-          id: "e1",
-          name: "Return Name",
-          text: "{{SenderName}}",
-          x: 8,
-          y: 15,
-          fontSize: 12,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "e2",
-          name: "Return Address",
-          text: "{{SenderAddress}}",
-          x: 8,
-          y: 28,
-          fontSize: 10,
-          color: "#64748b",
-          visible: true,
-        },
-        {
-          id: "e3",
-          name: "Recipient Name",
-          text: "{{RecipientName}}",
-          x: 55,
-          y: 50,
-          fontSize: 14,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "e4",
-          name: "Recipient Address",
-          text: "{{RecipientAddress}}",
-          x: 55,
-          y: 65,
-          fontSize: 12,
-          color: "#475569",
-          visible: true,
-        },
-        {
-          id: "e5",
-          name: "City State Zip",
-          text: "{{City}}, {{State}} {{Zip}}",
-          x: 55,
-          y: 78,
-          fontSize: 12,
-          color: "#475569",
-          visible: true,
-        },
-      ],
-    },
-  },
-  {
-    id: "personal-envelope",
-    name: "Personal Envelope",
-    category: "Envelope",
-    documentType: "envelope",
-    data: {
-      ...createDefaultDocument("envelope"),
-      accent: "#f43f5e",
-      background: "custom",
-      customBackground: "#fef2f2",
-      textAlign: "left",
-      fields: [
-        {
-          id: "pe1",
-          name: "From",
-          text: "From: {{YourName}}",
-          x: 8,
-          y: 18,
-          fontSize: 11,
-          color: "#475569",
-          visible: true,
-        },
-        {
-          id: "pe2",
-          name: "To",
-          text: "{{RecipientName}}",
-          x: 55,
-          y: 50,
-          fontSize: 16,
-          color: "#0f172a",
-          visible: true,
-        },
-        {
-          id: "pe3",
-          name: "Address",
-          text: "{{Address}}\n{{City}}, {{State}} {{Zip}}",
-          x: 55,
-          y: 68,
-          fontSize: 12,
-          color: "#475569",
-          visible: true,
-        },
-      ],
-    },
-  },
+  // Labels
+  template("hello-badge", "Hello Badge", "label", {
+    accent: "#FF7865",
+    background: "sunset",
+    fields: [
+      field("h1", "Header", "HELLO", 50, 20, 28, "#FFFFFF"),
+      field("h2", "Subheader", "my name is", 50, 35, 14, "#FFFFFF"),
+      field("h3", "Name", "{{Name}}", 50, 55, 36, "#FFFFFF"),
+      field("h4", "Title", "{{Title}}", 50, 75, 16, "#FED7AA"),
+    ],
+  }),
+  template("conference-badge", "Conference Badge", "label", {
+    accent: "#5BC8FF",
+    textAlign: "left",
+    fields: [
+      field("cb1", "Name", "{{Name}}", 15, 35, 32, "#0f172a"),
+      field("cb2", "Title", "{{Title}}", 15, 55, 18, "#475569"),
+      field("cb3", "Company", "{{Company}}", 15, 70, 16, "#0ea5e9"),
+    ],
+  }),
+  template("minimal-label", "Minimal Label", "label", {
+    accent: "#4A4A4A",
+    background: "custom",
+    customBackground: "#FFFFFF",
+    fields: [
+      field("ml1", "Name", "{{Name}}", 50, 45, 28, "#000000"),
+      field("ml2", "Detail", "{{Detail}}", 50, 65, 14, "#64748b"),
+    ],
+  }),
+
+  // Envelopes
+  template("business-envelope", "Business Envelope", "envelope", {
+    accent: "#0ea5e9",
+    background: "custom",
+    customBackground: "#FFFFFF",
+    textAlign: "left",
+    fields: [
+      field("e1", "Return Name", "{{SenderName}}", 8, 15, 12, "#0f172a"),
+      field("e2", "Return Address", "{{SenderAddress}}", 8, 28, 10, "#64748b"),
+      field("e3", "Recipient Name", "{{RecipientName}}", 55, 50, 14, "#0f172a"),
+      field("e4", "Recipient Address", "{{RecipientAddress}}", 55, 65, 12, "#475569"),
+      field("e5", "City State Zip", "{{City}}, {{State}} {{Zip}}", 55, 78, 12, "#475569"),
+    ],
+  }),
+  template("personal-envelope", "Personal Envelope", "envelope", {
+    accent: "#f43f5e",
+    background: "custom",
+    customBackground: "#fef2f2",
+    textAlign: "left",
+    fields: [
+      field("pe1", "From", "From: {{YourName}}", 8, 18, 11, "#475569"),
+      field("pe2", "To", "{{RecipientName}}", 55, 50, 16, "#0f172a"),
+      field("pe3", "Address", "{{Address}}\n{{City}}, {{State}} {{Zip}}", 55, 68, 12, "#475569"),
+    ],
+  }),
 ];
-
-export const getTemplatesByCategory = (category: TemplateCategory): Template[] => {
-  return templates.filter((t) => t.category === category);
-};
-
-export const getTemplatesByDocumentType = (type: DocumentType): Template[] => {
-  return templates.filter((t) => t.documentType === type);
-};
